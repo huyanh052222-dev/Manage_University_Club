@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="NovaHub - dashboard quản lý câu lạc bộ sinh viên"
+    />
+    <title>NovaHub | Tổng quan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles/index.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar" aria-label="Điều hướng chính"></aside>
+      <button class="sidebar-overlay" type="button" data-action="close-sidebar" aria-label="Đóng thanh điều hướng"></button>
+
+      <main class="main-content">
+        <header class="topbar" id="topbar"></header>
+        <div class="dashboard" id="dashboard" aria-live="polite"></div>
+      </main>
+    </div>
+
+    <div class="toast-region" id="toast-region" aria-live="polite"></div>
+    <div class="modal-root" id="modal-root"></div>
+
+    <noscript>
+      <p class="noscript-message">Vui lòng bật JavaScript để xem bản demo NovaHub.</p>
+    </noscript>
+    <script type="module" src="./scripts/app.js"></script>
+  </body>
+</html>

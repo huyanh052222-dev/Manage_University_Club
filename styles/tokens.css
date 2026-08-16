@@ -1,0 +1,31 @@
+:root {
+  color-scheme: dark;
+  --font-sans: "Be Vietnam Pro", Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --bg: #070d1a;
+  --bg-soft: #0b1221;
+  --surface: #0e1729;
+  --surface-2: #121d32;
+  --surface-3: #17233a;
+  --surface-hover: #1b2943;
+  --border: rgba(142, 164, 207, 0.13);
+  --border-strong: rgba(142, 164, 207, 0.22);
+  --text: #f5f7ff;
+  --text-soft: #cad2e4;
+  --muted: #7e8ca8;
+  --purple: #8b5cf6;
+  --purple-bright: #a978ff;
+  --purple-dark: #6436d8;
+  --blue: #5d8cff;
+  --cyan: #40d9c3;
+  --green: #67d378;
+  --yellow: #f6c84d;
+  --orange: #f6a84d;
+  --red: #ff6f7d;
+  --sidebar-width: 282px;
+  --topbar-height: 82px;
+  --radius-xl: 18px;
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --shadow-card: 0 18px 50px rgba(0, 0, 0, 0.18);
+  --transition: 180ms ease;
+}
