@@ -1,6 +1,6 @@
-# NovaHub Dashboard Demo
+# Cafe Horizon Dashboard Demo
 
-Dashboard quản lý câu lạc bộ sinh viên, dựng theo phong cách dark UI với dữ liệu minh họa.
+Dashboard vận hành quán café sinh viên, dựng theo phong cách sáng và ấm với dữ liệu minh họa.
 
 ## Chạy dự án
 
@@ -23,7 +23,9 @@ Sau đó mở `http://localhost:4173`.
 │   ├── base.css        # Reset và style nền
 │   ├── layout.css      # Bố cục trang
 │   ├── components.css  # Component UI
+│   ├── member-management.css # Màn hình quản lý nhân sự
 │   └── responsive.css  # Breakpoint responsive
+├── assets/images/      # Ảnh hero Cafe Horizon
 └── scripts/
     ├── app.js          # Khởi tạo và điều phối tương tác
     ├── data/           # Dữ liệu demo, có thể thay bằng API
@@ -36,6 +38,6 @@ Sau đó mở `http://localhost:4173`.
 
 `data/dashboard.js` → component tương ứng → `components/dashboard.js` → `app.js` → DOM.
 
-Toàn bộ nút, tab lọc nhiệm vụ, menu mobile, modal và toast đã có tương tác demo.
+Menu mobile, thông báo, modal, toast và các nút điều hướng chính đã có tương tác demo.
 
-Nút **Quản lý thành viên** trong khối **Đóng góp thành viên** mở màn hình quản trị riêng tại `#member-management`. Màn hình này hỗ trợ tìm kiếm, sắp xếp, theo dõi Nova Coin/nhiệm vụ/thời gian/XP/mức hoạt động và xem phân bổ đóng góp chi tiết của từng người.
+Nút **Xem tất cả thành viên** mở màn hình quản trị riêng tại `#member-management`. Màn hình này hỗ trợ tìm kiếm, sắp xếp, theo dõi coin/nhiệm vụ/thời gian/XP/mức hoạt động và xem phân bổ đóng góp chi tiết của từng người.

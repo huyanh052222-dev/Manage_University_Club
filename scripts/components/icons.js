@@ -28,6 +28,18 @@ const paths = {
   checkCircle: '<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
   trendingUp: '<path d="m3 17 6-6 4 4 8-8M15 7h6v6"/>',
   eye: '<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/>',
+  home: '<path d="m3 11 9-8 9 8v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',
+  coffee: '<path d="M4 9h13v5a6 6 0 0 1-6 6H10a6 6 0 0 1-6-6V9zM17 11h2a3 3 0 0 1 0 6h-3M7 2c-1 2 1 3 0 5M11 2c-1 2 1 3 0 5"/>',
+  target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+  store: '<path d="M3 10h18M5 10v10h14V10M4 4h16l1 6a3 3 0 0 1-5 2 3 3 0 0 1-4 0 3 3 0 0 1-4 0 3 3 0 0 1-5-2l1-6zM9 20v-5h6v5"/>',
+  fileText: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h8M8 9h2"/>',
+  receipt: '<path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2zM9 7h6M9 11h6M9 15h3"/>',
+  star: '<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.2L5.8 21 7 14.2l-5-4.9 6.9-1z"/>',
+  smile: '<circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>',
+  flame: '<path d="M12 22c4 0 7-3 7-7 0-3-2-6-5-9 0 3-2 4-3 5 0-3-1-6-3-8 0 4-3 6-3 11 0 5 3 8 7 8zM10 18c-1-2 1-4 2-5 0 2 2 3 2 5"/>',
+  barChart: '<path d="M3 3v18h18M7 16v-4M12 16V7M17 16v-7"/>',
+  leaf: '<path d="M21 3C12 3 5 7 5 14c0 4 3 7 7 7 7 0 9-9 9-18zM5 21c2-6 7-10 13-13"/>',
+  arrowDown: '<path d="M12 3v15M6 12l6 6 6-6M5 22h14"/>',
 };
 
 export const icon = (name, className = "") => {

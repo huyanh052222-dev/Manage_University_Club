@@ -1,19 +1,19 @@
-import { renderAnnouncement } from "./announcement.js";
-import { renderFinancePanel } from "./financePanel.js";
-import { renderMembersPanel } from "./membersPanel.js";
-import { renderOverviewCard } from "./overviewCard.js";
-import { renderTasksPanel } from "./tasksPanel.js";
+import { renderCafeHero } from "./cafeHero.js";
+import { renderCafeStats } from "./cafeStats.js";
+import { renderCashFlowPanel } from "./cashFlowPanel.js";
+import { renderFeaturedMembers } from "./featuredMembers.js";
+import { renderHotTasks } from "./hotTasks.js";
+import { renderCafeTip } from "./cafeTip.js";
 
 export const renderDashboard = () => `
-  <div class="dashboard-grid">
-    <div class="dashboard-column">
-      ${renderOverviewCard()}
-      ${renderMembersPanel()}
+  <div class="cafe-dashboard">
+    ${renderCafeHero()}
+    ${renderCafeStats()}
+    <div class="cafe-detail-grid">
+      ${renderFeaturedMembers()}
+      ${renderHotTasks()}
+      ${renderCashFlowPanel()}
     </div>
-    <div class="dashboard-column">
-      ${renderFinancePanel()}
-      ${renderTasksPanel()}
-    </div>
-    ${renderAnnouncement()}
+    ${renderCafeTip()}
   </div>
 `;

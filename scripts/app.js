@@ -1,9 +1,8 @@
 import { renderDashboard } from "./components/dashboard.js";
 import { renderContributionRows, renderMemberDetail, renderMemberManagement } from "./components/memberManagement.js";
 import { renderSidebar } from "./components/sidebar.js";
-import { renderTasks } from "./components/tasksPanel.js";
 import { renderTopbar } from "./components/topbar.js";
-import { demoNotifications, members, tasks } from "./data/dashboard.js";
+import { demoNotifications, members } from "./data/dashboard.js";
 import { closeModal, showModal, showToast } from "./ui/feedback.js";
 
 const elements = {
@@ -30,17 +29,17 @@ const updateActiveNavigation = (target) => {
 const setPageHeading = (title, subtitle) => {
   document.querySelector(".topbar-title").textContent = title;
   document.querySelector(".topbar-date").textContent = subtitle;
-  document.title = `${title} | NovaHub`;
+  document.title = `${title} | Cafe Horizon`;
 };
 
 const renderOverviewView = () => {
   elements.dashboard.innerHTML = renderDashboard();
-  setPageHeading("Tổng quan", "Chủ nhật, 20 tháng 5");
+  setPageHeading("Tuần 18", "Ngày 3 / 7 · Mùa xuân 2024");
 };
 
 const renderManagementView = () => {
   elements.dashboard.innerHTML = renderMemberManagement();
-  setPageHeading("Quản lý thành viên", "Theo dõi đóng góp tuần này");
+  setPageHeading("Nhân sự", "Theo dõi đóng góp tuần này");
   updateActiveNavigation(document.querySelector('[data-nav-id="groups"]'));
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
@@ -88,20 +87,6 @@ const refreshContributionRows = () => {
   if (resultLabel) resultLabel.textContent = String(resultCount);
 };
 
-const handleTaskAction = (button) => {
-  const task = tasks.find((item) => item.id === button.dataset.taskId);
-  if (!task) return;
-
-  if (task.status === "Tham gia") {
-    button.textContent = "Đã tham gia";
-    button.disabled = true;
-    showToast(`Đăng ký “${task.name}” thành công.`);
-    return;
-  }
-
-  showToast(`“${task.name}” hiện có trạng thái: ${task.status}.`);
-};
-
 const handleAction = (actionElement) => {
   const action = actionElement.dataset.action;
   if (!action) return;
@@ -132,15 +117,15 @@ const handleAction = (actionElement) => {
   if (action === "show-profile") {
     showModal({
       title: "Tài khoản cá nhân",
-      content: "<p>Nguyễn Minh Anh · Quản trị viên</p><p>Thông tin tài khoản này đang dùng dữ liệu minh họa.</p>",
+      content: "<p>TechNova · Quản lý nhóm</p><p>Tài khoản đang quản lý Cafe Horizon. Thông tin hiện dùng dữ liệu minh họa.</p>",
     });
     return;
   }
 
   if (action === "show-season" || action === "show-rules") {
     showModal({
-      title: "Luật chơi Startup Survival",
-      content: "<p>Mỗi nhóm cần cân bằng bốn nguồn lực: nhân lực, thời gian, năng lượng và uy tín.</p><p>Hoàn thành nhiệm vụ để nhận Nova Coin, XP và duy trì vị trí trên bảng xếp hạng.</p>",
+      title: "Quy tắc vận hành Cafe Horizon",
+      content: "<p>Nhóm cần cân bằng nhân sự, đơn hàng, năng lượng và danh tiếng.</p><p>Hoàn thành nhiệm vụ để nhận coin, kinh nghiệm và cải thiện vị trí xếp hạng.</p>",
     });
     return;
   }
@@ -167,26 +152,10 @@ const handleAction = (actionElement) => {
     return;
   }
 
-  if (action === "task") {
-    handleTaskAction(actionElement);
-    return;
-  }
-
   showToast(actionMessages[action] ?? "Tính năng đang được minh họa trong bản demo.");
 };
 
 document.addEventListener("click", (event) => {
-  const tab = event.target.closest("[data-tab]");
-  if (tab) {
-    document.querySelectorAll("[data-tab]").forEach((item) => {
-      const active = item === tab;
-      item.classList.toggle("active", active);
-      item.setAttribute("aria-selected", String(active));
-    });
-    document.querySelector("[data-task-list]").innerHTML = renderTasks(tab.dataset.tab);
-    return;
-  }
-
   const navItem = event.target.closest("[data-nav-id]");
   if (navItem) {
     updateActiveNavigation(navItem);

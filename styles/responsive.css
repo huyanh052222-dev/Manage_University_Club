@@ -1,204 +1,72 @@
-@media (max-width: 1360px) {
-  :root {
-    --sidebar-width: 242px;
-  }
-
-  .dashboard-grid {
-    grid-template-columns: minmax(360px, 0.85fr) minmax(460px, 1.15fr);
-  }
-
-  .task-card {
-    grid-template-columns: minmax(215px, 1fr) 66px 108px;
-    gap: 8px;
-  }
-
-  .status-button {
-    min-width: 102px;
-  }
+@media (max-width:1440px) {
+  :root { --sidebar-width:224px; }
+  .brand { padding-inline:22px; }
+  .brand-name { font-size:24px; }
+  .topbar { grid-template-columns:minmax(145px,auto) minmax(450px,1fr) auto; gap:14px; padding-inline:20px; }
+  .top-finance-item { padding-inline:9px; }
+  .top-finance-item>span { display:none; }
+  .dashboard { padding-inline:20px; }
+  .cafe-detail-grid { grid-template-columns:minmax(260px,.9fr) minmax(310px,1.05fr) minmax(400px,1.5fr); }
 }
-
-@media (max-width: 1180px) {
-  .sidebar {
-    width: min(282px, 84vw);
-    transform: translateX(-102%);
-    transition: transform 240ms ease;
-  }
-
-  body.sidebar-open {
-    overflow: hidden;
-  }
-
-  body.sidebar-open .sidebar {
-    transform: translateX(0);
-  }
-
-  body.sidebar-open .sidebar-overlay {
-    display: block;
-  }
-
-  .main-content {
-    margin-left: 0;
-  }
-
-  .menu-button {
-    display: grid;
-  }
-
-  .dashboard-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .dashboard-column {
-    display: contents;
-  }
-
-  .resource-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .hero-panel { order: 1; }
-  .finance-panel { order: 2; }
-  .tasks-panel { order: 3; }
-  .members-panel { order: 4; }
-  .announcement { order: 5; }
+@media (max-height:820px) and (min-width:1021px) {
+  .brand { min-height:78px; }
+  .sidebar-nav { gap:2px; }
+  .nav-item { min-height:41px; }
+  .cafe-sidebar-art { min-height:150px; padding-bottom:16px; }
+  .cup-illustration { width:58px; height:58px; }
+  .cup-illustration .icon { width:40px; height:40px; }
+  .leaf-row { display:none; }
+  .cafe-sidebar-art p { font-size:13px; }
 }
-
-@media (max-width: 680px) {
-  :root {
-    --topbar-height: 68px;
-  }
-
-  .topbar {
-    padding: 0 14px;
-  }
-
-  .topbar-title {
-    font-size: 18px;
-  }
-
-  .topbar-date,
-  .user-meta {
-    display: none;
-  }
-
-  .dashboard {
-    padding: 15px 12px 20px;
-  }
-
-  .dashboard-grid,
-  .dashboard-column {
-    gap: 13px;
-  }
-
-  .club-hero {
-    min-height: 175px;
-    padding: 20px;
-  }
-
-  .club-name {
-    font-size: 23px;
-  }
-
-  .club-details {
-    grid-template-columns: 1fr;
-    gap: 18px;
-  }
-
-  .season-goal {
-    margin-top: 24px;
-  }
-
-  .finance-content,
-  .task-list {
-    padding: 12px;
-  }
-
-  .finance-stats,
-  .resource-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .resource-heading {
-    align-items: flex-start;
-  }
-
-  .resource-title-wrap {
-    display: grid;
-    gap: 1px;
-  }
-
-  .member-row {
-    grid-template-columns: minmax(135px, 1fr) 72px 48px;
-    gap: 7px;
-  }
-
-  .member-stat strong,
-  .member-activity strong {
-    font-size: 10px;
-  }
-
-  .task-card {
-    grid-template-columns: 1fr auto;
-    gap: 10px;
-  }
-
-  .task-main {
-    grid-column: 1 / -1;
-  }
-
-  .task-reward {
-    padding-left: 53px;
-  }
-
-  .status-button {
-    min-width: 112px;
-  }
-
-  .announcement {
-    align-items: flex-start;
-    flex-direction: column;
-    padding: 16px;
-  }
-
-  .announcement .primary-button {
-    align-self: stretch;
-  }
+@media (max-width:1200px) {
+  .topbar { grid-template-columns:auto 1fr auto; }
+  .top-finance-item:nth-child(3),.top-finance-item:nth-child(4) { display:none; }
+  .top-finance { grid-template-columns:repeat(2,1fr); }
+  .cafe-hero { grid-template-columns:minmax(460px,1.45fr) minmax(340px,1fr); }
+  .cafe-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .cafe-detail-grid { grid-template-columns:1fr 1.1fr; }
+  .cash-flow { grid-column:1/-1; }
 }
-
-@media (max-width: 430px) {
-  .finance-stats,
-  .resource-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .panel-header {
-    padding: 0 14px;
-  }
-
-  .member-list {
-    padding-inline: 12px;
-  }
-
-  .member-row {
-    grid-template-columns: 1fr auto;
-  }
-
-  .member-stat {
-    display: none;
-  }
-
-  .task-reward {
-    padding-left: 0;
-  }
+@media (max-width:1020px) {
+  .sidebar { width:min(270px,84vw); transform:translateX(-102%); transition:transform 240ms ease; }
+  body.sidebar-open { overflow:hidden; }
+  body.sidebar-open .sidebar { transform:translateX(0); }
+  body.sidebar-open .sidebar-overlay { display:block; }
+  .main-content { margin-left:0; }
+  .menu-button { display:grid; }
+  .topbar { padding-left:14px; }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-  }
+@media (max-width:780px) {
+  :root { --topbar-height:72px; }
+  .topbar { grid-template-columns:1fr auto; min-height:var(--topbar-height); padding:8px 13px; }
+  .top-finance { display:none; }
+  .week-icon { display:none; }
+  .user-meta,.user-button>.icon { display:none; }
+  .dashboard { padding:14px 12px 20px; }
+  .cafe-dashboard { gap:12px; }
+  .cafe-hero { grid-template-columns:1fr; }
+  .cafe-hero-photo { min-height:235px; }
+  .cafe-hero-info { padding:20px; }
+  .cafe-detail-grid { grid-template-columns:1fr; gap:12px; }
+  .cash-flow { grid-column:auto; }
 }
+@media (max-width:560px) {
+  .topbar-title { font-size:15px; }
+  .cafe-hero-photo { min-height:205px; }
+  .cafe-score-grid { grid-template-columns:1fr 1fr; gap:14px 0; }
+  .cafe-score-grid>div { padding-inline:12px; }
+  .cafe-score-grid>div:nth-child(2) { border-right:0; }
+  .cafe-score-grid>div:nth-child(3) { grid-column:1/-1; padding:12px 0 0; border-top:1px solid var(--border); }
+  .cafe-stats { grid-template-columns:1fr; gap:10px; }
+  .cafe-stat-card { min-height:98px; }
+  .cafe-panel { min-height:auto; }
+  .chart-legend { gap:10px; }
+  .chart-wrap { overflow-x:auto; }
+  .chart-wrap svg { min-width:470px; }
+  .cash-totals { grid-template-columns:1fr; }
+  .cash-totals div { border-right:0; border-bottom:1px solid var(--border); }
+  .cash-totals div:last-child { border-bottom:0; }
+  .cafe-tip { justify-content:flex-start; text-align:left; }
+  .cafe-tip>i { display:none; }
+}
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition-duration:.01ms!important; animation-duration:.01ms!important; animation-iteration-count:1!important; } }

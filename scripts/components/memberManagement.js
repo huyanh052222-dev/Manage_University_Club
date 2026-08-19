@@ -32,7 +32,7 @@ const renderMemberRow = (member, rank) => `
       </div>
     </div>
     <div class="contribution-number" data-label="Đóng góp">
-      <strong>${formatNumber(member.contribution)} <i class="coin">N</i></strong>
+      <strong>${formatNumber(member.contribution)} <small class="coin-unit">coin</small></strong>
       <span class="trend ${member.trend >= 0 ? "up" : "down"}">${member.trend >= 0 ? "+" : ""}${member.trend}% tuần này</span>
     </div>
     <div class="contribution-number" data-label="Nhiệm vụ">
@@ -79,12 +79,12 @@ export const renderMemberDetail = (member) => `
     <span class="avatar" style="--avatar-a:${member.colors[0]};--avatar-b:${member.colors[1]}">${member.initials}</span>
     <div><strong>${member.name}</strong><span>${member.role} · Hoạt động ${member.activity}%</span></div>
   </div>
-  <p>Phân bổ ${formatNumber(member.contribution)} Nova Coin đóng góp trong tuần:</p>
+  <p>Phân bổ ${formatNumber(member.contribution)} coin đóng góp trong tuần:</p>
   <ul class="detail-breakdown">
-    <li><span>Nhiệm vụ nhóm</span><strong>${formatNumber(member.breakdown.missions)} <i class="coin">N</i></strong></li>
-    <li><span>Sự kiện CLB</span><strong>${formatNumber(member.breakdown.events)} <i class="coin">N</i></strong></li>
-    <li><span>Hỗ trợ thành viên</span><strong>${formatNumber(member.breakdown.support)} <i class="coin">N</i></strong></li>
-    <li><span>Thưởng chủ động</span><strong>${formatNumber(member.breakdown.bonus)} <i class="coin">N</i></strong></li>
+    <li><span>Nhiệm vụ nhóm</span><strong>${formatNumber(member.breakdown.missions)} <small class="coin-unit">coin</small></strong></li>
+    <li><span>Sự kiện CLB</span><strong>${formatNumber(member.breakdown.events)} <small class="coin-unit">coin</small></strong></li>
+    <li><span>Hỗ trợ thành viên</span><strong>${formatNumber(member.breakdown.support)} <small class="coin-unit">coin</small></strong></li>
+    <li><span>Thưởng chủ động</span><strong>${formatNumber(member.breakdown.bonus)} <small class="coin-unit">coin</small></strong></li>
   </ul>
 `;
 
@@ -94,7 +94,7 @@ export const renderMemberManagement = () => `
       <div>
         <button class="back-link" type="button" data-action="back-overview">${icon("arrowLeft")} Quay lại tổng quan</button>
         <h2 id="management-title">Theo dõi đóng góp thành viên</h2>
-        <p>Xem mức độ tham gia và hiệu quả đóng góp của từng thành viên trong nhóm TechNova.</p>
+        <p>Xem mức độ tham gia và hiệu quả đóng góp của từng thành viên tại Cafe Horizon.</p>
       </div>
       <div class="management-actions">
         <button class="secondary-button" type="button" data-action="export-contributions">${icon("download")} Xuất báo cáo</button>
@@ -109,7 +109,7 @@ export const renderMemberManagement = () => `
       </article>
       <article class="management-stat" style="--stat-color:#f6c84d">
         <span class="stat-icon">${icon("wallet")}</span>
-        <div><span>Tổng đóng góp tuần</span><strong>${formatNumber(totals.contribution)} <i class="coin">N</i></strong><small class="positive">+9,4% so với tuần trước</small></div>
+        <div><span>Tổng đóng góp tuần</span><strong>${formatNumber(totals.contribution)} <small class="coin-unit">coin</small></strong><small class="positive">+9,4% so với tuần trước</small></div>
       </article>
       <article class="management-stat" style="--stat-color:#5d8cff">
         <span class="stat-icon">${icon("checkCircle")}</span>

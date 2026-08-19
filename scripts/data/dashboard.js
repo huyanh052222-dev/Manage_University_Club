@@ -1,46 +1,73 @@
 export const navigationItems = [
-  { id: "overview", label: "Tổng quan", icon: "grid" },
-  { id: "groups", label: "Nhóm của tôi", icon: "users" },
-  { id: "missions", label: "Nhiệm vụ & Sự kiện", icon: "calendarCheck" },
-  { id: "market", label: "Thị trường tài nguyên", icon: "rocket" },
+  { id: "overview", label: "Tổng quan", icon: "home" },
+  { id: "operations", label: "Vận hành quán", icon: "coffee" },
+  { id: "groups", label: "Nhân sự", icon: "users" },
+  { id: "missions", label: "Nhiệm vụ", icon: "target" },
+  { id: "events", label: "Sự kiện", icon: "calendarCheck" },
+  { id: "upgrades", label: "Nâng cấp quán", icon: "store" },
+  { id: "finance", label: "Tài chính", icon: "wallet" },
   { id: "ranking", label: "Bảng xếp hạng", icon: "award" },
-  { id: "transactions", label: "Lịch sử giao dịch", icon: "wallet" },
-  { id: "notifications", label: "Thông báo", icon: "bell" },
-  { id: "help", label: "Hướng dẫn", icon: "helpCircle" },
+  { id: "weekly-report", label: "Báo cáo tuần", icon: "fileText" },
 ];
 
 export const currentUser = {
-  name: "Nguyễn Minh Anh",
-  initials: "MA",
-  role: "Quản trị viên",
-  colors: ["#8f765f", "#283756"],
+  name: "TechNova",
+  initials: "TN",
+  role: "Quản lý nhóm",
+  colors: ["#c18a61", "#5b3825"],
 };
 
 export const club = {
-  name: "TechNova",
-  code: "Nhóm 03",
+  name: "Cafe Horizon",
+  code: "Quán 03",
   status: "Đang hoạt động",
-  slogan: "Innovate Today, Lead Tomorrow",
-  field: "Công nghệ · Giáo dục",
-  level: "Lv. 4 · Startup tiềm năng",
-  xp: 750,
-  xpTarget: 1000,
-  seasonGoal: "Top 3 bảng xếp hạng chung cuộc",
-  memberCount: 7,
+  slogan: "Cùng nhau tạo nên khoảng trời riêng",
+  field: "Quán café của CLB Sinh Viên",
+  xp: 2350,
+  xpTarget: 3000,
+  seasonGoal: "Top 3 quán café sinh viên xuất sắc",
+  memberCount: 8,
   memberLimit: 10,
   foundedAt: "01/06/2024",
-  startingFund: 1000,
+  startingFund: 20000,
+  reputation: 4.5,
+  ranking: "#3 / 24",
+  satisfaction: 87,
 };
 
 export const finance = {
-  currentFund: 12450,
-  change: 2150,
-  changePercent: 20,
-  weeklyFlow: 1250,
-  income: 3200,
-  expense: 1950,
-  updatedAt: "10:30 · 20/05/2024",
+  currentFund: 20000,
+  change: 2500,
+  changePercent: 12,
+  weeklyFlow: 2500,
+  income: 5200,
+  expense: 2700,
+  updatedAt: "09:30 · 19/08/2026",
 };
+
+export const cafeStats = [
+  { id: "staff", label: "Nhân sự", value: "8", total: "/ 10", note: "nhân viên", meta: [["Đi làm", "7"], ["Vắng mặt", "1"]], icon: "users", color: "#d47b55" },
+  { id: "orders", label: "Đơn hàng tuần", value: "23", total: "", note: "hoàn thành", meta: [["Hoàn thành", "23"], ["Đang xử lý", "4"]], icon: "receipt", color: "#6ca65d" },
+  { id: "energy", label: "Năng lượng nhóm", value: "82", total: "/ 100", note: "Nhiệt huyết", progress: 82, icon: "zap", color: "#e5a13c" },
+  { id: "reputation", label: "Danh tiếng", value: "740", total: "/ 1000", note: "Danh tiếng quán", progress: 74, icon: "star", color: "#8c68c5" },
+];
+
+export const weeklyCashFlow = {
+  labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
+  income: [1.2, 3.4, 4.0, 2.5, 5.4, 3.8, 4.0],
+  expense: [-0.2, -0.1, -0.4, -3.0, -1.6, -0.9, -1.8],
+  profit: [0.5, 1.8, 2.1, 0.2, 2.3, 1.1, 2.0],
+  totalIncome: 12850,
+  totalExpense: 7650,
+  totalProfit: 5200,
+};
+
+export const hotTasks = [
+  { id: "ai-workshop", title: "[Workshop AI] Xây dựng mô hình ML", description: "Tổ chức workshop cho sinh viên toàn trường", reward: 800, due: "25/08", icon: "calendarCheck", tone: "purple" },
+  { id: "hackathon", title: "[Hackathon 48h] Challenge", description: "Tham gia cuộc thi lập trình hackathon", reward: 1200, due: "28/08", icon: "target", tone: "blue" },
+  { id: "monthly-report", title: "[Báo cáo tháng 8]", description: "Tổng kết hoạt động và tài chính tháng", reward: 300, due: "30/08", icon: "fileText", tone: "gold" },
+  { id: "social-content", title: "[Content Social] Tuần 19", description: "Đăng bài truyền thông cho quán", reward: 200, due: "24/08", icon: "heart", tone: "coral" },
+];
 
 export const resources = [
   { id: "people", label: "Nhân lực", value: 7, total: 10, unit: "", icon: "user", color: "#5d8cff" },
@@ -91,6 +118,12 @@ export const members = [
     contribution: 190, activity: 30, tasksCompleted: 4, workHours: 6.5, xp: 290, trend: -10,
     lastContribution: "Điểm danh sự kiện · 4 ngày trước", colors: ["#8a657e", "#333553"],
     breakdown: { missions: 80, events: 60, support: 40, bonus: 10 },
+  },
+  {
+    id: 8, name: "Hoàng Thu Hà", initials: "TH", role: "Thành viên",
+    contribution: 160, activity: 65, tasksCompleted: 5, workHours: 7.5, xp: 310, trend: 4,
+    lastContribution: "Hỗ trợ ca chiều · Hôm qua", colors: ["#bd8d67", "#725647"],
+    breakdown: { missions: 70, events: 30, support: 50, bonus: 10 },
   },
 ];
 
@@ -162,7 +195,7 @@ export const tasks = [
 ];
 
 export const demoNotifications = [
-  "Nhóm TechNova vừa nhận thêm 100 XP.",
-  "Nhiệm vụ Báo cáo tuần sắp đến hạn.",
-  "Workshop Kỹ năng thuyết trình đã mở đăng ký.",
+  "Cafe Horizon vừa hoàn thành đơn hàng thứ 23 trong tuần.",
+  "Nhiệm vụ Content Social sắp đến hạn.",
+  "Doanh thu tuần đã tăng 12% so với tuần trước.",
 ];
