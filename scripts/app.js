@@ -1,13 +1,17 @@
 import { renderDashboard } from "./components/dashboard.js";
 import { renderCoinManagement } from "./components/coinManagement.js";
-import { renderMemberCards, renderMemberDirectory } from "./components/memberDirectory.js";
+import { renderLoginPage } from "./components/loginPage.js?v=auth2";
+import { renderMemberDirectory, renderMemberGroups } from "./components/memberDirectory.js";
 import { renderSidebar } from "./components/sidebar.js";
 import { renderTopbar } from "./components/topbar.js";
 import { demoNotifications } from "./data/dashboard.js";
 import { adjustGroupCoins, getGroup, getGroups } from "./services/coinLedger.js";
+import { isAdminAuthenticated, loginAdmin, logoutAdmin } from "./services/authService.js";
 import { closeModal, showModal, showToast } from "./ui/feedback.js";
 
 const elements = {
+  authView: document.querySelector("#auth-view"),
+  appShell: document.querySelector("#app-shell"),
   sidebar: document.querySelector("#sidebar"),
   topbar: document.querySelector("#topbar"),
   dashboard: document.querySelector("#dashboard"),
@@ -21,6 +25,33 @@ const renderApp = () => {
 };
 
 const closeSidebar = () => document.body.classList.remove("sidebar-open");
+
+const showLoginPage = () => {
+  closeSidebar();
+  closeModal();
+  elements.appShell.hidden = true;
+  elements.authView.hidden = false;
+  elements.authView.innerHTML = renderLoginPage();
+  document.title = "Đăng nhập Admin | Cafe Horizon";
+
+  if (window.location.hash !== "#login") {
+    window.history.replaceState({ view: "login" }, "", "#login");
+  }
+
+  window.requestAnimationFrame(() => document.querySelector("[data-login-password]")?.focus());
+};
+
+const showAdminApp = () => {
+  elements.authView.hidden = true;
+  elements.authView.replaceChildren();
+  elements.appShell.hidden = false;
+
+  if (!window.location.hash || window.location.hash === "#login") {
+    window.history.replaceState({ view: "overview" }, "", "#overview");
+  }
+
+  renderApp();
+};
 
 const updateActiveNavigation = (target) => {
   document.querySelectorAll("[data-nav-id]").forEach((item) => {
@@ -37,31 +68,34 @@ const setPageHeading = (title, subtitle) => {
 const renderOverviewView = () => {
   elements.dashboard.innerHTML = renderDashboard();
   setPageHeading("Tuần 18", "Ngày 3 / 7 · Mùa xuân 2024");
+  const requestedSection = window.location.hash.slice(1);
+  const activeSection = ["overview", "missions"].includes(requestedSection) ? requestedSection : "overview";
+  updateActiveNavigation(document.querySelector(`[data-nav-id="${activeSection}"]`));
 };
 
-const renderManagementView = () => {
+const renderPersonnelView = () => {
   elements.dashboard.innerHTML = renderMemberDirectory();
-  setPageHeading("Nhân sự", "Danh sách thành viên trong nhóm");
-  updateActiveNavigation(document.querySelector('[data-nav-id="groups"]'));
+  setPageHeading("Nhân sự", "Tổng quát thành viên theo từng nhóm");
+  updateActiveNavigation(document.querySelector('[data-nav-id="personnel"]'));
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 const renderCurrentView = () => {
-  if (["#member-list", "#member-management"].includes(window.location.hash)) {
-    renderManagementView();
+  if (["#personnel", "#member-list", "#member-management"].includes(window.location.hash)) {
+    renderPersonnelView();
     return;
   }
   renderOverviewView();
 };
 
-const navigateToManagement = () => {
-  if (window.location.hash !== "#member-list") {
-    window.history.pushState({ view: "member-list" }, "", "#member-list");
+const navigateToPersonnel = () => {
+  if (window.location.hash !== "#personnel") {
+    window.history.pushState({ view: "personnel" }, "", "#personnel");
   }
-  renderManagementView();
+  renderPersonnelView();
 };
 
-const navigateToOverview = (targetHash = "#groups") => {
+const navigateToOverview = (targetHash = "#overview") => {
   window.history.pushState({ view: "overview" }, "", targetHash);
   renderOverviewView();
   const navItem = document.querySelector(`[data-nav-id="${targetHash.slice(1)}"]`);
@@ -76,14 +110,17 @@ const actionMessages = {
   "all-tasks": "Bạn đang xem toàn bộ nhiệm vụ hiện có.",
 };
 
-const refreshMemberCards = () => {
-  const cardsContainer = document.querySelector("[data-member-cards]");
-  if (!cardsContainer) return;
+const refreshPersonnelDirectory = () => {
+  const groupsContainer = document.querySelector("[data-member-groups]");
+  if (!groupsContainer) return;
   const query = document.querySelector("[data-member-search]")?.value ?? "";
-  cardsContainer.innerHTML = renderMemberCards({ query });
-  const resultCount = cardsContainer.querySelectorAll("[data-member-card]").length;
-  const resultLabel = document.querySelector("[data-member-result-count]");
-  if (resultLabel) resultLabel.textContent = String(resultCount);
+  groupsContainer.innerHTML = renderMemberGroups({ query });
+  const memberCount = groupsContainer.querySelectorAll("[data-member-card]").length;
+  const groupCount = groupsContainer.querySelectorAll("[data-group-card]").length;
+  const memberLabel = document.querySelector("[data-member-result-count]");
+  const groupLabel = document.querySelector("[data-group-result-count]");
+  if (memberLabel) memberLabel.textContent = String(memberCount);
+  if (groupLabel) groupLabel.textContent = String(groupCount);
 };
 
 const openCoinManagement = () => {
@@ -94,6 +131,24 @@ const refreshSelectedGroupBalance = (groupId) => {
   const group = getGroup(groupId);
   const balance = document.querySelector("[data-coin-balance]");
   if (group && balance) balance.textContent = `${group.balance.toLocaleString("vi-VN")} coin`;
+};
+
+const handleLoginSubmit = (form) => {
+  const formData = new FormData(form);
+  const result = loginAdmin({
+    username: formData.get("username"),
+    password: formData.get("password"),
+  });
+
+  if (!result.ok) {
+    form.querySelector("[data-login-error]").textContent = result.message;
+    form.querySelector("[data-login-password]")?.focus();
+    return;
+  }
+
+  window.history.replaceState({ view: "overview" }, "", "#overview");
+  showAdminApp();
+  showToast("Đăng nhập Admin thành công.");
 };
 
 const handleAction = (actionElement) => {
@@ -115,6 +170,23 @@ const handleAction = (actionElement) => {
     return;
   }
 
+  if (action === "toggle-password") {
+    const passwordInput = document.querySelector("[data-login-password]");
+    if (!passwordInput) return;
+    const shouldShow = passwordInput.type === "password";
+    passwordInput.type = shouldShow ? "text" : "password";
+    actionElement.setAttribute("aria-label", shouldShow ? "Ẩn mật khẩu" : "Hiện mật khẩu");
+    passwordInput.focus();
+    return;
+  }
+
+  if (action === "logout") {
+    logoutAdmin();
+    closeModal();
+    showLoginPage();
+    return;
+  }
+
   if (action === "show-notifications") {
     showModal({
       title: "Thông báo mới",
@@ -126,7 +198,7 @@ const handleAction = (actionElement) => {
   if (action === "show-profile") {
     showModal({
       title: "Tài khoản quản trị",
-      content: "<p><strong>Quản trị viên · Admin hệ thống</strong></p><p>Đây là tài khoản đăng nhập duy nhất, có quyền điều chỉnh coin của các nhóm. Thành viên chỉ được lưu dưới dạng hồ sơ hiển thị.</p>",
+      content: '<p><strong>Quản trị viên · Admin hệ thống</strong></p><p>Đây là tài khoản đăng nhập duy nhất, có quyền điều chỉnh coin của các nhóm. Thành viên chỉ được lưu dưới dạng hồ sơ hiển thị.</p><div class="account-modal-actions"><button class="secondary-button logout-button" type="button" data-action="logout">Đăng xuất</button></div>',
     });
     return;
   }
@@ -140,7 +212,7 @@ const handleAction = (actionElement) => {
   }
 
   if (action === "manage-members") {
-    navigateToManagement();
+    navigateToPersonnel();
     return;
   }
 
@@ -168,7 +240,12 @@ document.addEventListener("click", (event) => {
       openCoinManagement();
       return;
     }
-    const dashboardTargets = new Set(["#overview", "#groups", "#missions"]);
+    if (targetHash === "#personnel") {
+      event.preventDefault();
+      navigateToPersonnel();
+      return;
+    }
+    const dashboardTargets = new Set(["#overview", "#missions"]);
     if (document.querySelector(".management-view") && dashboardTargets.has(targetHash)) {
       event.preventDefault();
       navigateToOverview(targetHash);
@@ -189,7 +266,7 @@ document.addEventListener("click", (event) => {
 });
 
 document.addEventListener("input", (event) => {
-  if (event.target.matches("[data-member-search]")) refreshMemberCards();
+  if (event.target.matches("[data-member-search]")) refreshPersonnelDirectory();
 });
 
 document.addEventListener("change", (event) => {
@@ -197,6 +274,12 @@ document.addEventListener("change", (event) => {
 });
 
 document.addEventListener("submit", (event) => {
+  if (event.target.matches("[data-login-form]")) {
+    event.preventDefault();
+    handleLoginSubmit(event.target);
+    return;
+  }
+
   if (!event.target.matches("[data-coin-form]")) return;
   event.preventDefault();
 
@@ -227,6 +310,16 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-window.addEventListener("popstate", renderCurrentView);
+window.addEventListener("popstate", () => {
+  if (!isAdminAuthenticated()) {
+    showLoginPage();
+    return;
+  }
+  if (window.location.hash === "#login") {
+    window.history.replaceState({ view: "overview" }, "", "#overview");
+  }
+  renderCurrentView();
+});
 
-renderApp();
+if (isAdminAuthenticated()) showAdminApp();
+else showLoginPage();

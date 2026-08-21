@@ -2,5 +2,6 @@
 @import url("./base.css");
 @import url("./layout.css");
 @import url("./components.css");
+@import url("./auth.css");
 @import url("./member-directory.css");
 @import url("./responsive.css");

@@ -1,11 +1,20 @@
-import { cafeStats } from "../data/dashboard.js";
+import { cafeStats, groups, members } from "../data/dashboard.js";
 import { icon } from "./icons.js";
 
 const renderMeta = (meta) => meta.map(([label, value], index) => `<span>${label}<b class="${index ? "negative-text" : "positive-text"}">${value}</b></span>`).join("");
 
+const absentMembers = 2;
+const resolvedStats = cafeStats.map((stat) => stat.id === "staff" ? {
+  ...stat,
+  value: String(members.length),
+  total: `/ ${groups.length * 8}`,
+  note: `thành viên · ${groups.length} nhóm`,
+  meta: [["Đi làm", String(members.length - absentMembers)], ["Vắng mặt", String(absentMembers)]],
+} : stat);
+
 export const renderCafeStats = () => `
   <section class="cafe-stats" aria-label="Chỉ số vận hành">
-    ${cafeStats.map((stat) => `
+    ${resolvedStats.map((stat) => `
       <article class="cafe-stat-card" style="--stat-accent:${stat.color}">
         <span class="cafe-stat-icon">${icon(stat.icon)}</span>
         <div class="cafe-stat-main">

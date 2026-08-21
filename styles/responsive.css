@@ -25,7 +25,7 @@
   .cafe-hero { grid-template-columns:minmax(460px,1.45fr) minmax(340px,1fr); }
   .cafe-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .cafe-detail-grid { grid-template-columns:1fr 1.1fr; }
-  .cash-flow { grid-column:1/-1; }
+  .transaction-log { grid-column:1/-1; }
 }
 @media (max-width:1020px) {
   .sidebar { width:min(270px,84vw); transform:translateX(-102%); transition:transform 240ms ease; }
@@ -48,7 +48,7 @@
   .cafe-hero-photo { min-height:235px; }
   .cafe-hero-info { padding:20px; }
   .cafe-detail-grid { grid-template-columns:1fr; gap:12px; }
-  .cash-flow { grid-column:auto; }
+  .transaction-log { grid-column:auto; }
 }
 @media (max-width:560px) {
   .topbar-title { font-size:15px; }
@@ -60,12 +60,11 @@
   .cafe-stats { grid-template-columns:1fr; gap:10px; }
   .cafe-stat-card { min-height:98px; }
   .cafe-panel { min-height:auto; }
-  .chart-legend { gap:10px; }
-  .chart-wrap { overflow-x:auto; }
-  .chart-wrap svg { min-width:470px; }
-  .cash-totals { grid-template-columns:1fr; }
-  .cash-totals div { border-right:0; border-bottom:1px solid var(--border); }
-  .cash-totals div:last-child { border-bottom:0; }
+  .log-live,.transaction-kind { display:none; }
+  .transaction-log-list { padding-inline:12px; }
+  .transaction-log-list::before { left:27px; }
+  .transaction-summary div { padding-inline:8px; }
+  .transaction-summary strong { font-size:8px; }
   .cafe-tip { justify-content:flex-start; text-align:left; }
   .cafe-tip>i { display:none; }
 }

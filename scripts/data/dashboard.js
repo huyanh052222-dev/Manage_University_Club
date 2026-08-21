@@ -1,7 +1,7 @@
 export const navigationItems = [
   { id: "overview", label: "Tổng quan", icon: "home" },
   { id: "operations", label: "Vận hành quán", icon: "coffee" },
-  { id: "groups", label: "Nhân sự", icon: "users" },
+  { id: "personnel", label: "Nhân sự", icon: "users" },
   { id: "missions", label: "Nhiệm vụ", icon: "target" },
   { id: "events", label: "Sự kiện", icon: "calendarCheck" },
   { id: "upgrades", label: "Nâng cấp quán", icon: "store" },
@@ -46,28 +46,33 @@ export const finance = {
 };
 
 export const groups = [
-  { id: "cafe-horizon", name: "Cafe Horizon", code: "Nhóm 03", balance: 20000, memberCount: 8 },
-  { id: "creative-lab", name: "Creative Lab", code: "Nhóm 01", balance: 14600, memberCount: 7 },
-  { id: "green-corner", name: "Green Corner", code: "Nhóm 07", balance: 9850, memberCount: 6 },
-  { id: "nova-makers", name: "Nova Makers", code: "Nhóm 12", balance: 18200, memberCount: 9 },
+  { id: "cafe-horizon", name: "Cafe Horizon", initials: "CH", code: "Nhóm 03", focus: "Vận hành quán café", balance: 20000, memberCount: 8, colors: ["#b37850", "#6b4934"] },
+  { id: "creative-lab", name: "Creative Lab", initials: "CL", code: "Nhóm 01", focus: "Thiết kế & truyền thông", balance: 14600, memberCount: 7, colors: ["#9470a8", "#55426d"] },
+  { id: "green-corner", name: "Green Corner", initials: "GC", code: "Nhóm 07", focus: "Môi trường & cộng đồng", balance: 9850, memberCount: 6, colors: ["#729272", "#3f6753"] },
+  { id: "nova-makers", name: "Nova Makers", initials: "NM", code: "Nhóm 12", focus: "Công nghệ & sáng tạo", balance: 18200, memberCount: 5, colors: ["#617fa6", "#3d526e"] },
 ];
 
 export const cafeStats = [
-  { id: "staff", label: "Nhân sự", value: "8", total: "/ 10", note: "nhân viên", meta: [["Đi làm", "7"], ["Vắng mặt", "1"]], icon: "users", color: "#d47b55" },
+  { id: "staff", label: "Nhân sự", value: "26", total: "/ 32", note: "thành viên · 4 nhóm", meta: [["Đi làm", "24"], ["Vắng mặt", "2"]], icon: "users", color: "#d47b55" },
   { id: "orders", label: "Đơn hàng tuần", value: "23", total: "", note: "hoàn thành", meta: [["Hoàn thành", "23"], ["Đang xử lý", "4"]], icon: "receipt", color: "#6ca65d" },
   { id: "energy", label: "Năng lượng nhóm", value: "82", total: "/ 100", note: "Nhiệt huyết", progress: 82, icon: "zap", color: "#e5a13c" },
   { id: "reputation", label: "Danh tiếng", value: "740", total: "/ 1000", note: "Danh tiếng quán", progress: 74, icon: "star", color: "#8c68c5" },
 ];
 
-export const weeklyCashFlow = {
-  labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
-  income: [1.2, 3.4, 4.0, 2.5, 5.4, 3.8, 4.0],
-  expense: [-0.2, -0.1, -0.4, -3.0, -1.6, -0.9, -1.8],
-  profit: [0.5, 1.8, 2.1, 0.2, 2.3, 1.1, 2.0],
+export const weeklyCoinSummary = {
   totalIncome: 12850,
   totalExpense: 7650,
   totalProfit: 5200,
 };
+
+export const transactionLogs = [
+  { id: 1, type: "adjustment", title: "Admin cộng coin", group: "Creative Lab", amount: 500, date: "Hôm nay", time: "10:32", icon: "wallet" },
+  { id: 2, type: "income", title: "Hoàn thành Workshop AI", group: "Cafe Horizon", amount: 800, date: "Hôm nay", time: "09:15", icon: "trendingUp" },
+  { id: 3, type: "expense", title: "Chi phí nguyên liệu tuần", group: "Cafe Horizon", amount: -350, date: "Hôm qua", time: "16:40", icon: "arrowDown" },
+  { id: 4, type: "income", title: "Thưởng Hackathon 48h", group: "Nova Makers", amount: 1200, date: "Hôm qua", time: "14:10", icon: "trophy" },
+  { id: 5, type: "expense", title: "Chi phí sự kiện cộng đồng", group: "Green Corner", amount: -300, date: "19/08", time: "11:25", icon: "receipt" },
+  { id: 6, type: "adjustment", title: "Admin trừ coin", group: "Cafe Horizon", amount: -200, date: "19/08", time: "08:45", icon: "wallet" },
+];
 
 export const hotTasks = [
   { id: "ai-workshop", title: "[Workshop AI] Xây dựng mô hình ML", description: "Tổ chức workshop cho sinh viên toàn trường", reward: 800, due: "25/08", icon: "calendarCheck", tone: "purple" },
@@ -84,14 +89,32 @@ export const resources = [
 ];
 
 export const members = [
-  { id: 1, name: "Nguyễn Minh Anh", initials: "MA", role: "Trưởng nhóm", colors: ["#936d55", "#2e3b5c"] },
-  { id: 2, name: "Trần Hoàng Nam", initials: "HN", role: "Phó nhóm", colors: ["#66827a", "#293955"] },
-  { id: 3, name: "Lê Minh Châu", initials: "MC", role: "Thành viên", colors: ["#976a79", "#313b62"] },
-  { id: 4, name: "Phạm Gia Bảo", initials: "GB", role: "Thành viên", colors: ["#48778b", "#2a395c"] },
-  { id: 5, name: "Vũ Khánh Linh", initials: "KL", role: "Thành viên", colors: ["#a27565", "#40364f"] },
-  { id: 6, name: "Đỗ Trung Kiên", initials: "TK", role: "Thành viên", colors: ["#65799b", "#2d3857"] },
-  { id: 7, name: "Ngô Bảo Trâm", initials: "BT", role: "Thành viên", colors: ["#8a657e", "#333553"] },
-  { id: 8, name: "Hoàng Thu Hà", initials: "TH", role: "Thành viên", colors: ["#bd8d67", "#725647"] },
+  { id: 1, groupId: "cafe-horizon", name: "Nguyễn Minh Anh", initials: "MA", role: "Trưởng nhóm", colors: ["#936d55", "#2e3b5c"] },
+  { id: 2, groupId: "cafe-horizon", name: "Trần Hoàng Nam", initials: "HN", role: "Phó nhóm", colors: ["#66827a", "#293955"] },
+  { id: 3, groupId: "cafe-horizon", name: "Lê Minh Châu", initials: "MC", role: "Thành viên", colors: ["#976a79", "#313b62"] },
+  { id: 4, groupId: "cafe-horizon", name: "Phạm Gia Bảo", initials: "GB", role: "Thành viên", colors: ["#48778b", "#2a395c"] },
+  { id: 5, groupId: "cafe-horizon", name: "Vũ Khánh Linh", initials: "KL", role: "Thành viên", colors: ["#a27565", "#40364f"] },
+  { id: 6, groupId: "cafe-horizon", name: "Đỗ Trung Kiên", initials: "TK", role: "Thành viên", colors: ["#65799b", "#2d3857"] },
+  { id: 7, groupId: "cafe-horizon", name: "Ngô Bảo Trâm", initials: "BT", role: "Thành viên", colors: ["#8a657e", "#333553"] },
+  { id: 8, groupId: "cafe-horizon", name: "Hoàng Thu Hà", initials: "TH", role: "Thành viên", colors: ["#bd8d67", "#725647"] },
+  { id: 9, groupId: "creative-lab", name: "Phan Đức Anh", initials: "ĐA", role: "Trưởng nhóm", colors: ["#8a6d9d", "#51425f"] },
+  { id: 10, groupId: "creative-lab", name: "Nguyễn Thảo Vy", initials: "TV", role: "Phó nhóm", colors: ["#b2788d", "#654457"] },
+  { id: 11, groupId: "creative-lab", name: "Bùi Quang Huy", initials: "QH", role: "Thành viên", colors: ["#6e829f", "#41536d"] },
+  { id: 12, groupId: "creative-lab", name: "Trịnh Mai Phương", initials: "MP", role: "Thành viên", colors: ["#a8816d", "#665042"] },
+  { id: 13, groupId: "creative-lab", name: "Lâm Gia Hân", initials: "GH", role: "Thành viên", colors: ["#9d7187", "#5d4354"] },
+  { id: 14, groupId: "creative-lab", name: "Võ Thành Đạt", initials: "TĐ", role: "Thành viên", colors: ["#627f91", "#3d5668"] },
+  { id: 15, groupId: "creative-lab", name: "Đặng Khánh Ngọc", initials: "KN", role: "Thành viên", colors: ["#9b7868", "#5e493f"] },
+  { id: 16, groupId: "green-corner", name: "Lý Minh Khang", initials: "MK", role: "Trưởng nhóm", colors: ["#6a8b74", "#3f5f4e"] },
+  { id: 17, groupId: "green-corner", name: "Phạm Tú Anh", initials: "TA", role: "Phó nhóm", colors: ["#7e9670", "#536546"] },
+  { id: 18, groupId: "green-corner", name: "Đoàn Nhật Linh", initials: "NL", role: "Thành viên", colors: ["#729191", "#456263"] },
+  { id: 19, groupId: "green-corner", name: "Nguyễn Quốc Bảo", initials: "QB", role: "Thành viên", colors: ["#8b815e", "#60583d"] },
+  { id: 20, groupId: "green-corner", name: "Hoàng Diệu My", initials: "DM", role: "Thành viên", colors: ["#78947c", "#4d6650"] },
+  { id: 21, groupId: "green-corner", name: "Trần Đức Long", initials: "ĐL", role: "Thành viên", colors: ["#698786", "#415b5a"] },
+  { id: 22, groupId: "nova-makers", name: "Đinh Hải Yến", initials: "HY", role: "Trưởng nhóm", colors: ["#6a7fa0", "#3e506f"] },
+  { id: 23, groupId: "nova-makers", name: "Tạ Minh Quân", initials: "MQ", role: "Phó nhóm", colors: ["#5d829a", "#38566a"] },
+  { id: 24, groupId: "nova-makers", name: "Vương Hà Chi", initials: "HC", role: "Thành viên", colors: ["#7c739a", "#4b4567"] },
+  { id: 25, groupId: "nova-makers", name: "Lê Tuấn Vũ", initials: "TV", role: "Thành viên", colors: ["#637b93", "#3c5269"] },
+  { id: 26, groupId: "nova-makers", name: "Nguyễn Ngọc Ánh", initials: "NA", role: "Thành viên", colors: ["#887297", "#554561"] },
 ];
 
 export const taskTabs = [
