@@ -17,7 +17,7 @@ export const renderTopbar = () => `
   </div>
 
   <div class="top-finance" aria-label="Tổng hợp tài chính tuần">
-    <div class="top-finance-item"><span>${icon("wallet")}</span><div><small>Tiền mặt</small><strong>${formatNumber(finance.currentFund)} coin</strong></div></div>
+    <button class="top-finance-item admin-coin-entry" type="button" data-action="manage-group-coins" aria-label="Điều chỉnh coin của các nhóm"><span>${icon("wallet")}</span><div><small>Tiền mặt · Điều chỉnh</small><strong>${formatNumber(finance.currentFund)} coin</strong></div></button>
     <div class="top-finance-item positive"><span>${icon("trendingUp")}</span><div><small>Doanh thu tuần</small><strong>+${formatNumber(finance.income)} coin</strong></div></div>
     <div class="top-finance-item negative"><span>${icon("arrowDown")}</span><div><small>Chi phí tuần</small><strong>-${formatNumber(finance.expense)} coin</strong></div></div>
     <div class="top-finance-item profit"><span>${icon("coffee")}</span><div><small>Lợi nhuận tuần</small><strong>+${formatNumber(finance.weeklyFlow)} coin</strong></div></div>

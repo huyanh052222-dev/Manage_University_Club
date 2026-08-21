@@ -5,15 +5,15 @@ export const navigationItems = [
   { id: "missions", label: "Nhiệm vụ", icon: "target" },
   { id: "events", label: "Sự kiện", icon: "calendarCheck" },
   { id: "upgrades", label: "Nâng cấp quán", icon: "store" },
-  { id: "finance", label: "Tài chính", icon: "wallet" },
+  { id: "finance", label: "Quản lý coin", icon: "wallet" },
   { id: "ranking", label: "Bảng xếp hạng", icon: "award" },
   { id: "weekly-report", label: "Báo cáo tuần", icon: "fileText" },
 ];
 
 export const currentUser = {
-  name: "TechNova",
-  initials: "TN",
-  role: "Quản lý nhóm",
+  name: "Quản trị viên",
+  initials: "AD",
+  role: "Admin hệ thống",
   colors: ["#c18a61", "#5b3825"],
 };
 
@@ -44,6 +44,13 @@ export const finance = {
   expense: 2700,
   updatedAt: "09:30 · 19/08/2026",
 };
+
+export const groups = [
+  { id: "cafe-horizon", name: "Cafe Horizon", code: "Nhóm 03", balance: 20000, memberCount: 8 },
+  { id: "creative-lab", name: "Creative Lab", code: "Nhóm 01", balance: 14600, memberCount: 7 },
+  { id: "green-corner", name: "Green Corner", code: "Nhóm 07", balance: 9850, memberCount: 6 },
+  { id: "nova-makers", name: "Nova Makers", code: "Nhóm 12", balance: 18200, memberCount: 9 },
+];
 
 export const cafeStats = [
   { id: "staff", label: "Nhân sự", value: "8", total: "/ 10", note: "nhân viên", meta: [["Đi làm", "7"], ["Vắng mặt", "1"]], icon: "users", color: "#d47b55" },
@@ -77,54 +84,14 @@ export const resources = [
 ];
 
 export const members = [
-  {
-    id: 1, name: "Nguyễn Minh Anh", initials: "MA", role: "Trưởng nhóm", leader: true,
-    contribution: 450, activity: 100, tasksCompleted: 12, workHours: 18.5, xp: 720, trend: 18,
-    lastContribution: "Báo cáo chiến lược · 2 giờ trước", colors: ["#936d55", "#2e3b5c"],
-    breakdown: { missions: 220, events: 110, support: 80, bonus: 40 },
-  },
-  {
-    id: 2, name: "Trần Hoàng Nam", initials: "HN", role: "Phó nhóm",
-    contribution: 380, activity: 100, tasksCompleted: 10, workHours: 16, xp: 640, trend: 12,
-    lastContribution: "Hỗ trợ prototype · 4 giờ trước", colors: ["#66827a", "#293955"],
-    breakdown: { missions: 190, events: 80, support: 90, bonus: 20 },
-  },
-  {
-    id: 3, name: "Lê Minh Châu", initials: "MC", role: "Thành viên",
-    contribution: 320, activity: 80, tasksCompleted: 9, workHours: 14.5, xp: 560, trend: 8,
-    lastContribution: "Workshop thuyết trình · Hôm qua", colors: ["#976a79", "#313b62"],
-    breakdown: { missions: 150, events: 100, support: 50, bonus: 20 },
-  },
-  {
-    id: 4, name: "Phạm Gia Bảo", initials: "GB", role: "Thành viên",
-    contribution: 280, activity: 70, tasksCompleted: 7, workHours: 12, xp: 490, trend: 5,
-    lastContribution: "Kiểm thử ứng dụng · Hôm qua", colors: ["#48778b", "#2a395c"],
-    breakdown: { missions: 150, events: 50, support: 70, bonus: 10 },
-  },
-  {
-    id: 5, name: "Vũ Khánh Linh", initials: "KL", role: "Thành viên",
-    contribution: 250, activity: 60, tasksCompleted: 6, workHours: 10.5, xp: 420, trend: -3,
-    lastContribution: "Thiết kế slide dự án · 2 ngày trước", colors: ["#a27565", "#40364f"],
-    breakdown: { missions: 130, events: 60, support: 50, bonus: 10 },
-  },
-  {
-    id: 6, name: "Đỗ Trung Kiên", initials: "TK", role: "Thành viên",
-    contribution: 220, activity: 40, tasksCompleted: 5, workHours: 8, xp: 350, trend: -6,
-    lastContribution: "Cập nhật tài liệu · 3 ngày trước", colors: ["#65799b", "#2d3857"],
-    breakdown: { missions: 110, events: 40, support: 60, bonus: 10 },
-  },
-  {
-    id: 7, name: "Ngô Bảo Trâm", initials: "BT", role: "Thành viên",
-    contribution: 190, activity: 30, tasksCompleted: 4, workHours: 6.5, xp: 290, trend: -10,
-    lastContribution: "Điểm danh sự kiện · 4 ngày trước", colors: ["#8a657e", "#333553"],
-    breakdown: { missions: 80, events: 60, support: 40, bonus: 10 },
-  },
-  {
-    id: 8, name: "Hoàng Thu Hà", initials: "TH", role: "Thành viên",
-    contribution: 160, activity: 65, tasksCompleted: 5, workHours: 7.5, xp: 310, trend: 4,
-    lastContribution: "Hỗ trợ ca chiều · Hôm qua", colors: ["#bd8d67", "#725647"],
-    breakdown: { missions: 70, events: 30, support: 50, bonus: 10 },
-  },
+  { id: 1, name: "Nguyễn Minh Anh", initials: "MA", role: "Trưởng nhóm", colors: ["#936d55", "#2e3b5c"] },
+  { id: 2, name: "Trần Hoàng Nam", initials: "HN", role: "Phó nhóm", colors: ["#66827a", "#293955"] },
+  { id: 3, name: "Lê Minh Châu", initials: "MC", role: "Thành viên", colors: ["#976a79", "#313b62"] },
+  { id: 4, name: "Phạm Gia Bảo", initials: "GB", role: "Thành viên", colors: ["#48778b", "#2a395c"] },
+  { id: 5, name: "Vũ Khánh Linh", initials: "KL", role: "Thành viên", colors: ["#a27565", "#40364f"] },
+  { id: 6, name: "Đỗ Trung Kiên", initials: "TK", role: "Thành viên", colors: ["#65799b", "#2d3857"] },
+  { id: 7, name: "Ngô Bảo Trâm", initials: "BT", role: "Thành viên", colors: ["#8a657e", "#333553"] },
+  { id: 8, name: "Hoàng Thu Hà", initials: "TH", role: "Thành viên", colors: ["#bd8d67", "#725647"] },
 ];
 
 export const taskTabs = [

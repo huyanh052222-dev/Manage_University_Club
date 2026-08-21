@@ -1,7 +1,7 @@
 import { renderCafeHero } from "./cafeHero.js";
 import { renderCafeStats } from "./cafeStats.js";
 import { renderCashFlowPanel } from "./cashFlowPanel.js";
-import { renderFeaturedMembers } from "./featuredMembers.js";
+import { renderGroupMembers } from "./groupMembers.js";
 import { renderHotTasks } from "./hotTasks.js";
 import { renderCafeTip } from "./cafeTip.js";
 
@@ -10,7 +10,7 @@ export const renderDashboard = () => `
     ${renderCafeHero()}
     ${renderCafeStats()}
     <div class="cafe-detail-grid">
-      ${renderFeaturedMembers()}
+      ${renderGroupMembers()}
       ${renderHotTasks()}
       ${renderCashFlowPanel()}
     </div>

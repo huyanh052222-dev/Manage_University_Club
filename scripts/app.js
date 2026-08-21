@@ -1,8 +1,10 @@
 import { renderDashboard } from "./components/dashboard.js";
-import { renderContributionRows, renderMemberDetail, renderMemberManagement } from "./components/memberManagement.js";
+import { renderCoinManagement } from "./components/coinManagement.js";
+import { renderMemberCards, renderMemberDirectory } from "./components/memberDirectory.js";
 import { renderSidebar } from "./components/sidebar.js";
 import { renderTopbar } from "./components/topbar.js";
-import { demoNotifications, members } from "./data/dashboard.js";
+import { demoNotifications } from "./data/dashboard.js";
+import { adjustGroupCoins, getGroup, getGroups } from "./services/coinLedger.js";
 import { closeModal, showModal, showToast } from "./ui/feedback.js";
 
 const elements = {
@@ -38,14 +40,14 @@ const renderOverviewView = () => {
 };
 
 const renderManagementView = () => {
-  elements.dashboard.innerHTML = renderMemberManagement();
-  setPageHeading("Nhân sự", "Theo dõi đóng góp tuần này");
+  elements.dashboard.innerHTML = renderMemberDirectory();
+  setPageHeading("Nhân sự", "Danh sách thành viên trong nhóm");
   updateActiveNavigation(document.querySelector('[data-nav-id="groups"]'));
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 const renderCurrentView = () => {
-  if (window.location.hash === "#member-management") {
+  if (["#member-list", "#member-management"].includes(window.location.hash)) {
     renderManagementView();
     return;
   }
@@ -53,8 +55,8 @@ const renderCurrentView = () => {
 };
 
 const navigateToManagement = () => {
-  if (window.location.hash !== "#member-management") {
-    window.history.pushState({ view: "member-management" }, "", "#member-management");
+  if (window.location.hash !== "#member-list") {
+    window.history.pushState({ view: "member-list" }, "", "#member-list");
   }
   renderManagementView();
 };
@@ -71,20 +73,27 @@ const actionMessages = {
   "edit-club": "Tính năng chỉnh sửa thông tin nhóm đang ở chế độ demo.",
   transactions: "Đã mở khu vực lịch sử giao dịch (demo).",
   "manage-resources": "Khu vực phân bổ tài nguyên sẽ kết nối API ở bước tiếp theo.",
-  "add-member": "Đã tạo lời mời thành viên mẫu.",
   "all-tasks": "Bạn đang xem toàn bộ nhiệm vụ hiện có.",
 };
 
-const refreshContributionRows = () => {
-  const rowsContainer = document.querySelector("[data-contribution-rows]");
-  if (!rowsContainer) return;
-
+const refreshMemberCards = () => {
+  const cardsContainer = document.querySelector("[data-member-cards]");
+  if (!cardsContainer) return;
   const query = document.querySelector("[data-member-search]")?.value ?? "";
-  const sortBy = document.querySelector("[data-member-sort]")?.value ?? "contribution";
-  rowsContainer.innerHTML = renderContributionRows({ query, sortBy });
-  const resultCount = rowsContainer.querySelectorAll("[data-member-row]").length;
+  cardsContainer.innerHTML = renderMemberCards({ query });
+  const resultCount = cardsContainer.querySelectorAll("[data-member-card]").length;
   const resultLabel = document.querySelector("[data-member-result-count]");
   if (resultLabel) resultLabel.textContent = String(resultCount);
+};
+
+const openCoinManagement = () => {
+  showModal({ title: "Điều chỉnh coin của nhóm", content: renderCoinManagement(getGroups()) });
+};
+
+const refreshSelectedGroupBalance = (groupId) => {
+  const group = getGroup(groupId);
+  const balance = document.querySelector("[data-coin-balance]");
+  if (group && balance) balance.textContent = `${group.balance.toLocaleString("vi-VN")} coin`;
 };
 
 const handleAction = (actionElement) => {
@@ -116,8 +125,8 @@ const handleAction = (actionElement) => {
 
   if (action === "show-profile") {
     showModal({
-      title: "Tài khoản cá nhân",
-      content: "<p>TechNova · Quản lý nhóm</p><p>Tài khoản đang quản lý Cafe Horizon. Thông tin hiện dùng dữ liệu minh họa.</p>",
+      title: "Tài khoản quản trị",
+      content: "<p><strong>Quản trị viên · Admin hệ thống</strong></p><p>Đây là tài khoản đăng nhập duy nhất, có quyền điều chỉnh coin của các nhóm. Thành viên chỉ được lưu dưới dạng hồ sơ hiển thị.</p>",
     });
     return;
   }
@@ -140,15 +149,8 @@ const handleAction = (actionElement) => {
     return;
   }
 
-  if (action === "export-contributions") {
-    showToast("Đã chuẩn bị báo cáo đóng góp tuần (dữ liệu demo).");
-    return;
-  }
-
-  if (action === "member-details") {
-    const member = members.find((item) => item.id === Number(actionElement.dataset.memberId));
-    if (!member) return;
-    showModal({ title: "Chi tiết đóng góp", content: renderMemberDetail(member) });
+  if (action === "manage-group-coins") {
+    openCoinManagement();
     return;
   }
 
@@ -161,6 +163,11 @@ document.addEventListener("click", (event) => {
     updateActiveNavigation(navItem);
     closeSidebar();
     const targetHash = navItem.getAttribute("href");
+    if (targetHash === "#finance") {
+      event.preventDefault();
+      openCoinManagement();
+      return;
+    }
     const dashboardTargets = new Set(["#overview", "#groups", "#missions"]);
     if (document.querySelector(".management-view") && dashboardTargets.has(targetHash)) {
       event.preventDefault();
@@ -182,11 +189,35 @@ document.addEventListener("click", (event) => {
 });
 
 document.addEventListener("input", (event) => {
-  if (event.target.matches("[data-member-search]")) refreshContributionRows();
+  if (event.target.matches("[data-member-search]")) refreshMemberCards();
 });
 
 document.addEventListener("change", (event) => {
-  if (event.target.matches("[data-member-sort]")) refreshContributionRows();
+  if (event.target.matches("[data-coin-group]")) refreshSelectedGroupBalance(event.target.value);
+});
+
+document.addEventListener("submit", (event) => {
+  if (!event.target.matches("[data-coin-form]")) return;
+  event.preventDefault();
+
+  const form = event.target;
+  const formData = new FormData(form);
+  const result = adjustGroupCoins({
+    groupId: formData.get("groupId"),
+    direction: formData.get("direction"),
+    amount: Number(formData.get("amount")),
+  });
+
+  const error = form.querySelector("[data-coin-error]");
+  if (!result.ok) {
+    error.textContent = result.message;
+    return;
+  }
+
+  elements.topbar.innerHTML = renderTopbar();
+  closeModal();
+  const verb = result.direction === "add" ? "cộng" : "trừ";
+  showToast(`Đã ${verb} ${result.amount.toLocaleString("vi-VN")} coin cho ${result.group.name}. Số dư mới: ${result.group.balance.toLocaleString("vi-VN")} coin.`);
 });
 
 document.addEventListener("keydown", (event) => {
