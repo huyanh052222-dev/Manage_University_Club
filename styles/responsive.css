@@ -41,7 +41,6 @@
   .topbar { grid-template-columns:1fr auto; min-height:var(--topbar-height); padding:8px 13px; }
   .top-finance { display:none; }
   .week-icon { display:none; }
-  .user-meta,.user-button>.icon { display:none; }
   .dashboard { padding:14px 12px 20px; }
   .cafe-dashboard { gap:12px; }
   .cafe-hero { grid-template-columns:1fr; }

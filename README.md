@@ -23,27 +23,29 @@ Sau đó mở `http://localhost:4173`.
 │   ├── base.css        # Reset và style nền
 │   ├── layout.css      # Bố cục trang
 │   ├── components.css  # Component UI
-│   ├── auth.css        # Landing page và biểu mẫu đăng nhập
 │   ├── member-directory.css # Danh sách hồ sơ thành viên
 │   └── responsive.css  # Breakpoint responsive
 ├── assets/images/      # Ảnh hero Cafe Horizon
 └── scripts/
-    ├── app.js          # Khởi tạo và điều phối tương tác
+    ├── main.js         # Entry: mount page rồi khởi tạo ứng dụng
+    ├── app.js          # Điều phối dữ liệu, điều hướng và tương tác
+    ├── pages/          # Page component cấp cao
+    │   └── cafePage.js # Khung hiển thị Cafe Horizon
     ├── data/           # Dữ liệu demo, có thể thay bằng API
     ├── components/     # Hàm render từng module giao diện
-    ├── services/       # Đăng nhập demo và nghiệp vụ số dư coin
+    ├── services/       # Nghiệp vụ số dư coin
     ├── ui/             # Modal, toast và feedback
     └── utils/          # Hàm định dạng dùng chung
 ```
 
 ## Luồng dữ liệu
 
-`data/dashboard.js` → component tương ứng → `components/dashboard.js` → `app.js` → DOM.
+`index.html` → `main.js` → `pages/cafePage.js` → `app.js` → component và dữ liệu tương ứng → DOM.
+
+`index.html` chỉ giữ điểm mount `#app`. Toàn bộ khung giao diện nằm trong page component, sau khi page được render thì `app.js` mới khởi tạo các module chức năng.
 
 Menu mobile, thông báo, modal, toast và các nút điều hướng chính đã có tương tác demo.
 
-Hệ thống chỉ có một tài khoản admin. Admin có thể mở **Quản lý coin** để cộng hoặc trừ coin theo từng nhóm; dữ liệu hiện chỉ tồn tại trong phiên demo.
+Người quản lý có thể mở **Quản lý coin** để cộng hoặc trừ coin theo từng nhóm; dữ liệu hiện chỉ tồn tại trong phiên demo.
 
-Tài khoản kiểm thử: `admin` / `123456`. Trạng thái đăng nhập được lưu trong `sessionStorage`; đây là xác thực frontend dành cho demo, không dùng cho môi trường production.
-
-Thẻ **Quản lý các nhóm** hiển thị nhanh bốn nhóm bằng cụm avatar. Nút **Xem danh sách thành viên** và mục **Nhân sự** ở sidebar cùng mở trang tổng quát tại `#personnel`, nơi các hồ sơ thành viên được chia theo từng nhóm từ 5–8 người.
+Thẻ **Quản lý thành viên** hiển thị nhanh 8 thành viên của Cafe Horizon. Nút **Xem danh sách thành viên** và mục **Nhân sự** ở sidebar cùng mở trang chi tiết tại `#personnel` với một danh sách thành viên duy nhất, không chia theo nhóm.

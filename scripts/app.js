@@ -1,17 +1,13 @@
 import { renderDashboard } from "./components/dashboard.js";
 import { renderCoinManagement } from "./components/coinManagement.js";
-import { renderLoginPage } from "./components/loginPage.js?v=auth2";
-import { renderMemberDirectory, renderMemberGroups } from "./components/memberDirectory.js";
+import { renderMemberDirectory, renderMemberList } from "./components/memberDirectory.js";
 import { renderSidebar } from "./components/sidebar.js";
-import { renderTopbar } from "./components/topbar.js";
+import { renderTopbar } from "./components/topbar.js?v=student";
 import { demoNotifications } from "./data/dashboard.js";
 import { adjustGroupCoins, getGroup, getGroups } from "./services/coinLedger.js";
-import { isAdminAuthenticated, loginAdmin, logoutAdmin } from "./services/authService.js";
 import { closeModal, showModal, showToast } from "./ui/feedback.js";
 
 const elements = {
-  authView: document.querySelector("#auth-view"),
-  appShell: document.querySelector("#app-shell"),
   sidebar: document.querySelector("#sidebar"),
   topbar: document.querySelector("#topbar"),
   dashboard: document.querySelector("#dashboard"),
@@ -25,33 +21,6 @@ const renderApp = () => {
 };
 
 const closeSidebar = () => document.body.classList.remove("sidebar-open");
-
-const showLoginPage = () => {
-  closeSidebar();
-  closeModal();
-  elements.appShell.hidden = true;
-  elements.authView.hidden = false;
-  elements.authView.innerHTML = renderLoginPage();
-  document.title = "Đăng nhập Admin | Cafe Horizon";
-
-  if (window.location.hash !== "#login") {
-    window.history.replaceState({ view: "login" }, "", "#login");
-  }
-
-  window.requestAnimationFrame(() => document.querySelector("[data-login-password]")?.focus());
-};
-
-const showAdminApp = () => {
-  elements.authView.hidden = true;
-  elements.authView.replaceChildren();
-  elements.appShell.hidden = false;
-
-  if (!window.location.hash || window.location.hash === "#login") {
-    window.history.replaceState({ view: "overview" }, "", "#overview");
-  }
-
-  renderApp();
-};
 
 const updateActiveNavigation = (target) => {
   document.querySelectorAll("[data-nav-id]").forEach((item) => {
@@ -75,7 +44,7 @@ const renderOverviewView = () => {
 
 const renderPersonnelView = () => {
   elements.dashboard.innerHTML = renderMemberDirectory();
-  setPageHeading("Nhân sự", "Tổng quát thành viên theo từng nhóm");
+  setPageHeading("Nhân sự", "Quản lý chi tiết thành viên Cafe Horizon");
   updateActiveNavigation(document.querySelector('[data-nav-id="personnel"]'));
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
@@ -111,16 +80,13 @@ const actionMessages = {
 };
 
 const refreshPersonnelDirectory = () => {
-  const groupsContainer = document.querySelector("[data-member-groups]");
-  if (!groupsContainer) return;
+  const memberList = document.querySelector("[data-member-list]");
+  if (!memberList) return;
   const query = document.querySelector("[data-member-search]")?.value ?? "";
-  groupsContainer.innerHTML = renderMemberGroups({ query });
-  const memberCount = groupsContainer.querySelectorAll("[data-member-card]").length;
-  const groupCount = groupsContainer.querySelectorAll("[data-group-card]").length;
+  memberList.innerHTML = renderMemberList({ query });
+  const memberCount = memberList.querySelectorAll("[data-member-card]").length;
   const memberLabel = document.querySelector("[data-member-result-count]");
-  const groupLabel = document.querySelector("[data-group-result-count]");
   if (memberLabel) memberLabel.textContent = String(memberCount);
-  if (groupLabel) groupLabel.textContent = String(groupCount);
 };
 
 const openCoinManagement = () => {
@@ -131,24 +97,6 @@ const refreshSelectedGroupBalance = (groupId) => {
   const group = getGroup(groupId);
   const balance = document.querySelector("[data-coin-balance]");
   if (group && balance) balance.textContent = `${group.balance.toLocaleString("vi-VN")} coin`;
-};
-
-const handleLoginSubmit = (form) => {
-  const formData = new FormData(form);
-  const result = loginAdmin({
-    username: formData.get("username"),
-    password: formData.get("password"),
-  });
-
-  if (!result.ok) {
-    form.querySelector("[data-login-error]").textContent = result.message;
-    form.querySelector("[data-login-password]")?.focus();
-    return;
-  }
-
-  window.history.replaceState({ view: "overview" }, "", "#overview");
-  showAdminApp();
-  showToast("Đăng nhập Admin thành công.");
 };
 
 const handleAction = (actionElement) => {
@@ -170,35 +118,10 @@ const handleAction = (actionElement) => {
     return;
   }
 
-  if (action === "toggle-password") {
-    const passwordInput = document.querySelector("[data-login-password]");
-    if (!passwordInput) return;
-    const shouldShow = passwordInput.type === "password";
-    passwordInput.type = shouldShow ? "text" : "password";
-    actionElement.setAttribute("aria-label", shouldShow ? "Ẩn mật khẩu" : "Hiện mật khẩu");
-    passwordInput.focus();
-    return;
-  }
-
-  if (action === "logout") {
-    logoutAdmin();
-    closeModal();
-    showLoginPage();
-    return;
-  }
-
   if (action === "show-notifications") {
     showModal({
       title: "Thông báo mới",
       content: `<ul class="modal-list">${demoNotifications.map((item) => `<li>${item}</li>`).join("")}</ul>`,
-    });
-    return;
-  }
-
-  if (action === "show-profile") {
-    showModal({
-      title: "Tài khoản quản trị",
-      content: '<p><strong>Quản trị viên · Admin hệ thống</strong></p><p>Đây là tài khoản đăng nhập duy nhất, có quyền điều chỉnh coin của các nhóm. Thành viên chỉ được lưu dưới dạng hồ sơ hiển thị.</p><div class="account-modal-actions"><button class="secondary-button logout-button" type="button" data-action="logout">Đăng xuất</button></div>',
     });
     return;
   }
@@ -274,12 +197,6 @@ document.addEventListener("change", (event) => {
 });
 
 document.addEventListener("submit", (event) => {
-  if (event.target.matches("[data-login-form]")) {
-    event.preventDefault();
-    handleLoginSubmit(event.target);
-    return;
-  }
-
   if (!event.target.matches("[data-coin-form]")) return;
   event.preventDefault();
 
@@ -310,16 +227,11 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-window.addEventListener("popstate", () => {
-  if (!isAdminAuthenticated()) {
-    showLoginPage();
-    return;
-  }
-  if (window.location.hash === "#login") {
-    window.history.replaceState({ view: "overview" }, "", "#overview");
-  }
-  renderCurrentView();
-});
+window.addEventListener("popstate", renderCurrentView);
 
-if (isAdminAuthenticated()) showAdminApp();
-else showLoginPage();
+const supportedInitialRoutes = new Set(["#overview", "#personnel", "#member-list", "#member-management", "#missions"]);
+if (!supportedInitialRoutes.has(window.location.hash)) {
+  window.history.replaceState({ view: "overview" }, "", "#overview");
+}
+
+renderApp();

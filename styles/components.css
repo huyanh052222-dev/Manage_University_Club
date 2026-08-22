@@ -20,7 +20,7 @@
 .cafe-sidebar-art>span { width:100%; height:1px; margin-top:8px; background:rgba(210,178,139,.26); }
 .cafe-sidebar-art p { position:relative; margin:0; color:#a9917c; font-family:var(--font-display); font-size:15px; font-style:italic; line-height:1.45; }
 
-.topbar-heading,.topbar-actions,.week-context,.user-button { display:flex; align-items:center; }
+.topbar-heading,.topbar-actions,.week-context { display:flex; align-items:center; }
 .topbar-heading { min-width:0; gap:12px; }
 .week-context { gap:11px; }
 .week-icon { display:grid; width:40px; height:40px; place-items:center; border-radius:10px; background:#f5eee4; color:var(--brown); }
@@ -47,13 +47,8 @@
 .notification-button,.icon-button { display:grid; }
 .notification-button:hover,.menu-button:hover,.icon-button:hover { background:var(--surface-hover); transform:translateY(-1px); }
 .notification-dot { position:absolute; top:7px; right:7px; width:8px; height:8px; border:2px solid var(--surface); border-radius:50%; background:var(--red); }
-.user-button { gap:9px; padding:3px 4px; border:0; border-radius:11px; background:transparent; cursor:pointer; }
 .avatar { position:relative; display:grid; width:38px; height:38px; flex:0 0 auto; place-items:center; overflow:hidden; border:2px solid rgba(255,255,255,.85); border-radius:50%; background:linear-gradient(135deg,var(--avatar-a,#c38d66),var(--avatar-b,#6f4933)); box-shadow:0 3px 10px rgba(86,56,37,.13); color:#fff; font-size:10px; font-weight:700; }
 .avatar::after { position:absolute; right:1px; bottom:1px; width:7px; height:7px; border:1px solid #fff; border-radius:50%; background:var(--green); content:""; }
-.user-meta { display:grid; gap:0; }
-.user-name { color:var(--text); font-size:10px; font-weight:700; }
-.role-badge { color:var(--muted); font-size:8px; }
-.user-button>.icon { width:14px; color:var(--muted); }
 
 .panel,.cafe-panel { overflow:hidden; border:1px solid var(--border); border-radius:var(--radius-lg); background:rgba(255,253,249,.94); box-shadow:var(--shadow-card); }
 .cafe-hero { display:grid; min-height:285px; grid-template-columns:minmax(520px,1.7fr) minmax(370px,1fr); }
@@ -110,18 +105,14 @@
 .section-icon .icon { width:18px; height:18px; }
 .cafe-panel-header h2 { margin:0; font-size:12px; }
 .cafe-panel-header p { margin:1px 0 0; color:var(--muted); font-size:8px; }
-.group-overview-list,.hot-task-list { display:grid; flex:1; padding:5px 16px; }
-.group-overview-row { display:grid; min-height:64px; grid-template-columns:34px minmax(80px,1fr) auto; align-items:center; gap:9px; border-bottom:1px solid var(--border); }
-.group-overview-row:last-child { border-bottom:0; }
-.group-mark { display:grid; width:32px; height:32px; flex:0 0 auto; place-items:center; border-radius:10px; background:linear-gradient(135deg,var(--group-a,#b37850),var(--group-b,#6b4934)); box-shadow:0 3px 9px rgba(72,51,37,.12); color:#fff; font-size:8px; font-weight:800; }
-.group-overview-copy { display:grid; min-width:0; gap:1px; }
-.group-overview-copy strong { overflow:hidden; font-size:9px; text-overflow:ellipsis; white-space:nowrap; }
-.group-overview-copy span { color:var(--muted); font-size:7px; white-space:nowrap; }
-.group-avatar-stack { display:flex; align-items:center; justify-content:flex-end; padding-left:8px; }
-.group-avatar-stack .avatar { width:25px; height:25px; margin-left:-8px; border-width:2px; font-size:6px; }
-.group-avatar-stack .avatar:first-child { margin-left:0; }
-.group-avatar-stack .avatar::after { display:none; }
-.avatar-more { display:grid; width:25px; height:25px; margin-left:-8px; place-items:center; border:2px solid #fffdf9; border-radius:50%; background:#efe7dc; color:var(--brown); font-size:6px; font-weight:700; }
+.member-overview-list { display:grid; flex:1; grid-template-columns:1fr; padding:5px 16px; }
+.hot-task-list { display:grid; flex:1; padding:5px 16px; }
+.member-overview-row { display:grid; min-width:0; min-height:64px; grid-template-columns:34px minmax(0,1fr); align-items:center; gap:9px; padding:4px 8px; border-bottom:1px solid var(--border); }
+.member-overview-row:last-child { border-bottom:0; }
+.member-overview-row .avatar { width:31px; height:31px; font-size:7px; }
+.member-overview-copy { display:grid; min-width:0; gap:1px; }
+.member-overview-copy strong { overflow:hidden; font-size:8px; text-overflow:ellipsis; white-space:nowrap; }
+.member-overview-copy span { color:var(--muted); font-size:7px; white-space:nowrap; }
 
 .hot-task-row { display:grid; min-height:64px; grid-template-columns:34px minmax(135px,1fr) auto; align-items:center; gap:9px; border-bottom:1px solid var(--border); }
 .hot-task-row:last-child { border-bottom:0; }

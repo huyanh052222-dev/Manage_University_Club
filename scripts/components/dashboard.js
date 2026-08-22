@@ -1,6 +1,6 @@
 import { renderCafeHero } from "./cafeHero.js";
 import { renderCafeStats } from "./cafeStats.js";
-import { renderGroupOverview } from "./groupOverview.js";
+import { renderMemberOverview } from "./memberOverview.js";
 import { renderHotTasks } from "./hotTasks.js";
 import { renderCafeTip } from "./cafeTip.js";
 import { renderTransactionLog } from "./transactionLog.js";
@@ -10,7 +10,7 @@ export const renderDashboard = () => `
     ${renderCafeHero()}
     ${renderCafeStats()}
     <div class="cafe-detail-grid">
-      ${renderGroupOverview()}
+      ${renderMemberOverview()}
       ${renderHotTasks()}
       ${renderTransactionLog()}
     </div>

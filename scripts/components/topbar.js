@@ -1,4 +1,4 @@
-import { currentUser, finance } from "../data/dashboard.js";
+import { finance } from "../data/dashboard.js";
 import { formatNumber } from "../utils/format.js";
 import { icon } from "./icons.js";
 
@@ -27,14 +27,6 @@ export const renderTopbar = () => `
     <button class="notification-button" type="button" data-action="show-notifications" aria-label="Xem thông báo">
       ${icon("bell")}
       <span class="notification-dot"></span>
-    </button>
-    <button class="user-button" type="button" data-action="show-profile" aria-label="Mở thông tin tài khoản">
-      <span class="avatar" style="--avatar-a:${currentUser.colors[0]};--avatar-b:${currentUser.colors[1]}">${currentUser.initials}</span>
-      <span class="user-meta">
-        <span class="user-name">${currentUser.name}</span>
-        <span class="role-badge">${currentUser.role}</span>
-      </span>
-      ${icon("chevronDown")}
     </button>
   </div>
 `;
