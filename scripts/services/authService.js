@@ -1,35 +1,70 @@
+import { supabase } from "../supabase/supabase.js";
+
 const ADMIN_SESSION_KEY = "cafe-horizon-admin-session";
 
 export const ADMIN_DEMO_ACCOUNT = Object.freeze({
-  username: "admin",
-  password: "123456",
-  displayName: "Quản trị viên",
+    username: "admin",
+    password: "123456",
+    displayName: "Quản trị viên",
 });
 
-export const loginAdmin = ({ username, password }) => {
-  const normalizedUsername = String(username ?? "").trim().toLowerCase();
+export const loginAdmin = async ({ username, password }) => {
+    const normalizedUsername = String(username ?? "")
+        .trim()
+        .toLowerCase();
 
-  if (normalizedUsername !== ADMIN_DEMO_ACCOUNT.username || password !== ADMIN_DEMO_ACCOUNT.password) {
-    return { ok: false, message: "Tài khoản hoặc mật khẩu chưa đúng." };
-  }
+    if (!normalizedUsername || !password) {
+        return { ok: false, message: "Vui lòng nhập email và mật khẩu." };
+    }
 
-  window.sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({
-    username: ADMIN_DEMO_ACCOUNT.username,
-    signedInAt: new Date().toISOString(),
-  }));
+    let signInError;
+    try {
+        ({ error: signInError } = await supabase.auth.signInWithPassword({
+            email: normalizedUsername,
+            password,
+        }));
+    } catch {
+        return { ok: false, message: "Không thể kết nối Supabase. Vui lòng thử lại." };
+    }
 
-  return { ok: true };
+    if (signInError) {
+        return { ok: false, message: "Email hoặc mật khẩu chưa đúng." };
+    }
+
+    let isAdmin;
+    let adminError;
+    try {
+        ({ data: isAdmin, error: adminError } = await supabase.rpc("is_admin"));
+    } catch {
+        await supabase.auth.signOut();
+        return { ok: false, message: "Không thể kiểm tra quyền tài khoản." };
+    }
+    if (adminError || !isAdmin) {
+        await supabase.auth.signOut();
+        return { ok: false, message: "Tài khoản không có quyền quản trị." };
+    }
+
+    window.sessionStorage.setItem(
+        ADMIN_SESSION_KEY,
+        JSON.stringify({
+            username: normalizedUsername,
+            signedInAt: new Date().toISOString(),
+        }),
+    );
+
+    return { ok: true };
 };
 
 export const isAdminAuthenticated = () => {
-  try {
-    const session = JSON.parse(window.sessionStorage.getItem(ADMIN_SESSION_KEY));
-    return session?.username === ADMIN_DEMO_ACCOUNT.username;
-  } catch {
-    return false;
-  }
+    try {
+        const session = JSON.parse(window.sessionStorage.getItem(ADMIN_SESSION_KEY));
+        return Boolean(session?.username);
+    } catch {
+        return false;
+    }
 };
 
-export const logoutAdmin = () => {
-  window.sessionStorage.removeItem(ADMIN_SESSION_KEY);
+export const logoutAdmin = async () => {
+    window.sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    await supabase.auth.signOut();
 };
