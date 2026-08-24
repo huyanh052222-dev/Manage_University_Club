@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <title>Trang Quản Trị Sự Kiện</title>
+        <link rel="stylesheet" href="../../styles/tokens.css" />
+        <link rel="stylesheet" href="admin.css" />
+    </head>
+    <body>
+        <button class="admin-menu-button" id="adminMenuButton" type="button" aria-label="Mở menu quản trị" aria-controls="adminSidebar" aria-expanded="false">
+            <i class="fa-solid fa-bars" aria-hidden="true"></i>
+        </button>
+        <button class="admin-sidebar-overlay" id="adminSidebarOverlay" type="button" aria-label="Đóng menu quản trị"></button>
+        <div class="admin-layout">
+            <!-- Sidebar -->
+            <nav class="admin-sidebar" id="adminSidebar">
+                <div class="sidebar-header">
+                    <h2 class="sidebar-title">Admin Panel</h2>
+                </div>
+                <ul class="admin-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-tab-target="leaderboard-management" href="#leaderboard-management">
+                            <i class="fa-solid fa-trophy"></i>
+                            Bảng xếp hạng
+                        </a>
+                    </li>
+                </ul>
+                <div class="sidebar-footer">
+                    <button id="logoutBtn" class="admin-button danger-button sidebar-button">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        Đăng xuất
+                    </button>
+                </div>
+            </nav>
+
+            <main class="admin-main-content">
+                <div class="tab-content">
+                    <div class="tab-pane" id="leaderboard-management">
+                        <h1>Bảng xếp hạng và Cộng điểm</h1>
+                        <section class="weekly-countdown" aria-live="polite" hidden>
+                            <div>
+                                <span class="weekly-countdown-label">Thời gian đến tuần mới</span>
+                                <strong id="weeklyCountdown">Đang tính...</strong>
+                            </div>
+                            <span class="weekly-countdown-status" id="weeklyDeductionStatus">Chi phí tuần: 300 coin/quán</span>
+                        </section>
+                        <div class="leaderboard-grid">
+                            <div class="leaderboard-column">
+                                <h4>Cộng điểm thủ công</h4>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="form-field">
+                                            <label for="teamSelect" class="form-label">Chọn đội</label>
+                                            <select class="form-control" id="teamSelect">
+                                                <!-- Tên các đội sẽ được load ở đây -->
+                                            </select>
+                                        </div>
+                                        <div class="form-field">
+                                            <label for="pointsToAdd" class="form-label">Cộng coin</label>
+                                            <input type="number" class="form-control" id="pointsToAdd" placeholder="Nhập số coin" />
+                                        </div>
+                                        <button class="admin-button primary-button" id="addPointsBtn">Cộng coin</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="leaderboard-column">
+                                <h4>Bảng xếp hạng hiện tại</h4>
+                                <div id="leaderboard-admin">
+                                    <div class="lb-header" aria-hidden="true">
+                                        <span>Xếp hạng</span>
+                                        <span>Tên quán</span>
+                                        <span>Số coin</span>
+                                    </div>
+                                    <div class="lb-list">
+                                        <!-- Bảng xếp hạng sẽ được render ở đây -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <script src="https://kit.fontawesome.com/c4edd7a73c.js" crossorigin="anonymous"></script>
+        <script type="module" src="admin.js"></script>
+    </body>
+</html>
