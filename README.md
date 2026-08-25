@@ -18,6 +18,14 @@ Sau đó mở:
 Khi deploy Vercel, `vercel.json` ánh xạ thành:
 
 - Landing: `https://<project>.vercel.app/`
+- Nhóm A: `https://<project>.vercel.app/cafe/a`
+- Nhóm B: `https://<project>.vercel.app/cafe/b`
+- Nhóm C: `https://<project>.vercel.app/cafe/c`
+- Nhóm D: `https://<project>.vercel.app/cafe/d`
+- Nhóm E: `https://<project>.vercel.app/cafe/e`
+- Nhóm F: `https://<project>.vercel.app/cafe/f`
+- Nhóm G: `https://<project>.vercel.app/cafe/g`
+- Nhóm H: `https://<project>.vercel.app/cafe/h`
 - Admin: `https://<project>.vercel.app/admin`
 - Admin dashboard sau đăng nhập: `https://<project>.vercel.app/admin/dashboard`
 
@@ -58,7 +66,7 @@ Admin: `pages/admin/login.html` → `login.js` → Supabase Auth → `pages/admi
 
 `index.html` chỉ giữ điểm mount `#app`. Landing đọc công khai `teams` và `members` từ Supabase nhưng không yêu cầu đăng nhập và không liên kết sang Admin. Luồng xác thực chỉ tồn tại trong entry point riêng của Admin.
 
-Landing mặc định đọc nhóm `A`. Có thể chọn nhóm bằng query string, ví dụ `/?team=B`. Toàn bộ tên nhóm, số coin và danh sách nhân sự trên trang đều được hydrate từ cùng một lần tải dữ liệu. Khi bảng chưa có dòng, truy vấn thất bại hoặc cột mở rộng chưa có dữ liệu, các chỉ số liên quan giữ giá trị `0`.
+Landing mặc định đọc nhóm `A`. Trên Vercel, tám endpoint `/cafe/a` đến `/cafe/h` ánh xạ lần lượt tới `team_id` A–H. Query string cũ như `/?team=B` vẫn được hỗ trợ khi chạy local. Toàn bộ tên nhóm, số coin và danh sách nhân sự trên trang đều được hydrate từ cùng một lần tải dữ liệu. Khi bảng chưa có dòng, truy vấn thất bại hoặc cột mở rộng chưa có dữ liệu, các chỉ số liên quan giữ giá trị `0`.
 
 Menu mobile, thông báo, modal, toast và các nút điều hướng chính đã có tương tác demo.
 
@@ -66,9 +74,11 @@ Tuần vận hành được tính từ ngày mở bán `30/08/2026`: ngày này 
 
 ## Supabase
 
-`teams.points` là nguồn coin dùng chung giữa Landing và Admin. `members.team_id` là nguồn danh sách và số lượng nhân sự. Các cột `orders_completed`, `orders_pending`, `energy`, `xp`, `xp_target`, `weekly_income`, `weekly_expense` nằm trên cùng dòng `teams`; giá trị mặc định là `0`.
+`teams.points` là số dư coin dùng chung giữa Landing và Admin. `members.team_id` là nguồn danh sách và số lượng nhân sự. `orders` là nguồn danh sách đơn hàng; đơn có `team_id = null` hiển thị cho mọi nhóm, còn đơn có `team_id` chỉ hiển thị ở endpoint của nhóm tương ứng. `order_completions` liên kết thành viên với đơn đã hoàn thành để tính tỷ lệ trên tổng thành viên của tất cả quán. Bản demo có đơn `c-hello-world`, nguồn `#`, thưởng `240 coin`, deadline sau một ngày và tiến độ mẫu `20%`.
 
-Chạy `scripts/supabase/schema.sql` để bổ sung các cột MVP, quyền đọc công khai cho Landing và RPC `add_points_to_team`. Sau đó chạy `scripts/supabase/weekly_deduction.sql` để thêm kiểm tra quyền Admin cùng nghiệp vụ trừ coin đầu tuần.
+`coin_transactions` là sổ cái biến động coin. Nhật ký, tổng coin vào/ra, lợi nhuận tuần và các số liệu tài chính trên Landing đều được tính từ cùng bảng này. Khi chưa có giao dịch, danh sách trống và toàn bộ tổng số hiển thị `0 coin`. RPC `add_points_to_team` cập nhật `teams.points` và ghi nhật ký trong cùng một giao dịch SQL.
+
+Chạy `scripts/supabase/schema.sql` để bổ sung các bảng/cột MVP, đơn hàng mẫu, quyền đọc công khai cho Landing và RPC `add_points_to_team`. Sau đó chạy `scripts/supabase/weekly_deduction.sql` để thêm kiểm tra quyền Admin cùng nghiệp vụ trừ coin đầu tuần. Phí tuần cũng được ghi vào `coin_transactions` để không lệch số dư và nhật ký.
 
 Trang Admin tại `pages/admin/admin.html` đọc bảng `teams` và cập nhật coin qua RPC, không ghi trực tiếp vào bảng từ giao diện.
 

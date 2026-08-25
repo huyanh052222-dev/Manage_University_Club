@@ -48,26 +48,36 @@ export const cafeStats = [
 ];
 
 export const weeklyCoinSummary = {
-  totalIncome: 12850,
-  totalExpense: 7650,
-  totalProfit: 5200,
+  totalIncome: 0,
+  totalExpense: 0,
+  totalProfit: 0,
 };
 
-export const transactionLogs = [
-  { id: 1, type: "adjustment", title: "Admin cộng coin", group: "Creative Lab", amount: 500, date: "Hôm nay", time: "10:32", icon: "wallet" },
-  { id: 2, type: "income", title: "Hoàn thành Workshop AI", group: "Cafe Horizon", amount: 800, date: "Hôm nay", time: "09:15", icon: "trendingUp" },
-  { id: 3, type: "expense", title: "Chi phí nguyên liệu tuần", group: "Cafe Horizon", amount: -350, date: "Hôm qua", time: "16:40", icon: "arrowDown" },
-  { id: 4, type: "income", title: "Thưởng Hackathon 48h", group: "Nova Makers", amount: 1200, date: "Hôm qua", time: "14:10", icon: "trophy" },
-  { id: 5, type: "expense", title: "Chi phí sự kiện cộng đồng", group: "Green Corner", amount: -300, date: "19/08", time: "11:25", icon: "receipt" },
-  { id: 6, type: "adjustment", title: "Admin trừ coin", group: "Cafe Horizon", amount: -200, date: "19/08", time: "08:45", icon: "wallet" },
-];
+export const transactionLogs = [];
 
-export const hotTasks = [
-  { id: "ai-workshop", title: "[Workshop AI] Xây dựng mô hình ML", description: "Tổ chức workshop cho sinh viên toàn trường", reward: 800, due: "25/08", icon: "calendarCheck", tone: "purple" },
-  { id: "hackathon", title: "[Hackathon 48h] Challenge", description: "Tham gia cuộc thi lập trình hackathon", reward: 1200, due: "28/08", icon: "target", tone: "blue" },
-  { id: "monthly-report", title: "[Báo cáo tháng 8]", description: "Tổng kết hoạt động và tài chính tháng", reward: 300, due: "30/08", icon: "fileText", tone: "gold" },
-  { id: "social-content", title: "[Content Social] Tuần 19", description: "Đăng bài truyền thông cho quán", reward: 200, due: "24/08", icon: "heart", tone: "coral" },
-];
+export const createDemoOrder = () => {
+  const deadline = new Date(Date.now() + (24 * 60 * 60 * 1000));
+
+  return {
+    id: "c-hello-world",
+    title: "Bài tập C cơ bản: Hello World",
+    description: "Viết chương trình C đầu tiên sử dụng printf để in lời chào.",
+    requirements: "Tạo tệp main.c, sử dụng hàm printf và in chính xác dòng: Hello, World!",
+    sourceUrl: "#",
+    reward: 240,
+    deadline: deadline.toISOString(),
+    status: "available",
+    completionPercent: 20,
+    completedMembers: 0,
+    totalMembers: 0,
+    progressMode: "demo",
+    icon: "code",
+    tone: "purple",
+    isDemo: true,
+  };
+};
+
+export const orders = [createDemoOrder()];
 
 export const resources = [
   { id: "people", label: "Nhân lực", value: 7, total: 10, unit: "", icon: "user", color: "#5d8cff" },

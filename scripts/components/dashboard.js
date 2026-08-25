@@ -1,8 +1,8 @@
 import { renderCafeHero } from "./cafeHero.js";
 import { renderCafeStats } from "./cafeStats.js";
 import { renderMemberOverview } from "./memberOverview.js";
-import { renderHotTasks } from "./hotTasks.js";
-import { renderCafeTip } from "./cafeTip.js";
+import { renderOrders } from "./orders.js?v=order-progress";
+import { renderCafeTip } from "./cafeTip.js?v=orders";
 import { renderTransactionLog } from "./transactionLog.js";
 
 export const renderDashboard = () => `
@@ -11,7 +11,7 @@ export const renderDashboard = () => `
     ${renderCafeStats()}
     <div class="cafe-detail-grid">
       ${renderMemberOverview()}
-      ${renderHotTasks()}
+      ${renderOrders()}
       ${renderTransactionLog()}
     </div>
     ${renderCafeTip()}

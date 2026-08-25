@@ -42,6 +42,7 @@ const paths = {
   barChart: '<path d="M3 3v18h18M7 16v-4M12 16V7M17 16v-7"/>',
   leaf: '<path d="M21 3C12 3 5 7 5 14c0 4 3 7 7 7 7 0 9-9 9-18zM5 21c2-6 7-10 13-13"/>',
   arrowDown: '<path d="M12 3v15M6 12l6 6 6-6M5 22h14"/>',
+  code: '<path d="m8 9-4 3 4 3M16 9l4 3-4 3M14 5l-4 14"/>',
 };
 
 export const icon = (name, className = "") => {

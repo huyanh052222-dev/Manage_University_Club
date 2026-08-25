@@ -2,6 +2,38 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
+      "source": "/cafe/a",
+      "destination": "/index.html?team=A"
+    },
+    {
+      "source": "/cafe/b",
+      "destination": "/index.html?team=B"
+    },
+    {
+      "source": "/cafe/c",
+      "destination": "/index.html?team=C"
+    },
+    {
+      "source": "/cafe/d",
+      "destination": "/index.html?team=D"
+    },
+    {
+      "source": "/cafe/e",
+      "destination": "/index.html?team=E"
+    },
+    {
+      "source": "/cafe/f",
+      "destination": "/index.html?team=F"
+    },
+    {
+      "source": "/cafe/g",
+      "destination": "/index.html?team=G"
+    },
+    {
+      "source": "/cafe/h",
+      "destination": "/index.html?team=H"
+    },
+    {
       "source": "/admin",
       "destination": "/pages/admin/login.html"
     },

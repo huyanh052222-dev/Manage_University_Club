@@ -3,6 +3,11 @@ import { getCafeWeekContext } from "../utils/cafeWeek.js";
 import { formatNumber } from "../utils/format.js";
 import { icon } from "./icons.js";
 
+const formatSignedCoin = (amount) => {
+  if (amount === 0) return "0 coin";
+  return `${amount > 0 ? "+" : "−"}${formatNumber(Math.abs(amount))} coin`;
+};
+
 export const renderTopbar = () => {
   const weekContext = getCafeWeekContext();
   return `
@@ -21,9 +26,9 @@ export const renderTopbar = () => {
 
   <div class="top-finance" aria-label="Tổng hợp tài chính tuần">
     <div class="top-finance-item"><span>${icon("wallet")}</span><div><small>Tiền mặt</small><strong>${formatNumber(finance.currentFund)} coin</strong></div></div>
-    <div class="top-finance-item positive"><span>${icon("trendingUp")}</span><div><small>Doanh thu tuần</small><strong>+${formatNumber(finance.income)} coin</strong></div></div>
-    <div class="top-finance-item negative"><span>${icon("arrowDown")}</span><div><small>Chi phí tuần</small><strong>-${formatNumber(finance.expense)} coin</strong></div></div>
-    <div class="top-finance-item profit"><span>${icon("coffee")}</span><div><small>Lợi nhuận tuần</small><strong>+${formatNumber(finance.weeklyFlow)} coin</strong></div></div>
+    <div class="top-finance-item positive"><span>${icon("trendingUp")}</span><div><small>Doanh thu tuần</small><strong>${formatSignedCoin(finance.income)}</strong></div></div>
+    <div class="top-finance-item negative"><span>${icon("arrowDown")}</span><div><small>Chi phí tuần</small><strong>${formatSignedCoin(-finance.expense)}</strong></div></div>
+    <div class="top-finance-item profit"><span>${icon("coffee")}</span><div><small>Lợi nhuận tuần</small><strong>${formatSignedCoin(finance.weeklyFlow)}</strong></div></div>
   </div>
 
   <div class="topbar-actions">

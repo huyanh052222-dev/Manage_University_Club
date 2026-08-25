@@ -42,6 +42,8 @@ as $$
 declare
     inserted boolean;
     affected_rows integer;
+    team_record record;
+    actual_deduction integer;
 begin
     if auth.uid() is null then
         raise exception 'not authenticated';
@@ -63,8 +65,19 @@ begin
     inserted := affected_rows > 0;
 
     if inserted then
-        update public.teams
-        set points = greatest(coalesce(points, 0) - deduction_amount, 0);
+        for team_record in select id, coalesce(points, 0) as points from public.teams
+        loop
+            actual_deduction := least(team_record.points, deduction_amount);
+
+            update public.teams
+            set points = team_record.points - actual_deduction
+            where id = team_record.id;
+
+            if actual_deduction > 0 then
+                insert into public.coin_transactions (team_id, type, title, amount)
+                values (team_record.id, 'expense', 'Phí vận hành tuần', -actual_deduction);
+            end if;
+        end loop;
     end if;
 
     return inserted;

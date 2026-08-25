@@ -64,6 +64,10 @@
   .transaction-log-list::before { left:27px; }
   .transaction-summary div { padding-inline:8px; }
   .transaction-summary strong { font-size:8px; }
+  .order-row { grid-template-columns:34px minmax(0,1fr); }
+  .order-row-meta { grid-column:2; margin-top:-4px; text-align:left; }
+  .order-detail-grid { grid-template-columns:1fr; }
+  .order-detail-actions { grid-template-columns:1fr; }
   .cafe-tip { justify-content:flex-start; text-align:left; }
   .cafe-tip>i { display:none; }
 }
