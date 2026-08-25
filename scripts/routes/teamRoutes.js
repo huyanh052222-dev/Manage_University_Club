@@ -16,21 +16,32 @@ const normalizeTeamId = (value) => {
   return TEAM_IDS.includes(teamId) ? teamId : "";
 };
 
-export const getTeamIdFromLocation = ({ search = "", pathname = "", fallback = "A" } = {}) => {
-  let decodedPathname = String(pathname);
+const decodePathname = (pathname) => {
   try {
-    decodedPathname = decodeURIComponent(decodedPathname);
+    return decodeURIComponent(String(pathname || "/"));
   } catch {
-    // Giữ pathname gốc nếu chuỗi percent-encoding không hợp lệ.
+    return String(pathname || "/");
   }
+};
 
+const getTeamIdFromPathname = (pathname) => {
+  const decodedPathname = decodePathname(pathname);
   const pathMatch = decodedPathname.match(/^\/cafe\/([^/]+)\/?$/);
-  const pathTeamId = Object.entries(TEAM_ROUTE_TOKENS)
-    .find(([, token]) => token === pathMatch?.[1])?.[0];
-  if (pathTeamId) return pathTeamId;
+  return Object.entries(TEAM_ROUTE_TOKENS)
+    .find(([, token]) => token === pathMatch?.[1])?.[0] || "";
+};
 
-  const queryTeamId = normalizeTeamId(new URLSearchParams(search).get("team"));
-  if (queryTeamId) return queryTeamId;
+export const isSupportedLandingPath = (pathname = "/") => {
+  const decodedPathname = decodePathname(pathname);
+  const isIndexPath = decodedPathname === "/"
+    || decodedPathname === "/index.html"
+    || decodedPathname.endsWith("/index.html");
+  return isIndexPath || Boolean(getTeamIdFromPathname(decodedPathname));
+};
+
+export const getTeamIdFromLocation = ({ pathname = "", fallback = "A" } = {}) => {
+  const pathTeamId = getTeamIdFromPathname(pathname);
+  if (pathTeamId) return pathTeamId;
 
   return normalizeTeamId(fallback) || "A";
 };

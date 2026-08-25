@@ -44,7 +44,6 @@ const getInitials = (name) => String(name ?? "")
 const getTeamId = () => {
   const defaultTeamId = document.querySelector("#app")?.dataset.teamId || "A";
   return getTeamIdFromLocation({
-    search: window.location.search,
     pathname: window.location.pathname,
     fallback: defaultTeamId,
   });

@@ -14,6 +14,7 @@ Sau đó mở:
 
 - Landing công khai: `http://localhost:4173/`
 - Admin đăng nhập riêng: `http://localhost:4173/pages/admin/login.html`
+- Admin alias khi dùng static server: `http://localhost:4173/admin/login/`
 
 Khi deploy Vercel, `vercel.json` ánh xạ thành:
 
@@ -27,6 +28,7 @@ Khi deploy Vercel, `vercel.json` ánh xạ thành:
 - Nhóm G: `https://<project>.vercel.app/cafe/zzhbSdhdaSkMZkasdojASDV00640`
 - Nhóm H: `https://<project>.vercel.app/cafe/zzhaSdhdaskNZkbsdojBSDU00276`
 - Admin: `https://<project>.vercel.app/admin`
+- Admin login (alias): `https://<project>.vercel.app/admin/login`
 - Admin dashboard sau đăng nhập: `https://<project>.vercel.app/admin/dashboard`
 
 ## Cấu trúc
@@ -66,7 +68,7 @@ Admin: `pages/admin/login.html` → `login.js` → Supabase Auth → `pages/admi
 
 `index.html` chỉ giữ điểm mount `#app`. Landing đọc công khai `teams` và `members` từ Supabase nhưng không yêu cầu đăng nhập và không liên kết sang Admin. Luồng xác thực chỉ tồn tại trong entry point riêng của Admin.
 
-Landing mặc định đọc nhóm `A`. Trên Vercel, tám endpoint dùng token opaque, phân biệt hoa–thường và ánh xạ nội bộ tới `team_id` A–H. Bộ phân giải đường dẫn chấp nhận cả token thường lẫn token được percent-encode đúng chuẩn. Query string cũ như `/?team=B` vẫn được hỗ trợ khi chạy local. Toàn bộ tên nhóm, số coin và danh sách nhân sự trên trang đều được hydrate từ cùng một lần tải dữ liệu. Khi bảng chưa có dòng, truy vấn thất bại hoặc cột mở rộng chưa có dữ liệu, các chỉ số liên quan giữ giá trị `0`.
+Landing mặc định đọc nhóm `A`. Trên Vercel, tám endpoint dùng token opaque, phân biệt hoa–thường và ánh xạ nội bộ tới `team_id` A–H. Bộ phân giải đường dẫn chấp nhận token thường hoặc token được percent-encode đúng chuẩn. Các alias cũ `/a`, `/b`… và query `?team=A`… không còn được chấp nhận; đường dẫn không hợp lệ sẽ hiện trang 404. Toàn bộ tên nhóm, số coin và danh sách nhân sự trên trang đều được hydrate từ cùng một lần tải dữ liệu. Khi bảng chưa có dòng, truy vấn thất bại hoặc cột mở rộng chưa có dữ liệu, các chỉ số liên quan giữ giá trị `0`.
 
 Menu mobile, thông báo, modal, toast và các nút điều hướng chính đã có tương tác demo.
 

@@ -278,6 +278,12 @@
 .modal-body p { margin:0 0 11px; }
 .modal-list { display:grid; gap:7px; padding:0; margin:0; list-style:none; }
 .modal-list li { padding:10px 11px; border:1px solid var(--border); border-radius:8px; background:var(--surface-2); }
+.route-not-found { display:grid; width:min(520px,calc(100% - 32px)); min-height:100vh; margin:auto; place-content:center; justify-items:center; gap:12px; color:var(--text-soft); text-align:center; }
+.route-not-found>span { color:var(--gold); font-family:"Cormorant Garamond",serif; font-size:64px; font-weight:700; line-height:1; }
+.route-not-found h1,.route-not-found p { margin:0; }
+.route-not-found h1 { color:var(--text); font-size:26px; }
+.route-not-found p { max-width:460px; color:var(--muted); line-height:1.7; }
+.route-not-found a { display:inline-flex; min-height:42px; align-items:center; margin-top:8px; padding:0 18px; border-radius:9px; background:var(--brown); color:#fff; font-weight:700; text-decoration:none; }
 .coin-admin-intro { display:flex; align-items:flex-start; gap:10px; padding:11px 12px; border:1px solid #ead8c3; border-radius:10px; background:#fbf3e7; }
 .coin-admin-intro>span { display:grid; width:30px; height:30px; flex:0 0 auto; place-items:center; border-radius:8px; background:#f0dfc9; color:var(--brown); }
 .coin-admin-intro .icon { width:16px; height:16px; }
