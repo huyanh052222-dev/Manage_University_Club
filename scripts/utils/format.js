@@ -8,4 +8,9 @@ export const getActivityColor = (activity) => {
   return "var(--red)";
 };
 
-export const percentage = (value, total) => Math.round((value / total) * 100);
+export const percentage = (value, total) => {
+  const resolvedValue = Number(value);
+  const resolvedTotal = Number(total);
+  if (!Number.isFinite(resolvedValue) || !Number.isFinite(resolvedTotal) || resolvedTotal <= 0) return 0;
+  return Math.round((resolvedValue / resolvedTotal) * 100);
+};

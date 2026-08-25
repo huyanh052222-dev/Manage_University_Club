@@ -1,17 +1,13 @@
 import { renderDashboard } from "./components/dashboard.js";
-import { renderCoinManagement } from "./components/coinManagement.js";
-import { renderLoginPage } from "./components/loginPage.js?v=merge";
 import { renderMemberDirectory, renderMemberList } from "./components/memberDirectory.js";
 import { renderSidebar } from "./components/sidebar.js";
-import { renderTopbar } from "./components/topbar.js?v=student";
-import { demoNotifications } from "./data/dashboard.js";
-import { adjustGroupCoins, getGroup, getGroups } from "./services/coinLedger.js";
-import { isAdminAuthenticated, loginAdmin, logoutAdmin } from "./services/authService.js";
+import { renderTopbar } from "./components/topbar.js?v=mvp-week";
+import { club, demoNotifications } from "./data/dashboard.js";
+import { loadDashboardData } from "./services/dashboardData.js";
 import { closeModal, showModal, showToast } from "./ui/feedback.js";
+import { getCafeWeekContext } from "./utils/cafeWeek.js";
 
 const elements = {
-  authView: document.querySelector("#auth-view"),
-  appShell: document.querySelector("#app-shell"),
   sidebar: document.querySelector("#sidebar"),
   topbar: document.querySelector("#topbar"),
   dashboard: document.querySelector("#dashboard"),
@@ -25,33 +21,6 @@ const renderApp = () => {
 
 const closeSidebar = () => document.body.classList.remove("sidebar-open");
 
-const showLoginPage = () => {
-  closeSidebar();
-  closeModal();
-  elements.appShell.hidden = true;
-  elements.authView.hidden = false;
-  elements.authView.innerHTML = renderLoginPage();
-  document.title = "Đăng nhập Admin | Cafe Horizon";
-
-  if (window.location.hash !== "#login") {
-    window.history.replaceState({ view: "login" }, "", "#login");
-  }
-
-  window.requestAnimationFrame(() => document.querySelector("[data-login-password]")?.focus());
-};
-
-const showAdminApp = () => {
-  elements.authView.hidden = true;
-  elements.authView.replaceChildren();
-  elements.appShell.hidden = false;
-
-  if (!window.location.hash || window.location.hash === "#login") {
-    window.history.replaceState({ view: "overview" }, "", "#overview");
-  }
-
-  renderApp();
-};
-
 const updateActiveNavigation = (target) => {
   document.querySelectorAll("[data-nav-id]").forEach((item) => {
     item.classList.toggle("active", item === target);
@@ -61,20 +30,21 @@ const updateActiveNavigation = (target) => {
 const setPageHeading = (title, subtitle) => {
   document.querySelector(".topbar-title").textContent = title;
   document.querySelector(".topbar-date").textContent = subtitle;
-  document.title = `${title} | Cafe Horizon`;
+  document.title = `${title} | ${club.name}`;
 };
 
 const renderOverviewView = () => {
   elements.dashboard.innerHTML = renderDashboard();
-  setPageHeading("Tuần 18", "Ngày 3 / 7 · Mùa xuân 2024");
+  const weekContext = getCafeWeekContext();
+  setPageHeading(weekContext.title, weekContext.subtitle);
   const requestedSection = window.location.hash.slice(1);
-  const activeSection = ["overview", "missions"].includes(requestedSection) ? requestedSection : "overview";
+  const activeSection = requestedSection === "overview" ? requestedSection : "overview";
   updateActiveNavigation(document.querySelector(`[data-nav-id="${activeSection}"]`));
 };
 
 const renderPersonnelView = () => {
   elements.dashboard.innerHTML = renderMemberDirectory();
-  setPageHeading("Nhân sự", "Quản lý chi tiết thành viên Cafe Horizon");
+  setPageHeading("Nhân sự", `Quản lý chi tiết thành viên ${club.name}`);
   updateActiveNavigation(document.querySelector('[data-nav-id="personnel"]'));
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
@@ -119,32 +89,6 @@ const refreshPersonnelDirectory = () => {
   if (memberLabel) memberLabel.textContent = String(memberCount);
 };
 
-const openCoinManagement = () => {
-  showModal({ title: "Điều chỉnh coin của nhóm", content: renderCoinManagement(getGroups()) });
-};
-
-const refreshSelectedGroupBalance = (groupId) => {
-  const group = getGroup(groupId);
-  const balance = document.querySelector("[data-coin-balance]");
-  if (group && balance) balance.textContent = `${group.balance.toLocaleString("vi-VN")} coin`;
-};
-
-const handleLoginSubmit = async (form) => {
-  const formData = new FormData(form);
-  const result = await loginAdmin({
-    username: formData.get("username"),
-    password: formData.get("password"),
-  });
-
-  if (!result.ok) {
-    form.querySelector("[data-login-error]").textContent = result.message;
-    form.querySelector("[data-login-password]")?.focus();
-    return;
-  }
-
-  window.location.href = "./pages/admin/admin.html";
-};
-
 const handleAction = (actionElement) => {
   const action = actionElement.dataset.action;
   if (!action) return;
@@ -161,21 +105,6 @@ const handleAction = (actionElement) => {
 
   if (action === "close-modal") {
     closeModal();
-    return;
-  }
-
-  if (action === "toggle-password") {
-    const passwordInput = document.querySelector("[data-login-password]");
-    if (!passwordInput) return;
-    const shouldShow = passwordInput.type === "password";
-    passwordInput.type = shouldShow ? "text" : "password";
-    actionElement.setAttribute("aria-label", shouldShow ? "Ẩn mật khẩu" : "Hiện mật khẩu");
-    passwordInput.focus();
-    return;
-  }
-
-  if (action === "logout") {
-    void logoutAdmin().finally(showLoginPage);
     return;
   }
 
@@ -205,11 +134,6 @@ const handleAction = (actionElement) => {
     return;
   }
 
-  if (action === "manage-group-coins") {
-    openCoinManagement();
-    return;
-  }
-
   showToast(actionMessages[action] ?? "Tính năng đang được minh họa trong bản demo.");
 };
 
@@ -219,17 +143,18 @@ document.addEventListener("click", (event) => {
     updateActiveNavigation(navItem);
     closeSidebar();
     const targetHash = navItem.getAttribute("href");
-    if (targetHash === "#finance") {
-      event.preventDefault();
-      openCoinManagement();
-      return;
-    }
     if (targetHash === "#personnel") {
       event.preventDefault();
       navigateToPersonnel();
       return;
     }
-    const dashboardTargets = new Set(["#overview", "#missions"]);
+    if (["#events", "#ranking"].includes(targetHash)) {
+      event.preventDefault();
+      updateActiveNavigation(document.querySelector('[data-nav-id="overview"]'));
+      showToast(`${navItem.textContent.trim()} đang được phát triển.`);
+      return;
+    }
+    const dashboardTargets = new Set(["#overview"]);
     if (document.querySelector(".management-view") && dashboardTargets.has(targetHash)) {
       event.preventDefault();
       navigateToOverview(targetHash);
@@ -239,6 +164,12 @@ document.addEventListener("click", (event) => {
       event.preventDefault();
       showToast(`Mục “${navItem.textContent.trim()}” đang được phát triển.`);
     }
+    return;
+  }
+
+  const developmentFeature = event.target.closest("[data-development-feature]");
+  if (developmentFeature) {
+    showToast(developmentFeature.dataset.developmentFeature || "Tính năng đang được phát triển.");
     return;
   }
 
@@ -252,57 +183,27 @@ document.addEventListener("input", (event) => {
   if (event.target.matches("[data-member-search]")) refreshPersonnelDirectory();
 });
 
-document.addEventListener("change", (event) => {
-  if (event.target.matches("[data-coin-group]")) refreshSelectedGroupBalance(event.target.value);
-});
-
-document.addEventListener("submit", async (event) => {
-  if (event.target.matches("[data-login-form]")) {
-    event.preventDefault();
-    await handleLoginSubmit(event.target);
-    return;
-  }
-
-  if (!event.target.matches("[data-coin-form]")) return;
-  event.preventDefault();
-
-  const form = event.target;
-  const formData = new FormData(form);
-  const result = adjustGroupCoins({
-    groupId: formData.get("groupId"),
-    direction: formData.get("direction"),
-    amount: Number(formData.get("amount")),
-  });
-
-  const error = form.querySelector("[data-coin-error]");
-  if (!result.ok) {
-    error.textContent = result.message;
-    return;
-  }
-
-  elements.topbar.innerHTML = renderTopbar();
-  closeModal();
-  const verb = result.direction === "add" ? "cộng" : "trừ";
-  showToast(`Đã ${verb} ${result.amount.toLocaleString("vi-VN")} coin cho ${result.group.name}. Số dư mới: ${result.group.balance.toLocaleString("vi-VN")} coin.`);
-});
-
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     closeSidebar();
     closeModal();
   }
+  if (["Enter", " "].includes(event.key) && event.target.matches("[data-development-feature]")) {
+    event.preventDefault();
+    showToast(event.target.dataset.developmentFeature || "Tính năng đang được phát triển.");
+  }
 });
 
 window.addEventListener("popstate", () => {
-  if (!isAdminAuthenticated()) {
-    showLoginPage();
-    return;
-  }
   if (window.location.hash === "#login") {
     window.history.replaceState({ view: "overview" }, "", "#overview");
   }
   renderCurrentView();
 });
 
-if (isAdminAuthenticated()) showAdminApp();
-else showLoginPage();
+if (!window.location.hash || window.location.hash === "#login") {
+  window.history.replaceState({ view: "overview" }, "", "#overview");
+}
+
+await loadDashboardData();
+renderApp();

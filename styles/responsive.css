@@ -53,9 +53,9 @@
   .topbar-title { font-size:15px; }
   .cafe-hero-photo { min-height:205px; }
   .cafe-score-grid { grid-template-columns:1fr 1fr; gap:14px 0; }
-  .cafe-score-grid>div { padding-inline:12px; }
-  .cafe-score-grid>div:nth-child(2) { border-right:0; }
-  .cafe-score-grid>div:nth-child(3) { grid-column:1/-1; padding:12px 0 0; border-top:1px solid var(--border); }
+  .cafe-score-item { padding-inline:12px; }
+  .cafe-score-item:nth-child(2) { border-right:0; }
+  .cafe-score-item:nth-child(3) { grid-column:1/-1; padding:12px 0 0; border-top:1px solid var(--border); }
   .cafe-stats { grid-template-columns:1fr; gap:10px; }
   .cafe-stat-card { min-height:98px; }
   .cafe-panel { min-height:auto; }

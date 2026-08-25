@@ -1,9 +1,9 @@
 import { icon } from "./icons.js?v=auth";
 
-export const renderLoginPage = () => `
+export const renderLoginPage = ({ assetBase = "." } = {}) => `
   <main class="auth-landing" aria-labelledby="login-title">
     <section class="auth-visual" aria-label="Giới thiệu hệ thống quản trị Cafe Horizon">
-      <img src="./assets/images/cafe-horizon-hero.jpg" alt="Không gian Cafe Horizon" />
+      <img src="${assetBase}/assets/images/cafe-horizon-hero.jpg" alt="Không gian Cafe Horizon" />
       <div class="auth-visual-overlay"></div>
       <header class="auth-brand">
         <span>${icon("coffee")}</span>

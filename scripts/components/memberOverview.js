@@ -1,4 +1,4 @@
-import { members } from "../data/dashboard.js";
+import { club, members } from "../data/dashboard.js";
 import { icon } from "./icons.js";
 
 export const renderMemberOverview = () => `
@@ -7,7 +7,7 @@ export const renderMemberOverview = () => `
       <span class="section-icon gold">${icon("users")}</span>
       <div>
         <h2 id="member-overview-title">Quản lý thành viên</h2>
-        <p>${members.length} thành viên của Cafe Horizon</p>
+        <p>${members.length} thành viên của ${club.name}</p>
       </div>
     </header>
     <div class="member-overview-list">

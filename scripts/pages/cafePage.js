@@ -1,7 +1,5 @@
 export const renderCafePage = () => `
-  <div class="auth-view" id="auth-view"></div>
-
-  <div class="app-shell" id="app-shell" data-page="cafe-horizon" hidden>
+  <div class="app-shell" id="app-shell" data-page="cafe-horizon">
     <aside class="sidebar" id="sidebar" aria-label="Điều hướng chính"></aside>
     <button class="sidebar-overlay" type="button" data-action="close-sidebar" aria-label="Đóng thanh điều hướng"></button>
 

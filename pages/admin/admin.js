@@ -1,9 +1,10 @@
 import { supabase } from "../../scripts/supabase/supabase.js";
 import { isAdminAuthenticated, logoutAdmin } from "../../scripts/services/authService.js";
+import { adminLoginUrl } from "./adminRoutes.js";
 
 document.addEventListener("DOMContentLoaded", async function () {
     if (!isAdminAuthenticated()) {
-        window.location.href = "../../index.html#login";
+        window.location.replace(adminLoginUrl);
         return;
     }
 
@@ -113,8 +114,8 @@ document.addEventListener("DOMContentLoaded", async function () {
             logoutBtn.disabled = true;
             logoutBtn.innerHTML = `<span class="button-spinner" role="status" aria-hidden="true"></span> Đang xuất...`;
 
-            logoutAdmin();
-            window.location.href = "../../index.html#login";
+            await logoutAdmin();
+            window.location.replace(adminLoginUrl);
         });
     }
 

@@ -1,4 +1,4 @@
-import { members } from "../data/dashboard.js";
+import { club, members } from "../data/dashboard.js";
 import { icon } from "./icons.js";
 
 const normalized = (value) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -30,7 +30,7 @@ export const renderMemberDirectory = () => `
       <div>
         <button class="back-link" type="button" data-action="back-overview">${icon("arrowLeft")} Quay lại tổng quan</button>
         <h2 id="management-title">Quản lý thành viên</h2>
-        <p>Danh sách chi tiết thành viên của Cafe Horizon.</p>
+        <p>Danh sách chi tiết thành viên của ${club.name}.</p>
       </div>
     </header>
 
