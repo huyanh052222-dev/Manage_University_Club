@@ -66,9 +66,11 @@ Tuần vận hành được tính từ ngày mở bán `30/08/2026`: ngày này 
 
 ## Supabase
 
-`teams.points` là nguồn coin dùng chung giữa Landing và Admin. `members.team_id` là nguồn danh sách và số lượng nhân sự. Các cột `orders_completed`, `orders_pending`, `energy`, `xp`, `xp_target`, `weekly_income`, `weekly_expense` nằm trên cùng dòng `teams`; giá trị mặc định là `0`.
+`teams.points` là số dư coin dùng chung giữa Landing và Admin. `members.team_id` là nguồn danh sách và số lượng nhân sự. `orders` là nguồn danh sách đơn hàng; đơn có `team_id = null` hiển thị cho mọi nhóm, còn đơn có `team_id` chỉ hiển thị ở endpoint của nhóm tương ứng. Bản demo có đơn `c-hello-world`, nguồn `#`, thưởng `240 coin` và deadline sau một ngày.
 
-Chạy `scripts/supabase/schema.sql` để bổ sung các cột MVP, quyền đọc công khai cho Landing và RPC `add_points_to_team`. Sau đó chạy `scripts/supabase/weekly_deduction.sql` để thêm kiểm tra quyền Admin cùng nghiệp vụ trừ coin đầu tuần.
+`coin_transactions` là sổ cái biến động coin. Nhật ký, tổng coin vào/ra, lợi nhuận tuần và các số liệu tài chính trên Landing đều được tính từ cùng bảng này. Khi chưa có giao dịch, danh sách trống và toàn bộ tổng số hiển thị `0 coin`. RPC `add_points_to_team` cập nhật `teams.points` và ghi nhật ký trong cùng một giao dịch SQL.
+
+Chạy `scripts/supabase/schema.sql` để bổ sung các bảng/cột MVP, đơn hàng mẫu, quyền đọc công khai cho Landing và RPC `add_points_to_team`. Sau đó chạy `scripts/supabase/weekly_deduction.sql` để thêm kiểm tra quyền Admin cùng nghiệp vụ trừ coin đầu tuần. Phí tuần cũng được ghi vào `coin_transactions` để không lệch số dư và nhật ký.
 
 Trang Admin tại `pages/admin/admin.html` đọc bảng `teams` và cập nhật coin qua RPC, không ghi trực tiếp vào bảng từ giao diện.
 

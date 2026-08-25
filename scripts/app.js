@@ -1,11 +1,13 @@
-import { renderDashboard } from "./components/dashboard.js";
+import { renderDashboard } from "./components/dashboard.js?v=orders";
 import { renderMemberDirectory, renderMemberList } from "./components/memberDirectory.js";
+import { renderOrderDetail } from "./components/orders.js";
 import { renderSidebar } from "./components/sidebar.js";
-import { renderTopbar } from "./components/topbar.js?v=mvp-week";
-import { club, demoNotifications } from "./data/dashboard.js";
+import { renderTopbar } from "./components/topbar.js?v=orders";
+import { club, demoNotifications, orders } from "./data/dashboard.js";
 import { loadDashboardData } from "./services/dashboardData.js";
 import { closeModal, showModal, showToast } from "./ui/feedback.js";
 import { getCafeWeekContext } from "./utils/cafeWeek.js";
+import { escapeHtml } from "./utils/format.js";
 
 const elements = {
   sidebar: document.querySelector("#sidebar"),
@@ -76,7 +78,6 @@ const actionMessages = {
   "edit-club": "Tính năng chỉnh sửa thông tin nhóm đang ở chế độ demo.",
   transactions: "Đã mở khu vực lịch sử giao dịch (demo).",
   "manage-resources": "Khu vực phân bổ tài nguyên sẽ kết nối API ở bước tiếp theo.",
-  "all-tasks": "Bạn đang xem toàn bộ nhiệm vụ hiện có.",
 };
 
 const refreshPersonnelDirectory = () => {
@@ -121,6 +122,29 @@ const handleAction = (actionElement) => {
       title: "Quy tắc vận hành Cafe Horizon",
       content: "<p>Nhóm cần cân bằng nhân sự, đơn hàng, năng lượng và danh tiếng.</p><p>Hoàn thành nhiệm vụ để nhận coin, kinh nghiệm và cải thiện vị trí xếp hạng.</p>",
     });
+    return;
+  }
+
+  if (action === "view-order") {
+    const order = orders.find((item) => String(item.id) === actionElement.dataset.orderId);
+    if (!order) {
+      showToast("Không tìm thấy đơn hàng này.");
+      return;
+    }
+    showModal({
+      title: escapeHtml(order.title),
+      content: renderOrderDetail(order),
+    });
+    return;
+  }
+
+  if (action === "order-source") {
+    showToast("Nguồn đơn hàng đang dùng liên kết # trong bản demo.");
+    return;
+  }
+
+  if (action === "all-orders") {
+    showToast(`Hiện có ${orders.length} đơn hàng khả dụng.`);
     return;
   }
 
@@ -175,6 +199,7 @@ document.addEventListener("click", (event) => {
 
   const actionElement = event.target.closest("[data-action]");
   if (!actionElement) return;
+  if (actionElement.matches("a")) event.preventDefault();
   if (actionElement.classList.contains("modal-backdrop") && event.target !== actionElement) return;
   handleAction(actionElement);
 });

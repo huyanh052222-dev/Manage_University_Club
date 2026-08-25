@@ -2,6 +2,13 @@ const numberFormatter = new Intl.NumberFormat("vi-VN");
 
 export const formatNumber = (value) => numberFormatter.format(value);
 
+export const escapeHtml = (value) => String(value ?? "")
+  .replaceAll("&", "&amp;")
+  .replaceAll("<", "&lt;")
+  .replaceAll(">", "&gt;")
+  .replaceAll('"', "&quot;")
+  .replaceAll("'", "&#039;");
+
 export const getActivityColor = (activity) => {
   if (activity >= 90) return "var(--green)";
   if (activity >= 70) return "var(--orange)";
