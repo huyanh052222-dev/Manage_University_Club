@@ -1,5 +1,6 @@
 import { supabase } from "../../scripts/supabase/supabase.js";
 import { isAdminAuthenticated, logoutAdmin } from "../../scripts/services/authService.js";
+import { getCafeWeekKey, getNextCafeWeekStart } from "../../scripts/utils/cafeWeek.js?v=cafe-cycle";
 import { adminLoginUrl } from "./adminRoutes.js";
 
 document.addEventListener("DOMContentLoaded", async function () {
@@ -122,28 +123,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     const weeklyCountdown = document.getElementById("weeklyCountdown");
     const weeklyDeductionStatus = document.getElementById("weeklyDeductionStatus");
     const weeklyCountdownPanel = document.querySelector(".weekly-countdown");
-    const weeklyCost = 300;
+    const weeklyBaseCost = 200;
     const countdownVisibilityWindow = 2 * 24 * 60 * 60 * 1000;
     let countdownTimer;
-    let currentWeekKey = getWeekKey(new Date());
-    let countdownTarget = getNextMonday();
-
-    function getNextMonday() {
-        const nextMonday = new Date();
-        const day = nextMonday.getDay();
-        const daysUntilMonday = day === 0 ? 1 : 8 - day;
-        nextMonday.setDate(nextMonday.getDate() + daysUntilMonday);
-        nextMonday.setHours(0, 0, 0, 0);
-        return nextMonday;
-    }
-
-    function getWeekKey(date) {
-        const monday = new Date(date);
-        const day = monday.getDay();
-        monday.setDate(monday.getDate() - (day === 0 ? 6 : day - 1));
-        monday.setHours(0, 0, 0, 0);
-        return monday.toISOString().slice(0, 10);
-    }
+    let currentWeekKey = getCafeWeekKey();
+    let countdownTarget = getNextCafeWeekStart();
 
     function updateCountdown() {
         const remaining = countdownTarget.getTime() - Date.now();
@@ -167,25 +151,43 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     async function deductWeeklyCoins() {
-        const weekKey = getWeekKey(new Date());
+        const weekKey = getCafeWeekKey();
+        if (!weekKey) {
+            if (weeklyDeductionStatus) {
+                weeklyDeductionStatus.textContent = "Chi phí bắt đầu tính từ ngày mở bán 30/08/2026.";
+            }
+            return false;
+        }
+
         const { data: wasDeducted, error } = await supabase.rpc("deduct_weekly_coins", {
-            deduction_amount: weeklyCost,
+            deduction_amount: weeklyBaseCost,
             week_key: weekKey,
         });
 
-        weeklyDeductionStatus.textContent = wasDeducted ? `Đã trừ ${weeklyCost} coin/quán cho tuần mới.` : "Phí tuần này đã trừ";
+        if (error) {
+            console.error("Lỗi khi kết toán tuần:", error);
+            if (weeklyDeductionStatus) weeklyDeductionStatus.textContent = "Chưa thể kết toán tuần.";
+            return false;
+        }
+
+        if (weeklyDeductionStatus) {
+            weeklyDeductionStatus.textContent = wasDeducted
+                ? "Đã kết toán tuần cũ và áp dụng 200 coin cố định + 20 coin/nhân viên cho tuần mới."
+                : "Chi phí tuần hiện tại đã được áp dụng.";
+        }
         await renderLeaderboardAdmin();
+        return wasDeducted;
     }
 
     function startWeeklyCountdown() {
         updateCountdown();
         countdownTimer = window.setInterval(updateCountdown, 1000);
         window.setInterval(async () => {
-            const weekKey = getWeekKey(new Date());
+            const weekKey = getCafeWeekKey();
             if (weekKey !== currentWeekKey) {
                 currentWeekKey = weekKey;
                 await deductWeeklyCoins();
-                countdownTarget = getNextMonday();
+                countdownTarget = getNextCafeWeekStart();
                 updateCountdown();
             }
         }, 30000);

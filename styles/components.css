@@ -28,7 +28,7 @@
 .topbar-date { display:block; margin-top:1px; color:var(--muted); font-size:9px; }
 .menu-button { display:none; }
 
-.top-finance { display:grid; min-width:0; grid-template-columns:repeat(4,minmax(125px,1fr)); overflow:hidden; border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,.7); box-shadow:var(--shadow-soft); }
+.top-finance { display:grid; min-width:0; grid-template-columns:repeat(4,minmax(125px,1fr)); overflow:visible; border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,.7); box-shadow:var(--shadow-soft); }
 .top-finance-item { display:flex; min-width:0; align-items:center; gap:9px; padding:9px 13px; border-right:1px solid var(--border); }
 .top-finance-item.admin-coin-entry { border-width:0 1px 0 0; background:transparent; color:inherit; text-align:left; cursor:pointer; transition:background var(--transition); }
 .top-finance-item.admin-coin-entry:hover { background:#fbf4e9; }
@@ -41,6 +41,35 @@
 .top-finance-item small,.top-finance-item strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .top-finance-item small { color:var(--muted); font-size:8px; }
 .top-finance-item strong { color:var(--text-soft); font-size:12px; font-weight:700; }
+.weekly-cost-container { position:relative; padding:0; }
+.weekly-cost-trigger { display:flex; width:100%; min-height:48px; align-items:center; gap:9px; padding:9px 13px; border:0; background:transparent; color:inherit; font:inherit; text-align:left; cursor:help; transition:background var(--transition); }
+.weekly-cost-trigger:hover,.weekly-cost-trigger:focus-visible { background:#fff8f5; outline:0; }
+.weekly-cost-trigger:focus-visible { box-shadow:inset 0 0 0 2px rgba(197,91,86,.28); }
+.weekly-cost-trigger-icon { display:grid; width:30px; height:30px; flex:0 0 auto; place-items:center; border-radius:8px; background:#f9ece9; color:var(--red); }
+.weekly-cost-trigger-copy { display:grid; min-width:0; }
+.weekly-cost-trigger-copy small,.weekly-cost-trigger-copy strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.weekly-cost-popover { position:absolute; top:calc(100% + 12px); left:50%; z-index:70; width:310px; padding-top:7px; color:var(--text); opacity:0; pointer-events:none; transform:translate(-50%,-5px); visibility:hidden; transition:opacity var(--transition),transform var(--transition),visibility var(--transition); }
+.weekly-cost-popover::before { position:absolute; top:1px; left:50%; width:12px; height:12px; border:1px solid var(--border-strong); border-right:0; border-bottom:0; background:#fffdf9; content:""; transform:translateX(-50%) rotate(45deg); }
+.weekly-cost-container:hover .weekly-cost-popover,.weekly-cost-container:focus-within .weekly-cost-popover { opacity:1; transform:translate(-50%,0); visibility:visible; }
+.weekly-cost-table { overflow:hidden; border:1px solid var(--border-strong); border-radius:12px; background:#fffdf9; box-shadow:0 18px 44px rgba(61,42,28,.18); }
+.weekly-cost-table header { display:flex; align-items:center; gap:9px; padding:12px 13px; border-bottom:1px solid var(--border); background:#fcf7f1; }
+.weekly-cost-table header>span { display:grid; width:30px; height:30px; flex:0 0 auto; place-items:center; border-radius:8px; background:#f9ece9; color:var(--red); }
+.weekly-cost-table header .icon { width:15px; height:15px; }
+.weekly-cost-table header>div { display:grid; gap:1px; }
+.weekly-cost-table b,.weekly-cost-table em,.weekly-cost-table strong,.weekly-cost-table span { overflow:visible; text-overflow:clip; white-space:normal; }
+.weekly-cost-table b { color:var(--text-soft); font-size:9px; font-style:normal; }
+.weekly-cost-table em { color:var(--muted); font-size:7px; font-style:normal; }
+.weekly-cost-rows { display:grid; padding:4px 13px; }
+.weekly-cost-row { display:flex; align-items:center; justify-content:space-between; gap:15px; padding:8px 0; border-bottom:1px solid var(--border); }
+.weekly-cost-row:last-child { border-bottom:0; }
+.weekly-cost-row>span { display:grid; gap:1px; }
+.weekly-cost-row strong { flex:0 0 auto; color:var(--text-soft)!important; font-size:8px; }
+.weekly-cost-table footer { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 13px; border-top:1px solid var(--border); background:#f9f3eb; }
+.weekly-cost-table footer span { color:var(--muted); font-size:8px; }
+.weekly-cost-table footer strong { color:var(--red)!important; font-size:9px; }
+.modal-cost-table { box-shadow:none; }
+.modal-cost-table header { padding:13px 14px; }
+.modal-cost-table .weekly-cost-row { padding-block:10px; }
 
 .topbar-actions { gap:10px; }
 .notification-button,.menu-button,.icon-button { position:relative; width:40px; height:40px; place-items:center; border:1px solid var(--border); border-radius:10px; background:var(--surface); color:var(--text-soft); cursor:pointer; transition:background var(--transition),transform var(--transition); }
@@ -249,6 +278,12 @@
 .modal-body p { margin:0 0 11px; }
 .modal-list { display:grid; gap:7px; padding:0; margin:0; list-style:none; }
 .modal-list li { padding:10px 11px; border:1px solid var(--border); border-radius:8px; background:var(--surface-2); }
+.route-not-found { display:grid; width:min(520px,calc(100% - 32px)); min-height:100vh; margin:auto; place-content:center; justify-items:center; gap:12px; color:var(--text-soft); text-align:center; }
+.route-not-found>span { color:var(--gold); font-family:"Cormorant Garamond",serif; font-size:64px; font-weight:700; line-height:1; }
+.route-not-found h1,.route-not-found p { margin:0; }
+.route-not-found h1 { color:var(--text); font-size:26px; }
+.route-not-found p { max-width:460px; color:var(--muted); line-height:1.7; }
+.route-not-found a { display:inline-flex; min-height:42px; align-items:center; margin-top:8px; padding:0 18px; border-radius:9px; background:var(--brown); color:#fff; font-weight:700; text-decoration:none; }
 .coin-admin-intro { display:flex; align-items:flex-start; gap:10px; padding:11px 12px; border:1px solid #ead8c3; border-radius:10px; background:#fbf3e7; }
 .coin-admin-intro>span { display:grid; width:30px; height:30px; flex:0 0 auto; place-items:center; border-radius:8px; background:#f0dfc9; color:var(--brown); }
 .coin-admin-intro .icon { width:16px; height:16px; }

@@ -4,7 +4,7 @@
   .brand-name { font-size:24px; }
   .topbar { grid-template-columns:minmax(145px,auto) minmax(450px,1fr) auto; gap:14px; padding-inline:20px; }
   .top-finance-item { padding-inline:9px; }
-  .top-finance-item>span { display:none; }
+  .top-finance-item>span,.weekly-cost-trigger-icon { display:none; }
   .dashboard { padding-inline:20px; }
   .cafe-detail-grid { grid-template-columns:minmax(260px,.9fr) minmax(310px,1.05fr) minmax(400px,1.5fr); }
 }

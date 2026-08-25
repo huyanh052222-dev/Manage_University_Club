@@ -2,11 +2,12 @@ import { renderDashboard } from "./components/dashboard.js?v=order-progress";
 import { renderMemberDirectory, renderMemberList } from "./components/memberDirectory.js";
 import { renderOrderDetail } from "./components/orders.js?v=order-progress";
 import { renderSidebar } from "./components/sidebar.js";
-import { renderTopbar } from "./components/topbar.js?v=orders";
+import { renderTopbar } from "./components/topbar.js?v=weekly-costs";
+import { renderWeeklyCostModal } from "./components/weeklyCosts.js";
 import { club, demoNotifications, orders } from "./data/dashboard.js";
-import { loadDashboardData } from "./services/dashboardData.js?v=team-links";
+import { loadDashboardData } from "./services/dashboardData.js?v=weekly-settlement";
 import { closeModal, showModal, showToast } from "./ui/feedback.js";
-import { getCafeWeekContext } from "./utils/cafeWeek.js";
+import { getCafeWeekContext, getNextCafeWeekStart } from "./utils/cafeWeek.js?v=cafe-cycle";
 import { escapeHtml } from "./utils/format.js";
 
 const elements = {
@@ -19,6 +20,20 @@ const renderApp = () => {
   elements.sidebar.innerHTML = renderSidebar();
   elements.topbar.innerHTML = renderTopbar();
   renderCurrentView();
+};
+
+let cafeWeekRefreshTimer;
+
+const scheduleCafeWeekRefresh = () => {
+  window.clearTimeout(cafeWeekRefreshTimer);
+  const nextWeekStart = getNextCafeWeekStart();
+  const delay = Math.max(1000, nextWeekStart.getTime() - Date.now() + 1000);
+
+  cafeWeekRefreshTimer = window.setTimeout(async () => {
+    await loadDashboardData();
+    renderApp();
+    scheduleCafeWeekRefresh();
+  }, Math.min(delay, 2_147_000_000));
 };
 
 const closeSidebar = () => document.body.classList.remove("sidebar-open");
@@ -113,6 +128,14 @@ const handleAction = (actionElement) => {
     showModal({
       title: "Thông báo mới",
       content: `<ul class="modal-list">${demoNotifications.map((item) => `<li>${item}</li>`).join("")}</ul>`,
+    });
+    return;
+  }
+
+  if (action === "weekly-costs") {
+    showModal({
+      title: "Chi tiết chi phí hàng tuần",
+      content: renderWeeklyCostModal(),
     });
     return;
   }
@@ -232,3 +255,4 @@ if (!window.location.hash || window.location.hash === "#login") {
 
 await loadDashboardData();
 renderApp();
+scheduleCafeWeekRefresh();
