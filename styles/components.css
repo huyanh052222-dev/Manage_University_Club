@@ -64,9 +64,9 @@
 .cafe-title-row h2 { margin:0; font-size:21px; letter-spacing:-.035em; }
 .cafe-title-row p { margin:2px 0 0; color:var(--muted); font-size:10px; }
 .cafe-score-grid { display:grid; grid-template-columns:1.15fr .85fr 1.1fr; padding:18px 0; border-bottom:1px solid var(--border); }
-.cafe-score-grid>div { min-width:0; padding:0 15px; border-right:1px solid var(--border); }
-.cafe-score-grid>div:first-child { padding-left:0; }
-.cafe-score-grid>div:last-child { padding-right:0; border-right:0; }
+.cafe-score-item { min-width:0; padding:0 15px; border:0; border-right:1px solid var(--border); background:transparent; color:inherit; font:inherit; text-align:left; }
+.cafe-score-item:first-child { padding-left:0; }
+.cafe-score-item:last-child { padding-right:0; border-right:0; }
 .cafe-score-grid span { display:block; color:var(--muted); font-size:8px; }
 .cafe-score-grid strong { display:flex; align-items:center; gap:5px; margin-top:6px; font-size:17px; }
 .stars { color:var(--gold); letter-spacing:2px; white-space:nowrap; }
@@ -81,7 +81,7 @@
 .cafe-xp .progress-track { margin-top:8px; }
 
 .cafe-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
-.cafe-stat-card { display:grid; min-height:112px; grid-template-columns:auto minmax(90px,1fr) minmax(75px,.75fr); align-items:center; gap:13px; padding:15px 17px; border:1px solid var(--border); border-radius:14px; background:rgba(255,253,249,.94); box-shadow:var(--shadow-soft); }
+.cafe-stat-card { position:relative; display:grid; min-height:112px; grid-template-columns:auto minmax(90px,1fr) minmax(75px,.75fr); align-items:center; gap:13px; padding:15px 17px; border:1px solid var(--border); border-radius:14px; background:rgba(255,253,249,.94); box-shadow:var(--shadow-soft); }
 .cafe-stat-icon,.section-icon,.task-tone { display:grid; place-items:center; }
 .cafe-stat-icon { width:52px; height:52px; border-radius:50%; background:color-mix(in srgb,var(--stat-accent) 14%,white); color:var(--stat-accent); }
 .cafe-stat-icon .icon { width:25px; height:25px; }
@@ -95,6 +95,11 @@
 .positive-text { color:var(--green)!important; }
 .negative-text { color:var(--red)!important; }
 .cafe-stat-progress .progress-track { height:6px; }
+
+.development-feature { position:relative; cursor:help; }
+.development-feature::after { position:absolute; right:8px; bottom:calc(100% + 8px); z-index:20; width:max-content; max-width:210px; padding:7px 9px; border:1px solid rgba(255,255,255,.14); border-radius:8px; background:#382d25; box-shadow:0 8px 20px rgba(55,40,29,.2); color:#fff; content:attr(data-development-message); font-size:8px; font-weight:600; line-height:1.4; opacity:0; pointer-events:none; transform:translateY(4px); transition:opacity var(--transition),transform var(--transition); }
+.development-feature:hover::after,.development-feature:focus-visible::after { opacity:1; transform:translateY(0); }
+.development-feature:focus-visible { outline:2px solid var(--brown-light); outline-offset:3px; }
 
 .cafe-panel { display:flex; min-height:360px; flex-direction:column; }
 .cafe-panel-header { display:flex; min-height:68px; align-items:center; gap:10px; padding:13px 17px; border-bottom:1px solid var(--border); }

@@ -10,7 +10,16 @@ Dự án dùng HTML/CSS/JavaScript thuần, không cần cài package:
 python3 -m http.server 4173
 ```
 
-Sau đó mở `http://localhost:4173`.
+Sau đó mở:
+
+- Landing công khai: `http://localhost:4173/`
+- Admin đăng nhập riêng: `http://localhost:4173/pages/admin/login.html`
+
+Khi deploy Vercel, `vercel.json` ánh xạ thành:
+
+- Landing: `https://<project>.vercel.app/`
+- Admin: `https://<project>.vercel.app/admin`
+- Admin dashboard sau đăng nhập: `https://<project>.vercel.app/admin/dashboard`
 
 ## Cấu trúc
 
@@ -23,29 +32,44 @@ Sau đó mở `http://localhost:4173`.
 │   ├── base.css        # Reset và style nền
 │   ├── layout.css      # Bố cục trang
 │   ├── components.css  # Component UI
+│   ├── auth.css        # Giao diện đăng nhập Admin
 │   ├── member-directory.css # Danh sách hồ sơ thành viên
 │   └── responsive.css  # Breakpoint responsive
 ├── assets/images/      # Ảnh hero Cafe Horizon
+├── pages/admin/        # Admin Panel dùng dữ liệu Supabase
 └── scripts/
     ├── main.js         # Entry: mount page rồi khởi tạo ứng dụng
     ├── app.js          # Điều phối dữ liệu, điều hướng và tương tác
     ├── pages/          # Page component cấp cao
     │   └── cafePage.js # Khung hiển thị Cafe Horizon
-    ├── data/           # Dữ liệu demo, có thể thay bằng API
+    ├── data/           # Store dùng chung và giá trị mặc định
     ├── components/     # Hàm render từng module giao diện
-    ├── services/       # Nghiệp vụ số dư coin
+    ├── services/       # Xác thực Supabase và nghiệp vụ số dư coin
+    ├── supabase/       # Client Supabase và migration SQL
     ├── ui/             # Modal, toast và feedback
     └── utils/          # Hàm định dạng dùng chung
 ```
 
 ## Luồng dữ liệu
 
-`index.html` → `main.js` → `pages/cafePage.js` → `app.js` → component và dữ liệu tương ứng → DOM.
+Landing: `index.html` → `main.js` → `pages/cafePage.js` → `app.js` → `services/dashboardData.js` → Supabase → store dùng chung → component → DOM.
 
-`index.html` chỉ giữ điểm mount `#app`. Toàn bộ khung giao diện nằm trong page component, sau khi page được render thì `app.js` mới khởi tạo các module chức năng.
+Admin: `pages/admin/login.html` → `login.js` → Supabase Auth → `pages/admin/admin.html` → `admin.js`.
+
+`index.html` chỉ giữ điểm mount `#app`. Landing đọc công khai `teams` và `members` từ Supabase nhưng không yêu cầu đăng nhập và không liên kết sang Admin. Luồng xác thực chỉ tồn tại trong entry point riêng của Admin.
+
+Landing mặc định đọc nhóm `A`. Có thể chọn nhóm bằng query string, ví dụ `/?team=B`. Toàn bộ tên nhóm, số coin và danh sách nhân sự trên trang đều được hydrate từ cùng một lần tải dữ liệu. Khi bảng chưa có dòng, truy vấn thất bại hoặc cột mở rộng chưa có dữ liệu, các chỉ số liên quan giữ giá trị `0`.
 
 Menu mobile, thông báo, modal, toast và các nút điều hướng chính đã có tương tác demo.
 
-Người quản lý có thể mở **Quản lý coin** để cộng hoặc trừ coin theo từng nhóm; dữ liệu hiện chỉ tồn tại trong phiên demo.
+Tuần vận hành được tính từ ngày mở bán `30/08/2026`: ngày này là ngày 1 của tuần 1, cứ đủ 7 ngày sẽ tăng một tuần.
 
-Thẻ **Quản lý thành viên** hiển thị nhanh 8 thành viên của Cafe Horizon. Nút **Xem danh sách thành viên** và mục **Nhân sự** ở sidebar cùng mở trang chi tiết tại `#personnel` với một danh sách thành viên duy nhất, không chia theo nhóm.
+## Supabase
+
+`teams.points` là nguồn coin dùng chung giữa Landing và Admin. `members.team_id` là nguồn danh sách và số lượng nhân sự. Các cột `orders_completed`, `orders_pending`, `energy`, `xp`, `xp_target`, `weekly_income`, `weekly_expense` nằm trên cùng dòng `teams`; giá trị mặc định là `0`.
+
+Chạy `scripts/supabase/schema.sql` để bổ sung các cột MVP, quyền đọc công khai cho Landing và RPC `add_points_to_team`. Sau đó chạy `scripts/supabase/weekly_deduction.sql` để thêm kiểm tra quyền Admin cùng nghiệp vụ trừ coin đầu tuần.
+
+Trang Admin tại `pages/admin/admin.html` đọc bảng `teams` và cập nhật coin qua RPC, không ghi trực tiếp vào bảng từ giao diện.
+
+Thẻ **Quản lý thành viên** và trang **Nhân sự** cùng đọc mảng `members` đã lọc theo `team_id`. Không có thành viên thì cả hai nơi cùng hiển thị `0`.

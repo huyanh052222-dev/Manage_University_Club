@@ -8,4 +8,4 @@ if (!appRoot) {
 
 appRoot.innerHTML = renderCafePage();
 
-await import("./app.js?v=20260823-cafe-page");
+await import("./app.js?v=20260825-mvp");

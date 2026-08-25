@@ -1,21 +1,12 @@
-import { cafeStats, club, members } from "../data/dashboard.js";
+import { cafeStats } from "../data/dashboard.js";
 import { icon } from "./icons.js";
 
 const renderMeta = (meta) => meta.map(([label, value], index) => `<span>${label}<b class="${index ? "negative-text" : "positive-text"}">${value}</b></span>`).join("");
 
-const absentMembers = 1;
-const resolvedStats = cafeStats.map((stat) => stat.id === "staff" ? {
-  ...stat,
-  value: String(members.length),
-  total: `/ ${club.memberLimit}`,
-  note: "nhân viên",
-  meta: [["Đi làm", String(members.length - absentMembers)], ["Vắng mặt", String(absentMembers)]],
-} : stat);
-
 export const renderCafeStats = () => `
   <section class="cafe-stats" aria-label="Chỉ số vận hành">
-    ${resolvedStats.map((stat) => `
-      <article class="cafe-stat-card" style="--stat-accent:${stat.color}">
+    ${cafeStats.map((stat) => `
+      <article class="cafe-stat-card${stat.isDeveloping ? " development-feature" : ""}" style="--stat-accent:${stat.color}" ${stat.isDeveloping ? 'tabindex="0" role="button" data-development-feature="Danh tiếng quán đang được phát triển." data-development-message="Tính năng đang phát triển" aria-label="Danh tiếng quán: 0, tính năng đang phát triển"' : ""}>
         <span class="cafe-stat-icon">${icon(stat.icon)}</span>
         <div class="cafe-stat-main">
           <h3>${stat.label}</h3>

@@ -1,13 +1,8 @@
 export const navigationItems = [
   { id: "overview", label: "Tổng quan", icon: "home" },
-  { id: "operations", label: "Vận hành quán", icon: "coffee" },
   { id: "personnel", label: "Nhân sự", icon: "users" },
-  { id: "missions", label: "Nhiệm vụ", icon: "target" },
   { id: "events", label: "Sự kiện", icon: "calendarCheck" },
-  { id: "upgrades", label: "Nâng cấp quán", icon: "store" },
-  { id: "finance", label: "Quản lý coin", icon: "wallet" },
   { id: "ranking", label: "Bảng xếp hạng", icon: "award" },
-  { id: "weekly-report", label: "Báo cáo tuần", icon: "fileText" },
 ];
 
 export const club = {
@@ -16,26 +11,26 @@ export const club = {
   status: "Đang hoạt động",
   slogan: "Cùng nhau tạo nên khoảng trời riêng",
   field: "Quán café của CLB Sinh Viên",
-  xp: 2350,
-  xpTarget: 3000,
+  xp: 0,
+  xpTarget: 0,
   seasonGoal: "Top 3 quán café sinh viên xuất sắc",
-  memberCount: 8,
-  memberLimit: 10,
+  memberCount: 0,
+  memberLimit: 0,
   foundedAt: "01/06/2024",
-  startingFund: 20000,
-  reputation: 4.5,
-  ranking: "#3 / 24",
-  satisfaction: 87,
+  startingFund: 0,
+  reputation: 0,
+  ranking: 0,
+  satisfaction: 0,
 };
 
 export const finance = {
-  currentFund: 20000,
-  change: 2500,
-  changePercent: 12,
-  weeklyFlow: 2500,
-  income: 5200,
-  expense: 2700,
-  updatedAt: "09:30 · 19/08/2026",
+  currentFund: 0,
+  change: 0,
+  changePercent: 0,
+  weeklyFlow: 0,
+  income: 0,
+  expense: 0,
+  updatedAt: "Chưa có dữ liệu",
 };
 
 export const groups = [
@@ -46,10 +41,10 @@ export const groups = [
 ];
 
 export const cafeStats = [
-  { id: "staff", label: "Nhân sự", value: "8", total: "/ 10", note: "nhân viên", meta: [["Đi làm", "7"], ["Vắng mặt", "1"]], icon: "users", color: "#d47b55" },
-  { id: "orders", label: "Đơn hàng tuần", value: "23", total: "", note: "hoàn thành", meta: [["Hoàn thành", "23"], ["Đang xử lý", "4"]], icon: "receipt", color: "#6ca65d" },
-  { id: "energy", label: "Năng lượng nhóm", value: "82", total: "/ 100", note: "Nhiệt huyết", progress: 82, icon: "zap", color: "#e5a13c" },
-  { id: "reputation", label: "Danh tiếng", value: "740", total: "/ 1000", note: "Danh tiếng quán", progress: 74, icon: "star", color: "#8c68c5" },
+  { id: "staff", label: "Nhân sự", value: "0", total: "", note: "nhân viên", meta: [["Đi làm", "0"], ["Vắng mặt", "0"]], icon: "users", color: "#d47b55" },
+  { id: "orders", label: "Đơn hàng tuần", value: "0", total: "", note: "hoàn thành", meta: [["Hoàn thành", "0"], ["Đang xử lý", "0"]], icon: "receipt", color: "#6ca65d" },
+  { id: "energy", label: "Năng lượng nhóm", value: "0", total: "/ 100", note: "Nhiệt huyết", progress: 0, icon: "zap", color: "#e5a13c" },
+  { id: "reputation", label: "Danh tiếng", value: "0", total: "/ 1000", note: "Đang phát triển", progress: 0, icon: "star", color: "#8c68c5", isDeveloping: true },
 ];
 
 export const weeklyCoinSummary = {
@@ -81,16 +76,7 @@ export const resources = [
   { id: "reputation", label: "Uy tín", value: 320, total: 500, unit: "", icon: "sparkles", color: "#a765ff" },
 ];
 
-export const members = [
-  { id: 1, name: "Nguyễn Minh Anh", initials: "MA", role: "Trưởng nhóm", colors: ["#936d55", "#2e3b5c"] },
-  { id: 2, name: "Trần Hoàng Nam", initials: "HN", role: "Phó nhóm", colors: ["#66827a", "#293955"] },
-  { id: 3, name: "Lê Minh Châu", initials: "MC", role: "Thành viên", colors: ["#976a79", "#313b62"] },
-  { id: 4, name: "Phạm Gia Bảo", initials: "GB", role: "Thành viên", colors: ["#48778b", "#2a395c"] },
-  { id: 5, name: "Vũ Khánh Linh", initials: "KL", role: "Thành viên", colors: ["#a27565", "#40364f"] },
-  { id: 6, name: "Đỗ Trung Kiên", initials: "TK", role: "Thành viên", colors: ["#65799b", "#2d3857"] },
-  { id: 7, name: "Ngô Bảo Trâm", initials: "BT", role: "Thành viên", colors: ["#8a657e", "#333553"] },
-  { id: 8, name: "Hoàng Thu Hà", initials: "TH", role: "Thành viên", colors: ["#bd8d67", "#725647"] },
-];
+export const members = [];
 
 export const taskTabs = [
   { id: "all", label: "Tất cả" },

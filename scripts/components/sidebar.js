@@ -1,4 +1,4 @@
-import { navigationItems } from "../data/dashboard.js";
+import { club, navigationItems } from "../data/dashboard.js";
 import { icon } from "./icons.js";
 
 const navigationMarkup = navigationItems
@@ -17,7 +17,7 @@ export const renderSidebar = () => `
       ${icon("coffee")}
     </div>
     <div class="brand-copy">
-      <p class="brand-name">Cafe Horizon</p>
+      <p class="brand-name">${club.name}</p>
       <span class="brand-tagline">CLB Sinh Viên</span>
     </div>
   </div>
