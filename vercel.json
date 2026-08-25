@@ -2,35 +2,35 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
-      "source": "/cafe/a",
+      "source": "/cafe/zzhaSdhdaskMZkasdojASDU00129",
       "destination": "/index.html?team=A"
     },
     {
-      "source": "/cafe/b",
+      "source": "/cafe/zzhaSdhdbskMZkasdojASDV00821",
       "destination": "/index.html?team=B"
     },
     {
-      "source": "/cafe/c",
+      "source": "/cafe/zzhbSdhdaskNZkasdojASDU00492",
       "destination": "/index.html?team=C"
     },
     {
-      "source": "/cafe/d",
+      "source": "/cafe/zzhaSdhdaSkMZkbsdojASDU00714",
       "destination": "/index.html?team=D"
     },
     {
-      "source": "/cafe/e",
+      "source": "/cafe/zzhaSdhdaskMZkbsdojBSDU00387",
       "destination": "/index.html?team=E"
     },
     {
-      "source": "/cafe/f",
+      "source": "/cafe/zzhaSdhdbskNZkasdojASDU00953",
       "destination": "/index.html?team=F"
     },
     {
-      "source": "/cafe/g",
+      "source": "/cafe/zzhbSdhdaSkMZkasdojASDV00640",
       "destination": "/index.html?team=G"
     },
     {
-      "source": "/cafe/h",
+      "source": "/cafe/zzhaSdhdaskNZkbsdojBSDU00276",
       "destination": "/index.html?team=H"
     },
     {

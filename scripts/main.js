@@ -8,4 +8,4 @@ if (!appRoot) {
 
 appRoot.innerHTML = renderCafePage();
 
-await import("./app.js?v=20260825-team-links");
+await import("./app.js?v=20260825-opaque-links");
