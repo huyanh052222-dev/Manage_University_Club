@@ -1,5 +1,5 @@
 import { finance } from "../data/dashboard.js";
-import { getCafeWeekContext } from "../utils/cafeWeek.js";
+import { getCafeWeekContext } from "../utils/cafeWeek.js?v=cafe-cycle";
 import { formatNumber } from "../utils/format.js";
 import { icon } from "./icons.js";
 import { renderWeeklyCostPopover } from "./weeklyCosts.js";
@@ -40,7 +40,7 @@ export const renderTopbar = () => {
       </button>
       ${renderWeeklyCostPopover()}
     </div>
-    <div class="top-finance-item profit"><span>${icon("coffee")}</span><div><small>Lợi nhuận tuần</small><strong>${formatSignedCoin(finance.weeklyFlow)}</strong></div></div>
+    <div class="top-finance-item profit"><span>${icon("coffee")}</span><div><small>Lợi nhuận kết toán</small><strong>${formatSignedCoin(finance.weeklyFlow)}</strong></div></div>
   </div>
 
   <div class="topbar-actions">

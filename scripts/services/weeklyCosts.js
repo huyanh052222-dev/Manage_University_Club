@@ -2,7 +2,6 @@ import { club } from "../data/dashboard.js";
 
 const WEEKLY_COST_CONFIG = Object.freeze({
   salaryPerMember: 20,
-  fallbackStaffCount: 10,
   ingredients: 50,
   utilities: 50,
   rent: 100,
@@ -13,17 +12,15 @@ const positiveIntegerOrZero = (value) => {
   return Number.isFinite(resolved) && resolved > 0 ? Math.round(resolved) : 0;
 };
 
-export const getWeeklyCostEstimate = () => {
-  const staffCount = positiveIntegerOrZero(club.memberLimit)
-    || positiveIntegerOrZero(club.memberCount)
-    || WEEKLY_COST_CONFIG.fallbackStaffCount;
+export const getWeeklyCostEstimate = (memberCount = club.memberCount) => {
+  const staffCount = positiveIntegerOrZero(memberCount);
   const salary = WEEKLY_COST_CONFIG.salaryPerMember * staffCount;
 
   const items = [
     {
       id: "salary",
       label: "Lương nhân viên",
-      detail: `${WEEKLY_COST_CONFIG.salaryPerMember} coin × ${staffCount} người`,
+      detail: `${staffCount > 0 ? WEEKLY_COST_CONFIG.salaryPerMember : 0} coin × ${staffCount} người`,
       amount: salary,
     },
     { id: "ingredients", label: "Nguyên liệu", detail: "Mỗi tuần", amount: WEEKLY_COST_CONFIG.ingredients },
@@ -33,6 +30,8 @@ export const getWeeklyCostEstimate = () => {
 
   return {
     staffCount,
+    fixedCost: WEEKLY_COST_CONFIG.ingredients + WEEKLY_COST_CONFIG.utilities + WEEKLY_COST_CONFIG.rent,
+    salaryPerMember: WEEKLY_COST_CONFIG.salaryPerMember,
     items,
     total: items.reduce((sum, item) => sum + item.amount, 0),
   };

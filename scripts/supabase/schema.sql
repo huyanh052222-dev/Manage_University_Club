@@ -76,6 +76,24 @@ create table if not exists public.coin_transactions (
 create index if not exists coin_transactions_team_occurred_at_idx
     on public.coin_transactions (team_id, occurred_at desc);
 
+-- Mỗi hàng là ảnh chụp kết toán của một quán. Lợi nhuận giữ nguyên cho tới kỳ kế tiếp.
+create table if not exists public.weekly_financial_settlements (
+    id uuid primary key default gen_random_uuid(),
+    team_id text not null references public.teams(id) on delete cascade,
+    period_start date not null,
+    period_end date not null,
+    income integer not null default 0 check (income >= 0),
+    expense integer not null default 0 check (expense >= 0),
+    profit integer not null default 0,
+    member_count integer not null default 0 check (member_count >= 0),
+    settled_at timestamptz not null default now(),
+    unique (team_id, period_start),
+    check (period_end > period_start)
+);
+
+create index if not exists weekly_settlements_team_period_idx
+    on public.weekly_financial_settlements (team_id, period_start desc);
+
 -- Đơn demo: deadline được tính một ngày kể từ lần đầu chạy migration.
 insert into public.orders (
     id,
@@ -126,6 +144,7 @@ alter table public.members enable row level security;
 alter table public.orders enable row level security;
 alter table public.order_completions enable row level security;
 alter table public.coin_transactions enable row level security;
+alter table public.weekly_financial_settlements enable row level security;
 
 drop policy if exists "public_read_teams" on public.teams;
 create policy "public_read_teams"
@@ -162,11 +181,19 @@ create policy "public_read_coin_transactions"
     to anon, authenticated
     using (true);
 
+drop policy if exists "public_read_weekly_financial_settlements" on public.weekly_financial_settlements;
+create policy "public_read_weekly_financial_settlements"
+    on public.weekly_financial_settlements
+    for select
+    to anon, authenticated
+    using (true);
+
 grant select on public.teams to anon, authenticated;
 grant select on public.members to anon, authenticated;
 grant select on public.orders to anon, authenticated;
 grant select on public.order_completions to anon, authenticated;
 grant select on public.coin_transactions to anon, authenticated;
+grant select on public.weekly_financial_settlements to anon, authenticated;
 
 create or replace function public.add_points_to_team(
     team_id_in text,

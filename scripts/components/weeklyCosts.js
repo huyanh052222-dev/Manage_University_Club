@@ -18,7 +18,7 @@ const renderCostTable = (modifier = "") => {
     <div class="weekly-cost-table ${modifier}">
       <header>
         <span>${icon("receipt")}</span>
-        <div><b>Dự toán chi phí tuần</b><em>Áp dụng cho ${estimate.staffCount} nhân viên</em></div>
+        <div><b>Dự toán chi phí tuần</b><em>${formatNumber(estimate.fixedCost)} cố định + ${estimate.salaryPerMember} coin × ${estimate.staffCount} nhân viên</em></div>
       </header>
       <div class="weekly-cost-rows">${renderCostRows(estimate.items)}</div>
       <footer><span>Tổng chi dự kiến</span><strong>~${formatNumber(estimate.total)} coin / tuần</strong></footer>

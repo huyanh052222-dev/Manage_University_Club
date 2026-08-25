@@ -9,7 +9,9 @@ import {
   weeklyCoinSummary,
 } from "../data/dashboard.js";
 import { getTeamIdFromLocation } from "../routes/teamRoutes.js";
+import { getCafeWeekStart, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=cafe-cycle";
 import { supabase } from "../supabase/supabase.js";
+import { getWeeklyCostEstimate } from "./weeklyCosts.js";
 
 const memberPalettes = [
   ["#936d55", "#2e3b5c"],
@@ -147,20 +149,19 @@ const normalizeTransaction = (transaction) => {
   };
 };
 
-const getLocalWeekStart = (now = new Date()) => {
-  const start = new Date(now);
-  const day = start.getDay();
-  start.setDate(start.getDate() - (day === 0 ? 6 : day - 1));
-  start.setHours(0, 0, 0, 0);
-  return start;
-};
-
-const hydrateCoinLedger = (transactions) => {
+const hydrateCoinLedger = (transactions, {
+  weekStart,
+  weekEnd,
+  settledProfit = 0,
+  weeklyExpense = 0,
+}) => {
   transactionLogs.splice(0, transactionLogs.length, ...transactions);
-  const weekStart = getLocalWeekStart();
   const weeklyTransactions = transactions.filter((transaction) => {
     const occurredAt = new Date(transaction.occurredAt);
-    return !Number.isNaN(occurredAt.getTime()) && occurredAt >= weekStart;
+    return weekStart
+      && !Number.isNaN(occurredAt.getTime())
+      && occurredAt >= weekStart
+      && occurredAt < weekEnd;
   });
   const totalIncome = weeklyTransactions
     .filter((transaction) => transaction.amount > 0)
@@ -168,6 +169,9 @@ const hydrateCoinLedger = (transactions) => {
   const totalExpense = weeklyTransactions
     .filter((transaction) => transaction.amount < 0)
     .reduce((total, transaction) => total + Math.abs(transaction.amount), 0);
+  const weeklyRevenue = weeklyTransactions
+    .filter((transaction) => transaction.type === "income" && transaction.amount > 0)
+    .reduce((total, transaction) => total + transaction.amount, 0);
 
   Object.assign(weeklyCoinSummary, {
     totalIncome,
@@ -175,9 +179,9 @@ const hydrateCoinLedger = (transactions) => {
     totalProfit: totalIncome - totalExpense,
   });
   Object.assign(finance, {
-    income: totalIncome,
-    expense: totalExpense,
-    weeklyFlow: totalIncome - totalExpense,
+    income: weeklyRevenue,
+    expense: weeklyExpense,
+    weeklyFlow: numberOrZero(settledProfit),
   });
 };
 
@@ -228,20 +232,45 @@ const resolveAttendance = (resolvedMembers) => {
 export const loadDashboardData = async () => {
   resetSharedData();
   const teamId = getTeamId();
+  const currentWeekStart = getCafeWeekStart();
+  const currentWeekEnd = getNextCafeWeekStart();
+
+  let transactionQuery = supabase
+    .from("coin_transactions")
+    .select("*")
+    .eq("team_id", teamId)
+    .order("occurred_at", { ascending: false });
+
+  if (currentWeekStart) {
+    transactionQuery = transactionQuery
+      .gte("occurred_at", currentWeekStart.toISOString())
+      .lt("occurred_at", currentWeekEnd.toISOString())
+      .limit(1000);
+  } else {
+    transactionQuery = transactionQuery.limit(50);
+  }
 
   try {
-    const [teamResult, memberResult, orderResult, transactionResult, allMemberResult, completionResult] = await Promise.all([
+    const [teamResult, memberResult, orderResult, transactionResult, allMemberResult, completionResult, settlementResult] = await Promise.all([
       supabase.from("teams").select("*").eq("id", teamId).maybeSingle(),
       supabase.from("members").select("*").eq("team_id", teamId).order("name", { ascending: true }),
       supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(20),
-      supabase.from("coin_transactions").select("*").eq("team_id", teamId).order("occurred_at", { ascending: false }).limit(50),
+      transactionQuery,
       supabase.from("members").select("id", { count: "exact", head: true }),
       supabase.from("order_completions").select("order_id, member_id"),
+      supabase
+        .from("weekly_financial_settlements")
+        .select("profit, period_start, settled_at")
+        .eq("team_id", teamId)
+        .order("period_start", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
     ]);
 
     const team = teamResult.data;
     const resolvedMembers = (memberResult.data || []).map(normalizeMember);
     members.splice(0, members.length, ...resolvedMembers);
+    club.memberCount = resolvedMembers.length;
 
     const resolvedOrders = (orderResult.data || [])
       .filter((order) => order.team_id == null || String(order.team_id).toUpperCase() === teamId)
@@ -274,7 +303,13 @@ export const loadDashboardData = async () => {
     }
 
     const resolvedTransactions = (transactionResult.data || []).map(normalizeTransaction);
-    hydrateCoinLedger(resolvedTransactions);
+    const weeklyCost = getWeeklyCostEstimate(resolvedMembers.length);
+    hydrateCoinLedger(resolvedTransactions, {
+      weekStart: currentWeekStart,
+      weekEnd: currentWeekEnd,
+      settledProfit: settlementResult.data?.profit,
+      weeklyExpense: weeklyCost.total,
+    });
 
     const completedOrders = orders.filter((order) => order.status === "completed").length;
     const pendingOrders = orders.length - completedOrders;
@@ -283,7 +318,6 @@ export const loadDashboardData = async () => {
       meta: [["Hoàn thành", String(completedOrders)], ["Đang xử lý", String(pendingOrders)]],
     });
 
-    club.memberCount = resolvedMembers.length;
     const attendance = resolveAttendance(resolvedMembers);
     updateStat("staff", {
       value: String(resolvedMembers.length),
@@ -297,6 +331,7 @@ export const loadDashboardData = async () => {
       teamFound: Boolean(team),
       ordersConnected: !orderResult.error,
       ledgerConnected: !transactionResult.error,
+      settlementConnected: !settlementResult.error,
       progressConnected: !completionResult.error && !allMemberResult.error,
     };
   } catch {
