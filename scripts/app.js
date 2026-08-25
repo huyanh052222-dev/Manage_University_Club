@@ -2,7 +2,8 @@ import { renderDashboard } from "./components/dashboard.js?v=order-progress";
 import { renderMemberDirectory, renderMemberList } from "./components/memberDirectory.js";
 import { renderOrderDetail } from "./components/orders.js?v=order-progress";
 import { renderSidebar } from "./components/sidebar.js";
-import { renderTopbar } from "./components/topbar.js?v=orders";
+import { renderTopbar } from "./components/topbar.js?v=weekly-costs";
+import { renderWeeklyCostModal } from "./components/weeklyCosts.js";
 import { club, demoNotifications, orders } from "./data/dashboard.js";
 import { loadDashboardData } from "./services/dashboardData.js?v=opaque-links";
 import { closeModal, showModal, showToast } from "./ui/feedback.js";
@@ -113,6 +114,14 @@ const handleAction = (actionElement) => {
     showModal({
       title: "Thông báo mới",
       content: `<ul class="modal-list">${demoNotifications.map((item) => `<li>${item}</li>`).join("")}</ul>`,
+    });
+    return;
+  }
+
+  if (action === "weekly-costs") {
+    showModal({
+      title: "Chi tiết chi phí hàng tuần",
+      content: renderWeeklyCostModal(),
     });
     return;
   }

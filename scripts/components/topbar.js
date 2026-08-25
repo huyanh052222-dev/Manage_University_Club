@@ -2,6 +2,7 @@ import { finance } from "../data/dashboard.js";
 import { getCafeWeekContext } from "../utils/cafeWeek.js";
 import { formatNumber } from "../utils/format.js";
 import { icon } from "./icons.js";
+import { renderWeeklyCostPopover } from "./weeklyCosts.js";
 
 const formatSignedCoin = (amount) => {
   if (amount === 0) return "0 coin";
@@ -27,7 +28,18 @@ export const renderTopbar = () => {
   <div class="top-finance" aria-label="Tổng hợp tài chính tuần">
     <div class="top-finance-item"><span>${icon("wallet")}</span><div><small>Tiền mặt</small><strong>${formatNumber(finance.currentFund)} coin</strong></div></div>
     <div class="top-finance-item positive"><span>${icon("trendingUp")}</span><div><small>Doanh thu tuần</small><strong>${formatSignedCoin(finance.income)}</strong></div></div>
-    <div class="top-finance-item negative"><span>${icon("arrowDown")}</span><div><small>Chi phí tuần</small><strong>${formatSignedCoin(-finance.expense)}</strong></div></div>
+    <div class="top-finance-item negative weekly-cost-container">
+      <button
+        class="weekly-cost-trigger"
+        type="button"
+        data-action="weekly-costs"
+        aria-label="Chi phí tuần ${formatSignedCoin(-finance.expense)}. Xem bảng dự toán chi tiết"
+      >
+        <span class="weekly-cost-trigger-icon">${icon("arrowDown")}</span>
+        <span class="weekly-cost-trigger-copy"><small>Chi phí tuần</small><strong>${formatSignedCoin(-finance.expense)}</strong></span>
+      </button>
+      ${renderWeeklyCostPopover()}
+    </div>
     <div class="top-finance-item profit"><span>${icon("coffee")}</span><div><small>Lợi nhuận tuần</small><strong>${formatSignedCoin(finance.weeklyFlow)}</strong></div></div>
   </div>
 

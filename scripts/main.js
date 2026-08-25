@@ -8,4 +8,4 @@ if (!appRoot) {
 
 appRoot.innerHTML = renderCafePage();
 
-await import("./app.js?v=20260825-opaque-links");
+await import("./app.js?v=20260825-weekly-costs");

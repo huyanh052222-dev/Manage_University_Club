@@ -1,6 +1,6 @@
 @import url("./tokens.css");
 @import url("./base.css");
 @import url("./layout.css");
-@import url("./components.css");
+@import url("./components.css?v=20260825-weekly-costs");
 @import url("./member-directory.css");
-@import url("./responsive.css");
+@import url("./responsive.css?v=20260825-weekly-costs");
