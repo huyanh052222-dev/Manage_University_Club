@@ -189,7 +189,14 @@
 .transaction-log-empty p { max-width:240px; margin:0; font-size:7px; line-height:1.5; }
 
 .modal:has(.order-detail) { width:min(560px,100%); }
+.modal:has(.order-detail) .modal-header { border-bottom:0; }
 .order-detail { display:grid; gap:14px; }
+.order-global-progress { display:grid; gap:6px; margin:-17px -17px 0; padding:0 5% 13px; border-bottom:1px solid var(--border); }
+.order-progress-copy { display:flex; align-items:center; justify-content:space-between; gap:12px; color:var(--muted); font-size:8px; }
+.order-progress-copy strong { color:var(--green); font-size:10px; }
+.order-progress-track { width:100%; height:8px; overflow:hidden; border-radius:999px; background:#e9e2d9; box-shadow:inset 0 1px 2px rgba(74,53,38,.08); }
+.order-progress-track>span { display:block; width:var(--order-progress,0%); height:100%; border-radius:inherit; background:linear-gradient(90deg,#78a56f,#5d9259); transition:width 320ms ease; }
+.order-global-progress small { color:var(--muted); font-size:7px; text-align:center; }
 .order-detail-heading { display:flex; align-items:flex-start; gap:11px; }
 .order-detail-heading .task-tone { width:40px; height:40px; flex:0 0 auto; }
 .order-detail-heading>div { display:grid; gap:5px; }
@@ -204,7 +211,10 @@
 .order-detail-grid .icon { width:14px; height:14px; }
 .order-detail-grid strong { font-size:11px; }
 .order-detail-grid small { color:var(--muted); font-size:7px; }
-.order-source-link { width:100%; }
+.order-detail-actions { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.order-source-link,.order-complete-button { width:100%; }
+.order-complete-button:disabled { border-color:#d9d0c6; background:#e7e1da; box-shadow:none; color:#9f9287; cursor:not-allowed; opacity:.86; }
+.order-complete-button:disabled:hover { transform:none; }
 
 .cafe-tip { display:flex; min-height:54px; align-items:center; justify-content:center; gap:12px; padding:10px 20px; border:1px solid #efe2d1; border-radius:13px; background:linear-gradient(90deg,rgba(240,225,205,.46),rgba(255,253,248,.86),rgba(235,225,202,.44)); color:var(--muted); text-align:center; }
 .cafe-tip>span { color:#b28456; }

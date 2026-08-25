@@ -94,6 +94,10 @@ const normalizeOrder = (order, index) => ({
   reward: Math.max(0, numberOrZero(order.reward ?? order.reward_coin ?? order.points)),
   deadline: order.deadline,
   status: String(order.status || "available").toLowerCase(),
+  completionPercent: clamp(order.demo_progress ?? order.completion_percent, 0, 100),
+  completedMembers: 0,
+  totalMembers: 0,
+  progressMode: String(order.progress_mode || "live").toLowerCase(),
   icon: order.icon || "code",
   tone: order.tone || orderTones[index % orderTones.length],
   isDemo: false,
@@ -173,6 +177,26 @@ const hydrateCoinLedger = (transactions) => {
   });
 };
 
+const hydrateOrderProgress = ({ allMemberCount, completionRows, completionConnected }) => {
+  const totalMembers = Math.max(0, numberOrZero(allMemberCount));
+
+  orders.forEach((order) => {
+    const completedMemberIds = new Set(
+      completionRows
+        .filter((completion) => String(completion.order_id) === String(order.id))
+        .map((completion) => completion.member_id),
+    );
+
+    order.completedMembers = completedMemberIds.size;
+    order.totalMembers = totalMembers;
+
+    if (order.progressMode === "demo" || !completionConnected) return;
+    order.completionPercent = totalMembers > 0
+      ? clamp(Math.round((completedMemberIds.size / totalMembers) * 100), 0, 100)
+      : 0;
+  });
+};
+
 const normalizeMember = (member, index) => ({
   id: member.id,
   name: member.name || "Thành viên chưa đặt tên",
@@ -202,11 +226,13 @@ export const loadDashboardData = async () => {
   const teamId = getTeamId();
 
   try {
-    const [teamResult, memberResult, orderResult, transactionResult] = await Promise.all([
+    const [teamResult, memberResult, orderResult, transactionResult, allMemberResult, completionResult] = await Promise.all([
       supabase.from("teams").select("*").eq("id", teamId).maybeSingle(),
       supabase.from("members").select("*").eq("team_id", teamId).order("name", { ascending: true }),
       supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(20),
       supabase.from("coin_transactions").select("*").eq("team_id", teamId).order("occurred_at", { ascending: false }).limit(50),
+      supabase.from("members").select("id", { count: "exact", head: true }),
+      supabase.from("order_completions").select("order_id, member_id"),
     ]);
 
     const team = teamResult.data;
@@ -219,6 +245,11 @@ export const loadDashboardData = async () => {
     if (resolvedOrders.length > 0) {
       orders.splice(0, orders.length, ...resolvedOrders);
     }
+    hydrateOrderProgress({
+      allMemberCount: allMemberResult.count,
+      completionRows: completionResult.data || [],
+      completionConnected: !completionResult.error && !allMemberResult.error,
+    });
 
     if (team) {
       Object.assign(club, {
@@ -258,10 +289,11 @@ export const loadDashboardData = async () => {
 
     return {
       teamId,
-      connected: !teamResult.error && !memberResult.error && !orderResult.error && !transactionResult.error,
+      connected: !teamResult.error && !memberResult.error && !orderResult.error && !transactionResult.error && !completionResult.error,
       teamFound: Boolean(team),
       ordersConnected: !orderResult.error,
       ledgerConnected: !transactionResult.error,
+      progressConnected: !completionResult.error && !allMemberResult.error,
     };
   } catch {
     return { teamId, connected: false, teamFound: false };

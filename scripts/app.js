@@ -1,10 +1,10 @@
-import { renderDashboard } from "./components/dashboard.js?v=orders";
+import { renderDashboard } from "./components/dashboard.js?v=order-progress";
 import { renderMemberDirectory, renderMemberList } from "./components/memberDirectory.js";
-import { renderOrderDetail } from "./components/orders.js";
+import { renderOrderDetail } from "./components/orders.js?v=order-progress";
 import { renderSidebar } from "./components/sidebar.js";
 import { renderTopbar } from "./components/topbar.js?v=orders";
 import { club, demoNotifications, orders } from "./data/dashboard.js";
-import { loadDashboardData } from "./services/dashboardData.js";
+import { loadDashboardData } from "./services/dashboardData.js?v=order-progress";
 import { closeModal, showModal, showToast } from "./ui/feedback.js";
 import { getCafeWeekContext } from "./utils/cafeWeek.js";
 import { escapeHtml } from "./utils/format.js";

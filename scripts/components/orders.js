@@ -38,9 +38,31 @@ export const renderOrders = () => `
 export const renderOrderDetail = (order) => {
   const sourceUrl = normalizeOrderSourceUrl(order.sourceUrl);
   const isPlaceholderSource = sourceUrl === "#";
+  const completionPercent = Math.min(100, Math.max(0, Number(order.completionPercent) || 0));
+  const progressDescription = order.progressMode === "demo"
+    ? `${completionPercent}% thành viên toàn hệ thống đã hoàn thành (demo)`
+    : `${completionPercent}% thành viên toàn hệ thống đã hoàn thành`;
 
   return `
     <div class="order-detail">
+      <section class="order-global-progress" aria-label="Tiến độ hoàn thành của tất cả thành viên">
+        <div class="order-progress-copy">
+          <span>Tiến độ toàn hệ thống</span>
+          <strong>${completionPercent}%</strong>
+        </div>
+        <div
+          class="order-progress-track"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="${completionPercent}"
+          aria-label="${escapeHtml(progressDescription)}"
+        >
+          <span style="--order-progress:${completionPercent}%"></span>
+        </div>
+        <small>${escapeHtml(progressDescription)}</small>
+      </section>
+
       <div class="order-detail-heading">
         <span class="task-tone ${escapeHtml(order.tone || "purple")}">${icon(order.icon || "receipt")}</span>
         <div>
@@ -67,11 +89,19 @@ export const renderOrderDetail = (order) => {
         </section>
       </div>
 
-      <a
-        class="primary-button order-source-link"
-        href="${escapeHtml(sourceUrl)}"
-        ${isPlaceholderSource ? 'data-action="order-source"' : 'target="_blank" rel="noopener noreferrer"'}
-      >${icon("arrowRight")} Mở nguồn đơn hàng</a>
+      <div class="order-detail-actions">
+        <a
+          class="primary-button order-source-link"
+          href="${escapeHtml(sourceUrl)}"
+          ${isPlaceholderSource ? 'data-action="order-source"' : 'target="_blank" rel="noopener noreferrer"'}
+        >${icon("arrowRight")} Mở nguồn đơn hàng</a>
+        <button
+          class="primary-button order-complete-button"
+          type="button"
+          disabled
+          title="Chức năng hoàn thành đơn hàng đang được phát triển"
+        >${icon("checkCircle")} Hoàn thành đơn hàng</button>
+      </div>
     </div>
   `;
 };

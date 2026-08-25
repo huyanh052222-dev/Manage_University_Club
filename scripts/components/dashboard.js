@@ -1,7 +1,7 @@
 import { renderCafeHero } from "./cafeHero.js";
 import { renderCafeStats } from "./cafeStats.js";
 import { renderMemberOverview } from "./memberOverview.js";
-import { renderOrders } from "./orders.js";
+import { renderOrders } from "./orders.js?v=order-progress";
 import { renderCafeTip } from "./cafeTip.js?v=orders";
 import { renderTransactionLog } from "./transactionLog.js";
 

@@ -42,9 +42,24 @@ create table if not exists public.orders (
     reward integer not null default 0 check (reward >= 0),
     deadline timestamptz,
     status text not null default 'available',
+    progress_mode text not null default 'live' check (progress_mode in ('live', 'demo')),
+    demo_progress integer not null default 0 check (demo_progress between 0 and 100),
     icon text not null default 'code',
     tone text not null default 'purple',
     created_at timestamptz not null default now()
+);
+
+-- Cho phép chạy lại migration trên database đã tạo bảng orders từ phiên bản trước.
+alter table public.orders
+    add column if not exists progress_mode text not null default 'live',
+    add column if not exists demo_progress integer not null default 0;
+
+-- Một thành viên chỉ có một lần hoàn thành cho mỗi đơn hàng.
+create table if not exists public.order_completions (
+    order_id text not null references public.orders(id) on delete cascade,
+    member_id uuid not null references public.members(id) on delete cascade,
+    completed_at timestamptz not null default now(),
+    primary key (order_id, member_id)
 );
 
 -- Mọi biến động số dư được lưu trong một sổ cái chung để Landing và Admin đọc cùng dữ liệu.
@@ -72,6 +87,8 @@ insert into public.orders (
     reward,
     deadline,
     status,
+    progress_mode,
+    demo_progress,
     icon,
     tone
 )
@@ -85,10 +102,14 @@ values (
     240,
     now() + interval '1 day',
     'available',
+    'demo',
+    20,
     'code',
     'purple'
 )
-on conflict (id) do nothing;
+on conflict (id) do update
+set progress_mode = excluded.progress_mode,
+    demo_progress = excluded.demo_progress;
 
 update public.teams set icon = '🔥', color = '#FF5533', bg = '#FFE8E4' where id = 'A';
 update public.teams set icon = '⚡', color = '#FFCC00', bg = '#FFF8E1' where id = 'B';
@@ -103,6 +124,7 @@ update public.teams set icon = '🌙', color = '#5A6FCF', bg = '#EEF0FF' where i
 alter table public.teams enable row level security;
 alter table public.members enable row level security;
 alter table public.orders enable row level security;
+alter table public.order_completions enable row level security;
 alter table public.coin_transactions enable row level security;
 
 drop policy if exists "public_read_teams" on public.teams;
@@ -126,6 +148,13 @@ create policy "public_read_orders"
     to anon, authenticated
     using (true);
 
+drop policy if exists "public_read_order_completions" on public.order_completions;
+create policy "public_read_order_completions"
+    on public.order_completions
+    for select
+    to anon, authenticated
+    using (true);
+
 drop policy if exists "public_read_coin_transactions" on public.coin_transactions;
 create policy "public_read_coin_transactions"
     on public.coin_transactions
@@ -136,6 +165,7 @@ create policy "public_read_coin_transactions"
 grant select on public.teams to anon, authenticated;
 grant select on public.members to anon, authenticated;
 grant select on public.orders to anon, authenticated;
+grant select on public.order_completions to anon, authenticated;
 grant select on public.coin_transactions to anon, authenticated;
 
 create or replace function public.add_points_to_team(

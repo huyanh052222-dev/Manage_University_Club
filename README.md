@@ -66,7 +66,7 @@ Tuần vận hành được tính từ ngày mở bán `30/08/2026`: ngày này 
 
 ## Supabase
 
-`teams.points` là số dư coin dùng chung giữa Landing và Admin. `members.team_id` là nguồn danh sách và số lượng nhân sự. `orders` là nguồn danh sách đơn hàng; đơn có `team_id = null` hiển thị cho mọi nhóm, còn đơn có `team_id` chỉ hiển thị ở endpoint của nhóm tương ứng. Bản demo có đơn `c-hello-world`, nguồn `#`, thưởng `240 coin` và deadline sau một ngày.
+`teams.points` là số dư coin dùng chung giữa Landing và Admin. `members.team_id` là nguồn danh sách và số lượng nhân sự. `orders` là nguồn danh sách đơn hàng; đơn có `team_id = null` hiển thị cho mọi nhóm, còn đơn có `team_id` chỉ hiển thị ở endpoint của nhóm tương ứng. `order_completions` liên kết thành viên với đơn đã hoàn thành để tính tỷ lệ trên tổng thành viên của tất cả quán. Bản demo có đơn `c-hello-world`, nguồn `#`, thưởng `240 coin`, deadline sau một ngày và tiến độ mẫu `20%`.
 
 `coin_transactions` là sổ cái biến động coin. Nhật ký, tổng coin vào/ra, lợi nhuận tuần và các số liệu tài chính trên Landing đều được tính từ cùng bảng này. Khi chưa có giao dịch, danh sách trống và toàn bộ tổng số hiển thị `0 coin`. RPC `add_points_to_team` cập nhật `teams.points` và ghi nhật ký trong cùng một giao dịch SQL.
 
