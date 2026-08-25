@@ -18,6 +18,14 @@ Sau đó mở:
 Khi deploy Vercel, `vercel.json` ánh xạ thành:
 
 - Landing: `https://<project>.vercel.app/`
+- Nhóm A: `https://<project>.vercel.app/cafe/a`
+- Nhóm B: `https://<project>.vercel.app/cafe/b`
+- Nhóm C: `https://<project>.vercel.app/cafe/c`
+- Nhóm D: `https://<project>.vercel.app/cafe/d`
+- Nhóm E: `https://<project>.vercel.app/cafe/e`
+- Nhóm F: `https://<project>.vercel.app/cafe/f`
+- Nhóm G: `https://<project>.vercel.app/cafe/g`
+- Nhóm H: `https://<project>.vercel.app/cafe/h`
 - Admin: `https://<project>.vercel.app/admin`
 - Admin dashboard sau đăng nhập: `https://<project>.vercel.app/admin/dashboard`
 
@@ -58,7 +66,7 @@ Admin: `pages/admin/login.html` → `login.js` → Supabase Auth → `pages/admi
 
 `index.html` chỉ giữ điểm mount `#app`. Landing đọc công khai `teams` và `members` từ Supabase nhưng không yêu cầu đăng nhập và không liên kết sang Admin. Luồng xác thực chỉ tồn tại trong entry point riêng của Admin.
 
-Landing mặc định đọc nhóm `A`. Có thể chọn nhóm bằng query string, ví dụ `/?team=B`. Toàn bộ tên nhóm, số coin và danh sách nhân sự trên trang đều được hydrate từ cùng một lần tải dữ liệu. Khi bảng chưa có dòng, truy vấn thất bại hoặc cột mở rộng chưa có dữ liệu, các chỉ số liên quan giữ giá trị `0`.
+Landing mặc định đọc nhóm `A`. Trên Vercel, tám endpoint `/cafe/a` đến `/cafe/h` ánh xạ lần lượt tới `team_id` A–H. Query string cũ như `/?team=B` vẫn được hỗ trợ khi chạy local. Toàn bộ tên nhóm, số coin và danh sách nhân sự trên trang đều được hydrate từ cùng một lần tải dữ liệu. Khi bảng chưa có dòng, truy vấn thất bại hoặc cột mở rộng chưa có dữ liệu, các chỉ số liên quan giữ giá trị `0`.
 
 Menu mobile, thông báo, modal, toast và các nút điều hướng chính đã có tương tác demo.
 

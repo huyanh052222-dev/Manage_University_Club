@@ -10,7 +10,7 @@ export const renderCafeHero = () => {
   return `
     <section class="cafe-hero panel" id="overview" aria-labelledby="cafe-name">
       <div class="cafe-hero-photo">
-        <img src="./assets/images/cafe-horizon-hero.jpg" alt="Không gian ngoài trời của ${club.name}" />
+        <img src="/assets/images/cafe-horizon-hero.jpg" alt="Không gian ngoài trời của ${club.name}" />
         <span class="hero-status"><i></i> ${weekContext.hasOpened ? "Đang mở cửa" : "Sắp mở bán 30/08"}</span>
       </div>
       <div class="cafe-hero-info">

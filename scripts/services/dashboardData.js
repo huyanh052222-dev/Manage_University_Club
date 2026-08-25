@@ -8,6 +8,7 @@ import {
   transactionLogs,
   weeklyCoinSummary,
 } from "../data/dashboard.js";
+import { getTeamIdFromLocation } from "../routes/teamRoutes.js";
 import { supabase } from "../supabase/supabase.js";
 
 const memberPalettes = [
@@ -39,9 +40,12 @@ const getInitials = (name) => String(name ?? "")
   .join("") || "TV";
 
 const getTeamId = () => {
-  const requestedTeamId = new URLSearchParams(window.location.search).get("team");
   const defaultTeamId = document.querySelector("#app")?.dataset.teamId || "A";
-  return String(requestedTeamId || defaultTeamId).trim().toUpperCase();
+  return getTeamIdFromLocation({
+    search: window.location.search,
+    pathname: window.location.pathname,
+    fallback: defaultTeamId,
+  });
 };
 
 const updateStat = (statId, values) => {

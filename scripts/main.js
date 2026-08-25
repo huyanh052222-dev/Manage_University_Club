@@ -8,4 +8,4 @@ if (!appRoot) {
 
 appRoot.innerHTML = renderCafePage();
 
-await import("./app.js?v=20260825-order-progress");
+await import("./app.js?v=20260825-team-links");
