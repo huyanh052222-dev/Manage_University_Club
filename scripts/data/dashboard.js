@@ -142,7 +142,5 @@ export const tasks = [
 ];
 
 export const demoNotifications = [
-  "Danh sách 10 đơn đồ uống của tuần này đã sẵn sàng.",
-  "Mỗi đơn hoàn thành được thưởng cố định 200 coin.",
-  "Danh sách món sẽ được phân bổ lại khi bước sang tuần mới.",
+  "Chào mừng bạn đến với hệ thống Coffee Shop!"
 ];
