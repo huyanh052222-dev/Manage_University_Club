@@ -1,4 +1,4 @@
-import { renderCafeHero } from "./cafeHero.js";
+import { renderCafeHero } from "./cafeHero.js?v=reputation-stars";
 import { renderCafeStats } from "./cafeStats.js";
 import { renderMemberOverview } from "./memberOverview.js";
 import { renderOrders } from "./orders.js?v=weekly-cafe-orders";

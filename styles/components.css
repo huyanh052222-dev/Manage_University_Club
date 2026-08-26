@@ -112,6 +112,7 @@
 .cafe-score-grid strong { display:flex; align-items:center; gap:5px; margin-top:6px; font-size:17px; }
 .stars { color:var(--gold); letter-spacing:2px; white-space:nowrap; }
 .stars i { color:#ded5ca; font-style:normal; }
+.stars i.active { color:var(--gold); }
 .satisfaction .icon { width:18px; height:18px; color:#a09084; }
 .cafe-xp { padding-top:16px; }
 .cafe-xp>div:first-child { display:flex; align-items:center; justify-content:space-between; gap:12px; color:var(--muted); font-size:8px; }

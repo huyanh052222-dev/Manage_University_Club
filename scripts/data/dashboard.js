@@ -1,5 +1,8 @@
 import { createWeeklyOrders } from "../services/weeklyOrders.js?v=weekly-cafe-orders";
 
+export const DEFAULT_CAFE_REPUTATION = 1;
+export const MAX_CAFE_REPUTATION = 5;
+
 export const navigationItems = [
   { id: "overview", label: "Tổng quan", icon: "home" },
   { id: "personnel", label: "Nhân sự", icon: "users" },
@@ -20,7 +23,7 @@ export const club = {
   memberLimit: 0,
   foundedAt: "01/06/2026",
   startingFund: 0,
-  reputation: 0,
+  reputation: DEFAULT_CAFE_REPUTATION,
   ranking: 0,
   satisfaction: 0,
 };
@@ -52,7 +55,7 @@ export const cafeStats = [
   { id: "staff", label: "Nhân sự", value: "0", total: "", note: "nhân viên", meta: [["Đi làm", "0"], ["Vắng mặt", "0"]], icon: "users", color: "#d47b55" },
   { id: "orders", label: "Đơn hàng tuần", value: "0", total: "", note: "hoàn thành", meta: [["Hoàn thành", "0"], ["Đang xử lý", "0"]], icon: "receipt", color: "#6ca65d" },
   { id: "energy", label: "Năng lượng nhóm", value: "0", total: "/ 100", note: "Nhiệt huyết", progress: 0, icon: "zap", color: "#e5a13c" },
-  { id: "reputation", label: "Danh tiếng", value: "0", total: "/ 1000", note: "Đang phát triển", progress: 0, icon: "star", color: "#8c68c5", isDeveloping: true },
+  { id: "reputation", label: "Uy tín quán", value: String(DEFAULT_CAFE_REPUTATION), total: `/ ${MAX_CAFE_REPUTATION} sao`, note: "Mức khởi đầu", progress: 20, icon: "star", color: "#8c68c5" },
 ];
 
 export const weeklyCoinSummary = {

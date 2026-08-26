@@ -1,4 +1,4 @@
-import { cafeStats, club, finance, members, orders, transactionLogs, weeklyCoinSummary } from "../data/dashboard.js";
+import { DEFAULT_CAFE_REPUTATION, MAX_CAFE_REPUTATION, cafeStats, club, finance, members, orders, transactionLogs, weeklyCoinSummary } from "../data/dashboard.js";
 import { getTeamIdFromLocation } from "../routes/teamRoutes.js";
 import { getCafeWeekStart, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=cafe-cycle";
 import { supabase } from "../supabase/supabase.js";
@@ -20,6 +20,11 @@ const timeFormatter = new Intl.DateTimeFormat("vi-VN", { hour: "2-digit", minute
 const numberOrZero = (value) => {
     const resolved = Number(value);
     return Number.isFinite(resolved) ? resolved : 0;
+};
+
+const numberOrDefault = (value, fallback) => {
+    const resolved = Number(value);
+    return Number.isFinite(resolved) ? resolved : fallback;
 };
 
 const clamp = (value, minimum, maximum) => Math.min(Math.max(numberOrZero(value), minimum), maximum);
@@ -63,7 +68,7 @@ const resetSharedData = () => {
         memberCount: 0,
         memberLimit: 0,
         startingFund: 0,
-        reputation: 0,
+        reputation: DEFAULT_CAFE_REPUTATION,
         ranking: 0,
         satisfaction: 0,
     });
@@ -98,7 +103,13 @@ const resetSharedData = () => {
         ],
     });
     updateStat("energy", { value: "0", progress: 0 });
-    updateStat("reputation", { value: "0", progress: 0, note: "Đang phát triển", isDeveloping: true });
+    updateStat("reputation", {
+        value: String(DEFAULT_CAFE_REPUTATION),
+        total: `/ ${MAX_CAFE_REPUTATION} sao`,
+        progress: (DEFAULT_CAFE_REPUTATION / MAX_CAFE_REPUTATION) * 100,
+        note: "Mức khởi đầu",
+        isDeveloping: false,
+    });
 };
 
 const isSameLocalDate = (left, right) => left.getFullYear() === right.getFullYear() && left.getMonth() === right.getMonth() && left.getDate() === right.getDate();
@@ -225,6 +236,11 @@ export const loadDashboardData = async () => {
         club.memberCount = resolvedMembers.length;
 
         if (team) {
+            const reputation = clamp(
+                numberOrDefault(team.reputation, DEFAULT_CAFE_REPUTATION),
+                DEFAULT_CAFE_REPUTATION,
+                MAX_CAFE_REPUTATION,
+            );
             Object.assign(club, {
                 name: team.name || club.name,
                 code: `Nhóm ${team.id || teamId}`,
@@ -232,6 +248,7 @@ export const loadDashboardData = async () => {
                 xpTarget: numberOrZero(team.xp_target),
                 memberLimit: numberOrZero(team.member_limit),
                 startingFund: numberOrZero(team.points),
+                reputation,
             });
             Object.assign(finance, {
                 currentFund: numberOrZero(team.points),
@@ -240,6 +257,13 @@ export const loadDashboardData = async () => {
 
             const energy = clamp(team.energy, 0, 100);
             updateStat("energy", { value: String(energy), progress: energy });
+            updateStat("reputation", {
+                value: String(reputation),
+                total: `/ ${MAX_CAFE_REPUTATION} sao`,
+                progress: (reputation / MAX_CAFE_REPUTATION) * 100,
+                note: reputation === DEFAULT_CAFE_REPUTATION ? "Mức khởi đầu" : "Uy tín hiện tại",
+                isDeveloping: false,
+            });
         }
 
         const resolvedTransactions = (transactionResult.data || []).map(normalizeTransaction);

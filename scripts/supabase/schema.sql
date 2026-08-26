@@ -4,7 +4,8 @@
 create table if not exists public.teams (
     id text primary key,
     name text not null,
-    points integer not null default 0
+    points integer not null default 0,
+    reputation integer not null default 1 check (reputation between 1 and 5)
 );
 
 alter table public.teams
@@ -19,7 +20,18 @@ alter table public.teams
     add column if not exists xp_target integer not null default 0,
     add column if not exists weekly_income integer not null default 0,
     add column if not exists weekly_expense integer not null default 0,
+    add column if not exists reputation integer not null default 1,
     add column if not exists updated_at timestamptz not null default now();
+
+-- Uy tín quán dùng thang 1–5 sao; mọi quán cũ bắt đầu từ 1 sao nếu chưa có dữ liệu hợp lệ.
+update public.teams
+set reputation = 1
+where reputation is null or reputation < 1 or reputation > 5;
+
+alter table public.teams alter column reputation set default 1;
+alter table public.teams alter column reputation set not null;
+alter table public.teams drop constraint if exists teams_reputation_check;
+alter table public.teams add constraint teams_reputation_check check (reputation between 1 and 5);
 
 create table if not exists public.members (
     id uuid primary key default gen_random_uuid(),

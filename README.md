@@ -78,11 +78,13 @@ Tuần vận hành được tính từ ngày mở bán `30/08/2026`: ngày này 
 
 `teams.points` là số dư coin dùng chung giữa Landing và Admin. `members.team_id` là nguồn danh sách và số lượng nhân sự. Bản MVP sinh đúng 10 đơn đồ uống mỗi tuần từ bốn tên món: Cà phê đen, Cà phê sữa, Bạc Sỉu và Trà sữa. Mỗi món xuất hiện ít nhất một lần, phần còn lại được phân bổ bằng bộ random có seed theo mã tuần. Vì seed không chứa `team_id`, cả tám quán luôn nhận cùng danh sách trong một tuần; sang tuần mới danh sách sẽ tự đổi. Mỗi đơn thưởng cố định `200 coin`, có hạn 7 ngày, nguồn tạm thời là `#` và chức năng tiến độ đang được tạm bỏ. Danh sách đơn có vùng cuộn riêng để không kéo dài dashboard.
 
+`teams.reputation` lưu uy tín quán theo thang 1–5 sao. Mọi quán bắt đầu ở mức 1 sao; giao diện luôn render đủ năm ngôi sao và chỉ tô sáng số sao tương ứng. Cơ chế tự tăng sao sẽ được bổ sung sau.
+
 `coin_transactions` là sổ cái biến động coin. Nhật ký và tổng coin vào/ra đọc từ bảng này; “Doanh thu tuần” chỉ cộng giao dịch loại `income` trong đúng chu kỳ 7 ngày hiện tại nên tự trở về `0 coin` khi sang tuần mới. Khi chưa có giao dịch, các tổng số liên quan hiển thị `0 coin`. RPC `add_points_to_team` cập nhật `teams.points` và ghi nhật ký trong cùng một giao dịch SQL.
 
 Chi phí mỗi tuần của từng quán là `200 + 20 × số nhân viên` coin, trong đó quản lý không được tính lương và 200 coin gồm nguyên liệu 50, điện nước 50 và mặt bằng 100. Không có nhân viên thì lương là `0 coin × 0 người`, tổng chi phí vẫn là 200 coin. `weekly_financial_settlements` lưu ảnh chụp doanh thu, chi phí và lợi nhuận của lần kết toán gần nhất; vì vậy “Lợi nhuận kết toán” không chạy theo giao dịch trực tiếp mà giữ nguyên đến kỳ kế tiếp.
 
-Chạy `scripts/supabase/schema.sql` để bổ sung các bảng/cột MVP, dọn đơn lập trình demo cũ, thiết lập mức thưởng mặc định 200 coin, bảng kết toán, quyền đọc công khai cho Landing và RPC `add_points_to_team`. Sau đó chạy `scripts/supabase/weekly_deduction.sql` để thêm kiểm tra quyền Admin cùng nghiệp vụ kết toán và trừ coin đầu chu kỳ. Mỗi chu kỳ bắt đầu theo mốc 30/08/2026, không theo thứ Hai. Phí thực trừ cũng được ghi vào `coin_transactions` để không lệch số dư và nhật ký.
+Chạy `scripts/supabase/schema.sql` để bổ sung các bảng/cột MVP, dọn đơn lập trình demo cũ, thiết lập mức thưởng mặc định 200 coin, uy tín mặc định 1/5 sao, bảng kết toán, quyền đọc công khai cho Landing và RPC `add_points_to_team`. Sau đó chạy `scripts/supabase/weekly_deduction.sql` để thêm kiểm tra quyền Admin cùng nghiệp vụ kết toán và trừ coin đầu chu kỳ. Mỗi chu kỳ bắt đầu theo mốc 30/08/2026, không theo thứ Hai. Phí thực trừ cũng được ghi vào `coin_transactions` để không lệch số dư và nhật ký.
 
 Trang Admin tại `pages/admin/admin.html` đọc bảng `teams` và cập nhật coin qua RPC, không ghi trực tiếp vào bảng từ giao diện.
 
