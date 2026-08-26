@@ -1,4 +1,4 @@
-import { createWeeklyOrders } from "../services/weeklyOrders.js?v=weekly-cafe-orders";
+import { createWeeklyOrders } from "../services/weeklyOrders.js?v=weekly-reward-pool";
 
 export const DEFAULT_CAFE_REPUTATION = 1;
 export const MAX_CAFE_REPUTATION = 5;

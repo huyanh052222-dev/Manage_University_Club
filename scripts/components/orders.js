@@ -1,5 +1,5 @@
 import { orders } from "../data/dashboard.js";
-import { summarizeWeeklyOrders } from "../services/weeklyOrders.js?v=weekly-cafe-orders";
+import { summarizeWeeklyOrders } from "../services/weeklyOrders.js?v=weekly-reward-pool";
 import { escapeHtml, formatNumber } from "../utils/format.js";
 import {
   formatOrderDeadline,
@@ -27,7 +27,7 @@ export const renderOrders = () => `
   <section class="cafe-panel orders-panel" id="orders" aria-labelledby="orders-title">
     <header class="cafe-panel-header">
       <span class="section-icon coral">${icon("receipt")}</span>
-      <div><h2 id="orders-title">Đơn hàng</h2><p>10 đơn chung cho 8 quán · 200 coin/đơn</p></div>
+      <div><h2 id="orders-title">Đơn hàng</h2><p>Quỹ tuần 200 coin · 10 đơn · 20 coin/đơn</p></div>
     </header>
     <div class="order-allocation" aria-label="Phân bổ 10 đơn hàng tuần">
       ${summarizeWeeklyOrders(orders).map((item) => `

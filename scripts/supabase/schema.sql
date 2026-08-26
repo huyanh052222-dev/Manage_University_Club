@@ -51,7 +51,7 @@ create table if not exists public.orders (
     description text not null default '',
     requirements text not null default '',
     source_url text not null default '#',
-    reward integer not null default 200 check (reward >= 0),
+    reward integer not null default 20 check (reward >= 0),
     deadline timestamptz,
     status text not null default 'available',
     progress_mode text not null default 'live' check (progress_mode in ('live', 'demo')),
@@ -61,8 +61,8 @@ create table if not exists public.orders (
     created_at timestamptz not null default now()
 );
 
--- Đồng bộ giá trị mặc định cho cả bảng đã được tạo từ migration cũ.
-alter table public.orders alter column reward set default 200;
+-- Đồng bộ giá trị mặc định: quỹ 200 coin được chia đều cho 10 đơn, tức 20 coin/đơn.
+alter table public.orders alter column reward set default 20;
 
 -- Cho phép chạy lại migration trên database đã tạo bảng orders từ phiên bản trước.
 alter table public.orders

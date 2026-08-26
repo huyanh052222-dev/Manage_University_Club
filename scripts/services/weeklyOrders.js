@@ -1,7 +1,9 @@
 import { getCafeWeekKey, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=cafe-cycle";
 
 export const WEEKLY_ORDER_TOTAL = 10;
-export const ORDER_REWARD = 200;
+export const WEEKLY_ORDER_REWARD_POOL = 200;
+export const ORDER_REWARD = WEEKLY_ORDER_REWARD_POOL / WEEKLY_ORDER_TOTAL;
+export const ORDER_SOURCE_URL = "https://zalo.me/0703500256";
 
 const ORDER_DEADLINE_DAYS = 7;
 const DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
@@ -120,7 +122,7 @@ export const createWeeklyOrders = (now = new Date()) => {
       title: item.title,
       description: item.description,
       requirements: item.requirements.join("\n"),
-      sourceUrl: "#",
+      sourceUrl: ORDER_SOURCE_URL,
       reward: ORDER_REWARD,
       deadline,
       status: "available",

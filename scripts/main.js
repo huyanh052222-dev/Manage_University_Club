@@ -25,5 +25,5 @@ if (isAdminLoginHash) {
 } else {
   appRoot.innerHTML = renderCafePage();
 
-  await import("./app.js?v=20260826-reputation-stars");
+  await import("./app.js?v=20260826-weekly-reward-pool");
 }
