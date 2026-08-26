@@ -1,4 +1,4 @@
-import { getWeeklyCostEstimate } from "../services/weeklyCosts.js";
+import { getWeeklyCostEstimate } from "../services/weeklyCosts.js?v=profit-salary";
 import { formatNumber } from "../utils/format.js";
 import { icon } from "./icons.js";
 
@@ -14,11 +14,14 @@ const renderCostRows = (items) => items.map((item) => `
 
 const renderCostTable = (modifier = "") => {
   const estimate = getWeeklyCostEstimate();
+  const managerNote = estimate.managerCount
+    ? ` · Không tính ${estimate.managerCount} quản lý`
+    : "";
   return `
     <div class="weekly-cost-table ${modifier}">
       <header>
         <span>${icon("receipt")}</span>
-        <div><b>Dự toán chi phí tuần</b><em>${formatNumber(estimate.fixedCost)} cố định + ${estimate.salaryPerMember} coin × ${estimate.staffCount} nhân viên</em></div>
+        <div><b>Dự toán chi phí tuần</b><em>${formatNumber(estimate.fixedCost)} cố định + ${estimate.salaryPerMember} coin × ${estimate.staffCount} nhân viên${managerNote}</em></div>
       </header>
       <div class="weekly-cost-rows">${renderCostRows(estimate.items)}</div>
       <footer><span>Tổng chi dự kiến</span><strong>~${formatNumber(estimate.total)} coin / tuần</strong></footer>

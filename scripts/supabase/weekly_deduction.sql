@@ -100,12 +100,26 @@ begin
             select
                 teams.id,
                 coalesce(teams.points, 0) as points,
-                count(members.id)::integer as member_count
+                count(members.id) filter (
+                    where lower(trim(coalesce(members.role, ''))) not in (
+                        'manage',
+                        'manager',
+                        'quản lý',
+                        'quan ly',
+                        'quản trị viên',
+                        'quan tri vien',
+                        'trưởng nhóm',
+                        'truong nhom',
+                        'leader',
+                        'admin'
+                    )
+                )::integer as paid_staff_count
             from public.teams as teams
             left join public.members as members on members.team_id = teams.id
             group by teams.id, teams.points
         loop
-            weekly_cost := deduction_amount + (20 * team_record.member_count);
+            -- Quản lý/trưởng nhóm không nhận lương; chỉ nhân viên được tính 20 coin/người.
+            weekly_cost := deduction_amount + (20 * team_record.paid_staff_count);
 
             -- Khi mở tuần mới, chốt doanh thu và chi phí của chu kỳ 7 ngày vừa kết thúc.
             if week_key > date '2026-08-30' then
@@ -136,7 +150,7 @@ begin
                     settled_income,
                     weekly_cost,
                     settled_income - weekly_cost,
-                    team_record.member_count
+                    team_record.paid_staff_count
                 )
                 on conflict (team_id, period_start) do nothing;
             end if;

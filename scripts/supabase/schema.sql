@@ -39,7 +39,7 @@ create table if not exists public.orders (
     description text not null default '',
     requirements text not null default '',
     source_url text not null default '#',
-    reward integer not null default 0 check (reward >= 0),
+    reward integer not null default 200 check (reward >= 0),
     deadline timestamptz,
     status text not null default 'available',
     progress_mode text not null default 'live' check (progress_mode in ('live', 'demo')),
@@ -48,6 +48,9 @@ create table if not exists public.orders (
     tone text not null default 'purple',
     created_at timestamptz not null default now()
 );
+
+-- Đồng bộ giá trị mặc định cho cả bảng đã được tạo từ migration cũ.
+alter table public.orders alter column reward set default 200;
 
 -- Cho phép chạy lại migration trên database đã tạo bảng orders từ phiên bản trước.
 alter table public.orders
@@ -94,40 +97,8 @@ create table if not exists public.weekly_financial_settlements (
 create index if not exists weekly_settlements_team_period_idx
     on public.weekly_financial_settlements (team_id, period_start desc);
 
--- Đơn demo: deadline được tính một ngày kể từ lần đầu chạy migration.
-insert into public.orders (
-    id,
-    team_id,
-    title,
-    description,
-    requirements,
-    source_url,
-    reward,
-    deadline,
-    status,
-    progress_mode,
-    demo_progress,
-    icon,
-    tone
-)
-values (
-    'c-hello-world',
-    null,
-    'Bài tập C cơ bản: Hello World',
-    'Viết chương trình C đầu tiên sử dụng printf để in lời chào.',
-    'Tạo tệp main.c, sử dụng hàm printf và in chính xác dòng: Hello, World!',
-    '#',
-    240,
-    now() + interval '1 day',
-    'available',
-    'demo',
-    20,
-    'code',
-    'purple'
-)
-on conflict (id) do update
-set progress_mode = excluded.progress_mode,
-    demo_progress = excluded.demo_progress;
+-- Dọn đơn lập trình demo cũ. Danh sách 10 đơn đồ uống được sinh đồng nhất theo tuần ở frontend.
+delete from public.orders where id = 'c-hello-world';
 
 update public.teams set icon = '🔥', color = '#FF5533', bg = '#FFE8E4' where id = 'A';
 update public.teams set icon = '⚡', color = '#FFCC00', bg = '#FFF8E1' where id = 'B';

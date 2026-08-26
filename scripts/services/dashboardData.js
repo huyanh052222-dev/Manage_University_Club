@@ -1,8 +1,9 @@
-import { cafeStats, club, createDemoOrder, finance, members, orders, transactionLogs, weeklyCoinSummary } from "../data/dashboard.js";
+import { cafeStats, club, finance, members, orders, transactionLogs, weeklyCoinSummary } from "../data/dashboard.js";
 import { getTeamIdFromLocation } from "../routes/teamRoutes.js";
 import { getCafeWeekStart, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=cafe-cycle";
 import { supabase } from "../supabase/supabase.js";
-import { getWeeklyCostEstimate } from "./weeklyCosts.js";
+import { getWeeklyCostEstimate, isManagerRole } from "./weeklyCosts.js";
+import { createWeeklyOrders } from "./weeklyOrders.js?v=weekly-cafe-orders";
 
 const memberPalettes = [
     ["#936d55", "#2e3b5c"],
@@ -13,7 +14,6 @@ const memberPalettes = [
     ["#65799b", "#2d3857"],
 ];
 
-const orderTones = ["purple", "blue", "gold", "coral"];
 const dateFormatter = new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit" });
 const timeFormatter = new Intl.DateTimeFormat("vi-VN", { hour: "2-digit", minute: "2-digit" });
 
@@ -48,7 +48,7 @@ const updateStat = (statId, values) => {
 
 const resetSharedData = () => {
     members.splice(0, members.length);
-    orders.splice(0, orders.length, createDemoOrder());
+    orders.splice(0, orders.length, ...createWeeklyOrders());
     transactionLogs.splice(0, transactionLogs.length);
     Object.assign(weeklyCoinSummary, {
         totalIncome: 0,
@@ -74,6 +74,12 @@ const resetSharedData = () => {
         weeklyFlow: 0,
         income: 0,
         expense: 0,
+        settledIncome: 0,
+        settledExpense: 0,
+        settledMemberCount: 0,
+        settlementPeriodStart: "",
+        settlementPeriodEnd: "",
+        settledAt: "",
         updatedAt: "Chưa có dữ liệu",
     });
     updateStat("staff", {
@@ -94,24 +100,6 @@ const resetSharedData = () => {
     updateStat("energy", { value: "0", progress: 0 });
     updateStat("reputation", { value: "0", progress: 0, note: "Đang phát triển", isDeveloping: true });
 };
-
-const normalizeOrder = (order, index) => ({
-    id: order.id,
-    title: order.title || "Đơn hàng chưa đặt tên",
-    description: order.description || order.summary || "Chưa có mô tả đơn hàng.",
-    requirements: order.requirements || "Chưa có yêu cầu chi tiết.",
-    sourceUrl: order.source_url || order.sourceUrl || "#",
-    reward: Math.max(0, numberOrZero(order.reward ?? order.reward_coin ?? order.points)),
-    deadline: order.deadline,
-    status: String(order.status || "available").toLowerCase(),
-    completionPercent: clamp(order.demo_progress ?? order.completion_percent, 0, 100),
-    completedMembers: 0,
-    totalMembers: 0,
-    progressMode: String(order.progress_mode || "live").toLowerCase(),
-    icon: order.icon || "code",
-    tone: order.tone || orderTones[index % orderTones.length],
-    isDemo: false,
-});
 
 const isSameLocalDate = (left, right) => left.getFullYear() === right.getFullYear() && left.getMonth() === right.getMonth() && left.getDate() === right.getDate();
 
@@ -151,7 +139,7 @@ const normalizeTransaction = (transaction) => {
     };
 };
 
-const hydrateCoinLedger = (transactions, { weekStart, weekEnd, settledProfit = 0, weeklyExpense = 0 }) => {
+const hydrateCoinLedger = (transactions, { weekStart, weekEnd, settlement, weeklyExpense = 0 }) => {
     transactionLogs.splice(0, transactionLogs.length, ...transactions);
     const weeklyTransactions = transactions.filter((transaction) => {
         const occurredAt = new Date(transaction.occurredAt);
@@ -169,21 +157,13 @@ const hydrateCoinLedger = (transactions, { weekStart, weekEnd, settledProfit = 0
     Object.assign(finance, {
         income: weeklyRevenue,
         expense: weeklyExpense,
-        weeklyFlow: numberOrZero(settledProfit),
-    });
-};
-
-const hydrateOrderProgress = ({ allMemberCount, completionRows, completionConnected }) => {
-    const totalMembers = Math.max(0, numberOrZero(allMemberCount));
-
-    orders.forEach((order) => {
-        const completedMemberIds = new Set(completionRows.filter((completion) => String(completion.order_id) === String(order.id)).map((completion) => completion.member_id));
-
-        order.completedMembers = completedMemberIds.size;
-        order.totalMembers = totalMembers;
-
-        if (order.progressMode === "demo" || !completionConnected) return;
-        order.completionPercent = totalMembers > 0 ? clamp(Math.round((completedMemberIds.size / totalMembers) * 100), 0, 100) : 0;
+        weeklyFlow: numberOrZero(settlement?.profit),
+        settledIncome: numberOrZero(settlement?.income),
+        settledExpense: numberOrZero(settlement?.expense),
+        settledMemberCount: numberOrZero(settlement?.member_count),
+        settlementPeriodStart: settlement?.period_start || "",
+        settlementPeriodEnd: settlement?.period_end || "",
+        settledAt: settlement?.settled_at || "",
     });
 };
 
@@ -191,7 +171,7 @@ const normalizeMember = (member, index) => ({
     id: member.id,
     name: member.name || "Thành viên chưa đặt tên",
     initials: getInitials(member.name),
-    role: member.role === "manage" ? "Quản lý" : "Nhân viên",
+    role: isManagerRole(member.role) ? "Quản lý" : "Nhân viên",
     roleCode: member.role || "staff",
     status: member.attendance_status || member.status || "",
     colors: memberPalettes[index % memberPalettes.length],
@@ -227,35 +207,22 @@ export const loadDashboardData = async () => {
     }
 
     try {
-        const [teamResult, memberResult, orderResult, transactionResult, allMemberResult, completionResult, settlementResult] = await Promise.all([
+        const [teamResult, memberResult, transactionResult, settlementResult] = await Promise.all([
             supabase.from("teams").select("*").eq("id", teamId).maybeSingle(),
             supabase.from("members").select("*").eq("team_id", teamId).order("name", { ascending: true }),
-            supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(20),
             transactionQuery,
-            supabase.from("members").select("id", { count: "exact", head: true }),
-            supabase.from("order_completions").select("order_id, member_id"),
-            supabase.from("weekly_financial_settlements").select("profit, period_start, settled_at").eq("team_id", teamId).order("period_start", { ascending: false }).limit(1).maybeSingle(),
+            supabase.from("weekly_financial_settlements").select("income, expense, profit, member_count, period_start, period_end, settled_at").eq("team_id", teamId).order("period_start", { ascending: false }).limit(1).maybeSingle(),
         ]);
 
         const team = teamResult.data;
         const resolvedMembers = (memberResult.data || [])
             .sort((left, right) => {
-                const roleOrder = Number(right.role === "manage") - Number(left.role === "manage");
+                const roleOrder = Number(isManagerRole(right.role)) - Number(isManagerRole(left.role));
                 return roleOrder || String(left.name || "").localeCompare(String(right.name || ""), "vi");
             })
             .map(normalizeMember);
         members.splice(0, members.length, ...resolvedMembers);
         club.memberCount = resolvedMembers.length;
-
-        const resolvedOrders = (orderResult.data || []).filter((order) => order.team_id == null || String(order.team_id).toUpperCase() === teamId).map(normalizeOrder);
-        if (resolvedOrders.length > 0) {
-            orders.splice(0, orders.length, ...resolvedOrders);
-        }
-        hydrateOrderProgress({
-            allMemberCount: allMemberResult.count,
-            completionRows: completionResult.data || [],
-            completionConnected: !completionResult.error && !allMemberResult.error,
-        });
 
         if (team) {
             Object.assign(club, {
@@ -276,11 +243,11 @@ export const loadDashboardData = async () => {
         }
 
         const resolvedTransactions = (transactionResult.data || []).map(normalizeTransaction);
-        const weeklyCost = getWeeklyCostEstimate(resolvedMembers.length);
+        const weeklyCost = getWeeklyCostEstimate(resolvedMembers);
         hydrateCoinLedger(resolvedTransactions, {
             weekStart: currentWeekStart,
             weekEnd: currentWeekEnd,
-            settledProfit: settlementResult.data?.profit,
+            settlement: settlementResult.data,
             weeklyExpense: weeklyCost.total,
         });
 
@@ -306,12 +273,11 @@ export const loadDashboardData = async () => {
 
         return {
             teamId,
-            connected: !teamResult.error && !memberResult.error && !orderResult.error && !transactionResult.error && !completionResult.error,
+            connected: !teamResult.error && !memberResult.error && !transactionResult.error,
             teamFound: Boolean(team),
-            ordersConnected: !orderResult.error,
+            ordersConnected: true,
             ledgerConnected: !transactionResult.error,
             settlementConnected: !settlementResult.error,
-            progressConnected: !completionResult.error && !allMemberResult.error,
         };
     } catch {
         return { teamId, connected: false, teamFound: false };

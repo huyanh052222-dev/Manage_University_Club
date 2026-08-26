@@ -2,7 +2,8 @@ import { finance } from "../data/dashboard.js";
 import { getCafeWeekContext } from "../utils/cafeWeek.js?v=cafe-cycle";
 import { formatNumber } from "../utils/format.js";
 import { icon } from "./icons.js";
-import { renderWeeklyCostPopover } from "./weeklyCosts.js";
+import { renderWeeklyCostPopover } from "./weeklyCosts.js?v=profit-salary";
+import { renderWeeklyProfitPopover } from "./weeklyProfit.js?v=profit-salary";
 
 const formatSignedCoin = (amount) => {
   if (amount === 0) return "0 coin";
@@ -40,7 +41,18 @@ export const renderTopbar = () => {
       </button>
       ${renderWeeklyCostPopover()}
     </div>
-    <div class="top-finance-item profit"><span>${icon("coffee")}</span><div><small>Lợi nhuận kết toán</small><strong>${formatSignedCoin(finance.weeklyFlow)}</strong></div></div>
+    <div class="top-finance-item profit weekly-profit-container ${finance.weeklyFlow < 0 ? "is-negative" : "is-positive"}">
+      <button
+        class="weekly-profit-trigger"
+        type="button"
+        data-action="weekly-profit"
+        aria-label="Lợi nhuận kết toán ${formatSignedCoin(finance.weeklyFlow)}. Xem chi tiết kỳ kết toán"
+      >
+        <span class="weekly-profit-trigger-icon">${icon("coffee")}</span>
+        <span class="weekly-profit-trigger-copy"><small>Lợi nhuận kết toán</small><strong>${formatSignedCoin(finance.weeklyFlow)}</strong></span>
+      </button>
+      ${renderWeeklyProfitPopover()}
+    </div>
   </div>
 
   <div class="topbar-actions">

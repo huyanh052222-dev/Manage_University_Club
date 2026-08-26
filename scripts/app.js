@@ -1,11 +1,12 @@
-import { renderDashboard } from "./components/dashboard.js?v=order-progress";
+import { renderDashboard } from "./components/dashboard.js?v=weekly-cafe-orders";
 import { renderMemberDirectory, renderMemberList } from "./components/memberDirectory.js";
-import { renderOrderDetail } from "./components/orders.js?v=order-progress";
+import { renderOrderDetail } from "./components/orders.js?v=weekly-cafe-orders";
 import { renderSidebar } from "./components/sidebar.js";
-import { renderTopbar } from "./components/topbar.js?v=weekly-costs";
-import { renderWeeklyCostModal } from "./components/weeklyCosts.js";
+import { renderTopbar } from "./components/topbar.js?v=profit-salary";
+import { renderWeeklyCostModal } from "./components/weeklyCosts.js?v=profit-salary";
+import { renderWeeklyProfitModal } from "./components/weeklyProfit.js?v=profit-salary";
 import { club, demoNotifications, orders } from "./data/dashboard.js";
-import { loadDashboardData } from "./services/dashboardData.js?v=weekly-settlement";
+import { loadDashboardData } from "./services/dashboardData.js?v=weekly-cafe-orders";
 import { closeModal, showModal, showToast } from "./ui/feedback.js";
 import { getCafeWeekContext, getNextCafeWeekStart } from "./utils/cafeWeek.js?v=cafe-cycle";
 import { escapeHtml } from "./utils/format.js";
@@ -140,6 +141,14 @@ const handleAction = (actionElement) => {
     return;
   }
 
+  if (action === "weekly-profit") {
+    showModal({
+      title: "Chi tiết lợi nhuận kết toán",
+      content: renderWeeklyProfitModal(),
+    });
+    return;
+  }
+
   if (action === "show-season" || action === "show-rules") {
     showModal({
       title: "Quy tắc vận hành Cafe Horizon",
@@ -155,7 +164,7 @@ const handleAction = (actionElement) => {
       return;
     }
     showModal({
-      title: escapeHtml(order.title),
+      title: `Yêu cầu đơn hàng: ${escapeHtml(order.title)}`,
       content: renderOrderDetail(order),
     });
     return;

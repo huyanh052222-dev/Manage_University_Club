@@ -1,3 +1,5 @@
+import { createWeeklyOrders } from "../services/weeklyOrders.js?v=weekly-cafe-orders";
+
 export const navigationItems = [
   { id: "overview", label: "Tổng quan", icon: "home" },
   { id: "personnel", label: "Nhân sự", icon: "users" },
@@ -16,7 +18,7 @@ export const club = {
   seasonGoal: "Top 3 quán café sinh viên xuất sắc",
   memberCount: 0,
   memberLimit: 0,
-  foundedAt: "01/06/2024",
+  foundedAt: "01/06/2026",
   startingFund: 0,
   reputation: 0,
   ranking: 0,
@@ -30,6 +32,12 @@ export const finance = {
   weeklyFlow: 0,
   income: 0,
   expense: 0,
+  settledIncome: 0,
+  settledExpense: 0,
+  settledMemberCount: 0,
+  settlementPeriodStart: "",
+  settlementPeriodEnd: "",
+  settledAt: "",
   updatedAt: "Chưa có dữ liệu",
 };
 
@@ -55,29 +63,7 @@ export const weeklyCoinSummary = {
 
 export const transactionLogs = [];
 
-export const createDemoOrder = () => {
-  const deadline = new Date(Date.now() + (24 * 60 * 60 * 1000));
-
-  return {
-    id: "c-hello-world",
-    title: "Bài tập C cơ bản: Hello World",
-    description: "Viết chương trình C đầu tiên sử dụng printf để in lời chào.",
-    requirements: "Tạo tệp main.c, sử dụng hàm printf và in chính xác dòng: Hello, World!",
-    sourceUrl: "#",
-    reward: 240,
-    deadline: deadline.toISOString(),
-    status: "available",
-    completionPercent: 20,
-    completedMembers: 0,
-    totalMembers: 0,
-    progressMode: "demo",
-    icon: "code",
-    tone: "purple",
-    isDemo: true,
-  };
-};
-
-export const orders = [createDemoOrder()];
+export const orders = createWeeklyOrders();
 
 export const resources = [
   { id: "people", label: "Nhân lực", value: 7, total: 10, unit: "", icon: "user", color: "#5d8cff" },
@@ -156,7 +142,7 @@ export const tasks = [
 ];
 
 export const demoNotifications = [
-  "Cafe Horizon vừa hoàn thành đơn hàng thứ 23 trong tuần.",
-  "Nhiệm vụ Content Social sắp đến hạn.",
-  "Doanh thu tuần đã tăng 12% so với tuần trước.",
+  "Danh sách 10 đơn đồ uống của tuần này đã sẵn sàng.",
+  "Mỗi đơn hoàn thành được thưởng cố định 200 coin.",
+  "Danh sách món sẽ được phân bổ lại khi bước sang tuần mới.",
 ];
