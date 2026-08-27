@@ -1,5 +1,5 @@
 import { orders } from "../data/dashboard.js";
-import { summarizeWeeklyOrders } from "../services/weeklyOrders.js?v=monday-saturday-deadline";
+import { summarizeWeeklyOrders } from "../services/weeklyOrders.js?v=order-summary-stat";
 import { escapeHtml, formatNumber } from "../utils/format.js";
 import {
   formatOrderDeadline,

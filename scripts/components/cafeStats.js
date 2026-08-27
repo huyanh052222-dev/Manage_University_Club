@@ -17,7 +17,8 @@ const renderMeta = (meta) => meta.map(([label, value, tone], index) => {
 export const renderCafeStats = () => `
   <section class="cafe-stats" aria-label="Chỉ số vận hành">
     ${cafeStats.map((stat) => {
-      const stateClass = stat.isLocked ? " is-locked" : stat.isDeveloping ? " development-feature" : "";
+      const isSummaryOnly = !stat.meta && !Number.isFinite(Number(stat.progress));
+      const stateClass = `${stat.isLocked ? " is-locked" : stat.isDeveloping ? " development-feature" : ""}${isSummaryOnly ? " is-summary-only" : ""}`;
       const stateAttributes = stat.isLocked
         ? `aria-disabled="true" aria-label="${stat.label}: đang phát triển, tạm khóa"`
         : stat.isDeveloping
@@ -32,10 +33,10 @@ export const renderCafeStats = () => `
           <strong>${stat.value} <small>${stat.total}</small></strong>
           <span>${stat.note}</span>
         </div>
-        ${stat.meta ? `<div class="cafe-stat-meta">${renderMeta(stat.meta)}</div>` : `
+        ${stat.meta ? `<div class="cafe-stat-meta">${renderMeta(stat.meta)}</div>` : Number.isFinite(Number(stat.progress)) ? `
           <div class="cafe-stat-progress">
             <div class="progress-track"><span class="progress-value" style="--progress:${stat.progress}%;--bar:${stat.color}"></span></div>
-          </div>`}
+          </div>` : ""}
         ${stat.isLocked ? `<div class="cafe-stat-lock" aria-hidden="true"><span>${icon("lock")}</span><strong>Đang phát triển</strong></div>` : ""}
       </article>`;
     }).join("")}

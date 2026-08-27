@@ -1,4 +1,4 @@
-import { renderDashboard } from "./components/dashboard.js?v=monday-saturday-deadline";
+import { renderDashboard } from "./components/dashboard.js?v=order-summary-stat";
 import { renderMemberDirectory, renderMemberList } from "./components/memberDirectory.js";
 import { renderOrderDetail } from "./components/orders.js?v=monday-saturday-deadline";
 import { renderSidebar } from "./components/sidebar.js";
@@ -6,7 +6,7 @@ import { renderTopbar } from "./components/topbar.js?v=profit-salary";
 import { renderWeeklyCostModal } from "./components/weeklyCosts.js?v=profit-salary";
 import { renderWeeklyProfitModal } from "./components/weeklyProfit.js?v=profit-salary";
 import { club, demoNotifications, orders } from "./data/dashboard.js";
-import { loadDashboardData } from "./services/dashboardData.js?v=monday-saturday-deadline";
+import { loadDashboardData } from "./services/dashboardData.js?v=order-summary-stat";
 import { closeModal, showModal, showToast } from "./ui/feedback.js";
 import { getCafeWeekContext, getNextCafeWeekStart } from "./utils/cafeWeek.js?v=cafe-cycle";
 import { escapeHtml } from "./utils/format.js";

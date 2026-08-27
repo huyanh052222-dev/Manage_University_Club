@@ -1,7 +1,7 @@
 import { renderCafeHero } from "./cafeHero.js?v=reputation-stars";
-import { renderCafeStats } from "./cafeStats.js?v=staff-role-counts";
+import { renderCafeStats } from "./cafeStats.js?v=order-summary-stat";
 import { renderMemberOverview } from "./memberOverview.js";
-import { renderOrders } from "./orders.js?v=monday-saturday-deadline";
+import { renderOrders } from "./orders.js?v=order-summary-stat";
 import { renderCafeTip } from "./cafeTip.js?v=orders";
 import { renderTransactionLog } from "./transactionLog.js";
 

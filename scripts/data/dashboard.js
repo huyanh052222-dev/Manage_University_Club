@@ -1,4 +1,4 @@
-import { createWeeklyOrders } from "../services/weeklyOrders.js?v=monday-saturday-deadline";
+import { WEEKLY_ORDER_TOTAL, createWeeklyOrders } from "../services/weeklyOrders.js?v=order-summary-stat";
 
 export const DEFAULT_CAFE_REPUTATION = 1;
 export const MAX_CAFE_REPUTATION = 5;
@@ -53,7 +53,7 @@ export const groups = [
 
 export const cafeStats = [
   { id: "staff", label: "Nhân sự", value: "0", total: "", note: "thành viên", meta: [["Quản lý", "0", "neutral"], ["Nhân viên", "0", "positive"]], icon: "users", color: "#d47b55" },
-  { id: "orders", label: "Đơn hàng tuần", value: "0", total: "", note: "hoàn thành", meta: [["Hoàn thành", "0"], ["Đang xử lý", "0"]], icon: "receipt", color: "#6ca65d" },
+  { id: "orders", label: "Đơn hàng tuần", value: String(WEEKLY_ORDER_TOTAL), total: "", note: "đơn trong tuần", icon: "receipt", color: "#6ca65d" },
   { id: "energy", label: "Năng lượng nhóm", value: "0", total: "/ 100", note: "Nhiệt huyết", progress: 0, icon: "zap", color: "#e5a13c" },
   { id: "reputation", label: "Uy tín quán", value: String(DEFAULT_CAFE_REPUTATION), total: `/ ${MAX_CAFE_REPUTATION} sao`, note: "Mức khởi đầu", progress: 20, icon: "star", color: "#8c68c5", isLocked: true },
 ];

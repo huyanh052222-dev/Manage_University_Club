@@ -25,5 +25,5 @@ if (isAdminLoginHash) {
 } else {
   appRoot.innerHTML = renderCafePage();
 
-  await import("./app.js?v=20260827-monday-saturday-deadline");
+  await import("./app.js?v=20260827-order-summary-stat");
 }

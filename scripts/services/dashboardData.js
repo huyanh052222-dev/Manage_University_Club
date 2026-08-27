@@ -3,7 +3,7 @@ import { getTeamIdFromLocation } from "../routes/teamRoutes.js";
 import { getCafeWeekStart, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=cafe-cycle";
 import { supabase } from "../supabase/supabase.js";
 import { getWeeklyCostEstimate, isManagerRole } from "./weeklyCosts.js";
-import { createWeeklyOrders } from "./weeklyOrders.js?v=monday-saturday-deadline";
+import { createWeeklyOrders } from "./weeklyOrders.js?v=order-summary-stat";
 
 const memberPalettes = [
     ["#936d55", "#2e3b5c"],
@@ -96,11 +96,10 @@ const resetSharedData = () => {
         ],
     });
     updateStat("orders", {
-        value: "0",
-        meta: [
-            ["Hoàn thành", "0"],
-            ["Đang xử lý", "0"],
-        ],
+        value: String(orders.length),
+        total: "",
+        note: "đơn trong tuần",
+        meta: null,
     });
     updateStat("energy", { value: "0", progress: 0 });
     updateStat("reputation", {
@@ -260,14 +259,11 @@ export const loadDashboardData = async () => {
             weeklyExpense: weeklyCost.total,
         });
 
-        const completedOrders = orders.filter((order) => order.status === "completed").length;
-        const pendingOrders = orders.length - completedOrders;
         updateStat("orders", {
-            value: String(completedOrders),
-            meta: [
-                ["Hoàn thành", String(completedOrders)],
-                ["Đang xử lý", String(pendingOrders)],
-            ],
+            value: String(orders.length),
+            total: "",
+            note: "đơn trong tuần",
+            meta: null,
         });
 
         updateStat("staff", {

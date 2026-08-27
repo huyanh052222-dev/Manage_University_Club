@@ -124,6 +124,7 @@
 
 .cafe-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
 .cafe-stat-card { position:relative; display:grid; min-height:112px; grid-template-columns:auto minmax(90px,1fr) minmax(75px,.75fr); align-items:center; gap:13px; padding:15px 17px; border:1px solid var(--border); border-radius:14px; background:rgba(255,253,249,.94); box-shadow:var(--shadow-soft); }
+.cafe-stat-card.is-summary-only { grid-template-columns:auto minmax(90px,1fr); }
 .cafe-stat-icon,.section-icon,.task-tone { display:grid; place-items:center; }
 .cafe-stat-icon { width:52px; height:52px; border-radius:50%; background:color-mix(in srgb,var(--stat-accent) 14%,white); color:var(--stat-accent); }
 .cafe-stat-icon .icon { width:25px; height:25px; }
