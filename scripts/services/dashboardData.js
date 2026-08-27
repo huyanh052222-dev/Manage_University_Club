@@ -91,8 +91,8 @@ const resetSharedData = () => {
         value: "0",
         total: "",
         meta: [
-            ["Đi làm", "0"],
-            ["Vắng mặt", "0"],
+            ["Quản lý", "0", "neutral"],
+            ["Nhân viên", "0", "positive"],
         ],
     });
     updateStat("orders", {
@@ -188,21 +188,6 @@ const normalizeMember = (member, index) => ({
     colors: memberPalettes[index % memberPalettes.length],
 });
 
-const resolveAttendance = (resolvedMembers) => {
-    const presentStatuses = new Set(["present", "working", "đi làm", "co mat", "có mặt"]);
-    const absentStatuses = new Set(["absent", "off", "vắng", "vang mat", "vắng mặt"]);
-    let present = 0;
-    let absent = 0;
-
-    resolvedMembers.forEach((member) => {
-        const status = String(member.status).trim().toLowerCase();
-        if (presentStatuses.has(status)) present += 1;
-        if (absentStatuses.has(status)) absent += 1;
-    });
-
-    return { present, absent };
-};
-
 export const loadDashboardData = async () => {
     resetSharedData();
     const teamId = getTeamId();
@@ -285,13 +270,12 @@ export const loadDashboardData = async () => {
             ],
         });
 
-        const attendance = resolveAttendance(resolvedMembers);
         updateStat("staff", {
             value: String(resolvedMembers.length),
             total: club.memberLimit > 0 ? `/ ${club.memberLimit}` : "",
             meta: [
-                ["Đi làm", String(attendance.present)],
-                ["Vắng mặt", String(attendance.absent)],
+                ["Quản lý", String(weeklyCost.managerCount), "neutral"],
+                ["Nhân viên", String(weeklyCost.staffCount), "positive"],
             ],
         });
 

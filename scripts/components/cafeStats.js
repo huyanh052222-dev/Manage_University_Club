@@ -1,7 +1,18 @@
 import { cafeStats } from "../data/dashboard.js";
 import { icon } from "./icons.js";
 
-const renderMeta = (meta) => meta.map(([label, value], index) => `<span>${label}<b class="${index ? "negative-text" : "positive-text"}">${value}</b></span>`).join("");
+const renderMeta = (meta) => meta.map(([label, value, tone], index) => {
+  const toneClass = tone === "positive"
+    ? "positive-text"
+    : tone === "negative"
+      ? "negative-text"
+      : tone === "neutral"
+        ? ""
+        : index
+          ? "negative-text"
+          : "positive-text";
+  return `<span>${label}<b class="${toneClass}">${value}</b></span>`;
+}).join("");
 
 export const renderCafeStats = () => `
   <section class="cafe-stats" aria-label="Chỉ số vận hành">

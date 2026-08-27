@@ -25,5 +25,5 @@ if (isAdminLoginHash) {
 } else {
   appRoot.innerHTML = renderCafePage();
 
-  await import("./app.js?v=20260827-locked-reputation-stat");
+  await import("./app.js?v=20260827-staff-role-counts");
 }
