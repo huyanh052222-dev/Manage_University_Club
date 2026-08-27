@@ -1,5 +1,5 @@
 import { renderCafeHero } from "./cafeHero.js?v=reputation-stars";
-import { renderCafeStats } from "./cafeStats.js";
+import { renderCafeStats } from "./cafeStats.js?v=locked-reputation-stat";
 import { renderMemberOverview } from "./memberOverview.js";
 import { renderOrders } from "./orders.js?v=weekly-reward-pool";
 import { renderCafeTip } from "./cafeTip.js?v=orders";

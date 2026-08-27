@@ -1,4 +1,4 @@
-import { renderDashboard } from "./components/dashboard.js?v=weekly-reward-pool";
+import { renderDashboard } from "./components/dashboard.js?v=locked-reputation-stat";
 import { renderMemberDirectory, renderMemberList } from "./components/memberDirectory.js";
 import { renderOrderDetail } from "./components/orders.js?v=weekly-reward-pool";
 import { renderSidebar } from "./components/sidebar.js";

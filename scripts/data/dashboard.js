@@ -55,7 +55,7 @@ export const cafeStats = [
   { id: "staff", label: "Nhân sự", value: "0", total: "", note: "nhân viên", meta: [["Đi làm", "0"], ["Vắng mặt", "0"]], icon: "users", color: "#d47b55" },
   { id: "orders", label: "Đơn hàng tuần", value: "0", total: "", note: "hoàn thành", meta: [["Hoàn thành", "0"], ["Đang xử lý", "0"]], icon: "receipt", color: "#6ca65d" },
   { id: "energy", label: "Năng lượng nhóm", value: "0", total: "/ 100", note: "Nhiệt huyết", progress: 0, icon: "zap", color: "#e5a13c" },
-  { id: "reputation", label: "Uy tín quán", value: String(DEFAULT_CAFE_REPUTATION), total: `/ ${MAX_CAFE_REPUTATION} sao`, note: "Mức khởi đầu", progress: 20, icon: "star", color: "#8c68c5" },
+  { id: "reputation", label: "Uy tín quán", value: String(DEFAULT_CAFE_REPUTATION), total: `/ ${MAX_CAFE_REPUTATION} sao`, note: "Mức khởi đầu", progress: 20, icon: "star", color: "#8c68c5", isLocked: true },
 ];
 
 export const weeklyCoinSummary = {

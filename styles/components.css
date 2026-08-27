@@ -137,6 +137,13 @@
 .positive-text { color:var(--green)!important; }
 .negative-text { color:var(--red)!important; }
 .cafe-stat-progress .progress-track { height:6px; }
+.cafe-stat-card.is-locked { overflow:hidden; cursor:not-allowed; user-select:none; }
+.cafe-stat-card.is-locked>:not(.cafe-stat-lock) { opacity:.3; filter:blur(3px) grayscale(.35); pointer-events:none; }
+.cafe-stat-card.is-locked::after { position:absolute; inset:0; z-index:1; background:rgba(255,253,249,.34); content:""; backdrop-filter:blur(1px); }
+.cafe-stat-lock { position:absolute; inset:0; z-index:2; display:grid; place-items:center; align-content:center; gap:5px; color:#75685e; text-align:center; pointer-events:none; }
+.cafe-stat-lock>span { display:grid; width:34px; height:34px; place-items:center; border:1px solid rgba(117,104,94,.2); border-radius:50%; background:rgba(255,253,249,.84); box-shadow:0 5px 16px rgba(75,58,44,.1); }
+.cafe-stat-lock .icon { width:17px; height:17px; }
+.cafe-stat-lock strong { padding:3px 8px; border-radius:999px; background:rgba(255,253,249,.86); font-size:8px; }
 
 .development-feature { position:relative; cursor:help; }
 .development-feature::after { position:absolute; right:8px; bottom:calc(100% + 8px); z-index:20; width:max-content; max-width:210px; padding:7px 9px; border:1px solid rgba(255,255,255,.14); border-radius:8px; background:#382d25; box-shadow:0 8px 20px rgba(55,40,29,.2); color:#fff; content:attr(data-development-message); font-size:8px; font-weight:600; line-height:1.4; opacity:0; pointer-events:none; transform:translateY(4px); transition:opacity var(--transition),transform var(--transition); }
