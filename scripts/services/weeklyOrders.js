@@ -1,12 +1,9 @@
-import { getCafeWeekKey, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=cafe-cycle";
-
 export const WEEKLY_ORDER_TOTAL = 10;
 export const WEEKLY_ORDER_REWARD_POOL = 200;
 export const ORDER_REWARD = WEEKLY_ORDER_REWARD_POOL / WEEKLY_ORDER_TOTAL;
 export const ORDER_SOURCE_URL = "https://zalo.me/0703500256";
 
-const ORDER_DEADLINE_DAYS = 7;
-const DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
+const FIRST_ORDER_MONDAY = new Date(2026, 7, 31, 0, 0, 0, 0);
 
 export const menuOrderCatalog = Object.freeze([
   {
@@ -79,20 +76,42 @@ const createSeededRandom = (seed) => {
   };
 };
 
-const getWeekIdentity = (now) => {
-  const activeWeekKey = getCafeWeekKey(now);
-  if (activeWeekKey) return activeWeekKey;
+const resolveOrderDate = (value) => {
+  const resolved = value instanceof Date ? new Date(value) : new Date(value);
+  return Number.isNaN(resolved.getTime()) ? new Date() : resolved;
+};
 
-  const openingDate = getNextCafeWeekStart(now);
-  const year = openingDate.getFullYear();
-  const month = String(openingDate.getMonth() + 1).padStart(2, "0");
-  const day = String(openingDate.getDate()).padStart(2, "0");
+const formatLocalDateKey = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
 
-const getWeeklyDeadline = (now) => {
-  const createdAt = now instanceof Date ? now : new Date(now);
-  return new Date(createdAt.getTime() + (ORDER_DEADLINE_DAYS * DAY_IN_MILLISECONDS)).toISOString();
+export const getOrderWeekSchedule = (now = new Date()) => {
+  const reference = resolveOrderDate(now);
+  let startsAt = new Date(reference.getFullYear(), reference.getMonth(), reference.getDate());
+  const dayOfWeek = startsAt.getDay();
+
+  // Thứ Hai–thứ Bảy dùng tuần hiện tại; Chủ nhật chuẩn bị cho thứ Hai kế tiếp.
+  startsAt.setDate(startsAt.getDate() + (dayOfWeek === 0 ? 1 : 1 - dayOfWeek));
+  if (startsAt < FIRST_ORDER_MONDAY) startsAt = new Date(FIRST_ORDER_MONDAY);
+
+  const deadline = new Date(
+    startsAt.getFullYear(),
+    startsAt.getMonth(),
+    startsAt.getDate() + 5,
+    23,
+    59,
+    59,
+    999,
+  );
+
+  return {
+    weekKey: formatLocalDateKey(startsAt),
+    startsAt: startsAt.toISOString(),
+    deadline: deadline.toISOString(),
+  };
 };
 
 const shuffle = (items, random) => {
@@ -105,7 +124,8 @@ const shuffle = (items, random) => {
 };
 
 export const createWeeklyOrders = (now = new Date()) => {
-  const weekKey = getWeekIdentity(now);
+  const schedule = getOrderWeekSchedule(now);
+  const { weekKey } = schedule;
   const random = createSeededRandom(hashText(`cafe-orders:${weekKey}`));
   const quantities = menuOrderCatalog.map(() => 1);
 
@@ -113,7 +133,6 @@ export const createWeeklyOrders = (now = new Date()) => {
     quantities[Math.floor(random() * quantities.length)] += 1;
   }
 
-  const deadline = getWeeklyDeadline(now);
   const generatedOrders = menuOrderCatalog.flatMap((item, catalogIndex) => Array.from(
     { length: quantities[catalogIndex] },
     (_, itemIndex) => ({
@@ -124,7 +143,8 @@ export const createWeeklyOrders = (now = new Date()) => {
       requirements: item.requirements.join("\n"),
       sourceUrl: ORDER_SOURCE_URL,
       reward: ORDER_REWARD,
-      deadline,
+      startsAt: schedule.startsAt,
+      deadline: schedule.deadline,
       status: "available",
       icon: item.icon,
       tone: item.tone,

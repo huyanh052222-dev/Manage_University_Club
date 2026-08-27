@@ -76,7 +76,7 @@ Tuần vận hành được tính từ ngày mở bán `30/08/2026`: ngày này 
 
 ## Supabase
 
-`teams.points` là số dư coin dùng chung giữa Landing và Admin. `members.team_id` là nguồn danh sách và số lượng nhân sự. Bản MVP sinh đúng 10 đơn đồ uống mỗi tuần từ bốn tên món: Cà phê đen, Cà phê sữa, Bạc Sỉu và Trà sữa. Mỗi món xuất hiện ít nhất một lần, phần còn lại được phân bổ bằng bộ random có seed theo mã tuần. Vì seed không chứa `team_id`, cả tám quán luôn nhận cùng danh sách trong một tuần; sang tuần mới danh sách sẽ tự đổi. Quỹ thưởng tối đa là `200 coin` cho cả 10 đơn, chia đều thành `20 coin/đơn`; mỗi đơn có hạn 7 ngày và nút nguồn dẫn tới `https://zalo.me/0703500256`. Chức năng tiến độ đang được tạm bỏ và danh sách đơn có vùng cuộn riêng để không kéo dài dashboard.
+`teams.points` là số dư coin dùng chung giữa Landing và Admin. `members.team_id` là nguồn danh sách và số lượng nhân sự. Bản MVP sinh đúng 10 đơn đồ uống mỗi tuần từ bốn tên món: Cà phê đen, Cà phê sữa, Bạc Sỉu và Trà sữa. Mỗi món xuất hiện ít nhất một lần, phần còn lại được phân bổ bằng bộ random có seed theo mã tuần. Vì seed không chứa `team_id`, cả tám quán luôn nhận cùng danh sách trong một tuần; sang tuần mới danh sách sẽ tự đổi. Chu kỳ đơn bắt đầu vào thứ Hai và hết hạn lúc 23:59 thứ Bảy; Chủ nhật chuẩn bị danh sách của tuần kế tiếp. Quỹ thưởng tối đa là `200 coin` cho cả 10 đơn, chia đều thành `20 coin/đơn`, và nút nguồn dẫn tới `https://zalo.me/0703500256`. Chức năng tiến độ đang được tạm bỏ và danh sách đơn có vùng cuộn riêng để không kéo dài dashboard.
 
 `teams.reputation` lưu uy tín quán theo thang 1–5 sao. Mọi quán bắt đầu ở mức 1 sao; giao diện luôn render đủ năm ngôi sao và chỉ tô sáng số sao tương ứng. Cơ chế tự tăng sao sẽ được bổ sung sau.
 

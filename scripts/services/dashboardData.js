@@ -3,7 +3,7 @@ import { getTeamIdFromLocation } from "../routes/teamRoutes.js";
 import { getCafeWeekStart, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=cafe-cycle";
 import { supabase } from "../supabase/supabase.js";
 import { getWeeklyCostEstimate, isManagerRole } from "./weeklyCosts.js";
-import { createWeeklyOrders } from "./weeklyOrders.js?v=weekly-reward-pool";
+import { createWeeklyOrders } from "./weeklyOrders.js?v=monday-saturday-deadline";
 
 const memberPalettes = [
     ["#936d55", "#2e3b5c"],
