@@ -4,7 +4,7 @@ import { getCafeWeekKey, getNextCafeWeekStart } from "../../scripts/utils/cafeWe
 import { adminLoginUrl } from "./adminRoutes.js";
 
 document.addEventListener("DOMContentLoaded", async function () {
-    if (!isAdminAuthenticated()) {
+    if (!(await isAdminAuthenticated())) {
         window.location.replace(adminLoginUrl);
         return;
     }
@@ -171,9 +171,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
 
         if (weeklyDeductionStatus) {
-            weeklyDeductionStatus.textContent = wasDeducted
-                ? "Đã kết toán tuần cũ và áp dụng 200 coin cố định + 20 coin/nhân viên cho tuần mới."
-                : "Chi phí tuần hiện tại đã được áp dụng.";
+            weeklyDeductionStatus.textContent = wasDeducted ? "Đã kết toán tuần cũ và áp dụng 200 coin cố định + 20 coin/nhân viên cho tuần mới." : "Chi phí tuần hiện tại đã được áp dụng.";
         }
         await renderLeaderboardAdmin();
         return wasDeducted;

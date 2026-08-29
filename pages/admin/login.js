@@ -7,13 +7,24 @@ const loginRoot = document.querySelector("#admin-login-root");
 if (!loginRoot) {
   throw new Error("Không tìm thấy điểm mount #admin-login-root.");
 }
+const initLoginPage = async () => {
+    const authenticated = await isAdminAuthenticated();
 
-if (isAdminAuthenticated()) {
-  window.location.replace(adminDashboardUrl);
-} else {
-  loginRoot.innerHTML = renderLoginPage({ assetBase: "" });
-  window.requestAnimationFrame(() => document.querySelector("[data-login-password]")?.focus());
-}
+    if (authenticated) {
+        window.location.replace(adminDashboardUrl);
+        return;
+    }
+
+    loginRoot.innerHTML = renderLoginPage({
+        assetBase: ""
+    });
+
+    window.requestAnimationFrame(() => {
+        document
+            .querySelector("[data-login-password]")
+            ?.focus();
+    });
+};
 
 document.addEventListener("click", (event) => {
   const toggleButton = event.target.closest('[data-action="toggle-password"]');
@@ -54,3 +65,6 @@ document.addEventListener("submit", async (event) => {
 
   window.location.replace(adminDashboardUrl);
 });
+
+
+initLoginPage();
