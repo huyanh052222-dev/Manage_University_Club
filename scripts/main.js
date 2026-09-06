@@ -25,5 +25,5 @@ if (isAdminLoginHash) {
 } else {
   appRoot.innerHTML = renderCafePage();
 
-  await import("./app.js?v=20260827-order-summary-stat");
+  await import("./app.js?v=20260906-special-order-demo");
 }

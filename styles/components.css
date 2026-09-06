@@ -201,6 +201,15 @@
 .order-row-meta b { color:var(--green); font-size:8px; white-space:nowrap; }
 .order-row-meta small { color:var(--muted); font-size:7px; white-space:nowrap; }
 .order-row-meta em { color:var(--red); font-style:normal; }
+.special-order-row { position:relative; min-height:98px; margin:6px 0 8px; overflow:hidden; padding:11px 10px 11px 13px; border:1px solid #dfb45f; border-radius:12px; background:linear-gradient(110deg,#fff8e7 0%,#fffdf7 58%,#f8edcf 100%); box-shadow:0 8px 20px rgba(137,92,30,.13),inset 0 0 0 1px rgba(255,255,255,.72); }
+.special-order-row::before { position:absolute; top:9px; bottom:9px; left:0; width:4px; border-radius:0 5px 5px 0; background:linear-gradient(#e9b94f,#a86d22); content:""; }
+.special-order-row:hover { background:linear-gradient(110deg,#fff3d7 0%,#fffaf0 58%,#f4e4bd 100%); box-shadow:0 10px 24px rgba(137,92,30,.18),inset 0 0 0 1px rgba(255,255,255,.8); transform:translateY(-1px); }
+.special-order-row .task-tone { width:36px; height:36px; background:#f3dba9; box-shadow:0 4px 10px rgba(159,105,31,.16); color:#98631d; }
+.special-order-row .order-row-copy { gap:3px; }
+.special-order-row .order-row-copy strong { color:#49311e; font-size:10px; }
+.special-order-row .order-row-meta b { color:#a66a19; font-size:9px; }
+.special-order-badge { display:inline-flex!important; width:max-content; max-width:100%; align-items:center; gap:3px; overflow:visible!important; padding:3px 6px; border:1px solid rgba(174,113,30,.22); border-radius:999px; background:#f7dfaa; color:#8d5a17!important; font-size:6px!important; font-weight:800; letter-spacing:.06em; line-height:1; text-transform:uppercase; }
+.special-order-badge .icon { width:9px; height:9px; }
 .cafe-panel-link { display:flex; min-height:42px; align-items:center; justify-content:center; gap:7px; border:0; border-top:1px solid var(--border); background:transparent; color:var(--text-soft); font-size:8px; font-weight:600; cursor:pointer; transition:background var(--transition),color var(--transition); }
 .cafe-panel-link:hover { background:var(--surface-hover); color:var(--brown); }
 .cafe-panel-link .icon { width:14px; height:14px; }
@@ -251,6 +260,9 @@
 .order-detail-heading>div { display:grid; gap:5px; }
 .order-detail-heading p { margin:0; color:var(--muted); line-height:1.55; }
 .order-status { width:max-content; padding:3px 7px; border-radius:999px; background:#edf5e9; color:var(--green); font-size:7px; font-weight:700; }
+.special-order-status { display:inline-flex; align-items:center; gap:4px; background:#f7dfaa; color:#8d5a17; }
+.special-order-status .icon { width:10px; height:10px; }
+.special-order-detail .order-requirement { border-color:#e4c27f; background:#fff8e9; }
 .order-requirement { padding:13px 14px; border:1px solid var(--border); border-radius:10px; background:var(--surface-2); }
 .order-requirement h3 { margin:0 0 6px; font-size:10px; }
 .order-requirement ul { display:grid; gap:5px; padding-left:18px; margin:0; line-height:1.55; }

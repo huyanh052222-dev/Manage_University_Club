@@ -1,6 +1,6 @@
-import { renderDashboard } from "./components/dashboard.js?v=order-summary-stat";
+import { renderDashboard } from "./components/dashboard.js?v=special-order-demo";
 import { renderMemberDirectory, renderMemberList } from "./components/memberDirectory.js";
-import { renderOrderDetail } from "./components/orders.js?v=monday-saturday-deadline";
+import { renderOrderDetail } from "./components/orders.js?v=special-order-demo";
 import { renderSidebar } from "./components/sidebar.js";
 import { renderTopbar } from "./components/topbar.js?v=profit-salary";
 import { renderWeeklyCostModal } from "./components/weeklyCosts.js?v=profit-salary";
