@@ -10,9 +10,11 @@ import {
 import { icon } from "./icons.js";
 
 const SPECIAL_ORDER_LABEL = "Đơn đặc biệt";
+const ENABLE_SPECIAL_ORDER_DEMO = false;
+const isSpecialOrder = (order) => ENABLE_SPECIAL_ORDER_DEMO && Boolean(order.isSpecial);
 
 const ensureSpecialOrderDemo = (orderItems) => {
-  if (!orderItems.length || orderItems.some((order) => order.isSpecial)) return;
+  if (!ENABLE_SPECIAL_ORDER_DEMO || !orderItems.length || orderItems.some(isSpecialOrder)) return;
 
   Object.assign(orderItems[0], {
     isSpecial: true,
@@ -24,13 +26,13 @@ const ensureSpecialOrderDemo = (orderItems) => {
 export const prioritizeSpecialOrders = (orderItems) => orderItems
   .map((order, index) => ({ order, index }))
   .sort((left, right) => (
-    Number(Boolean(right.order.isSpecial)) - Number(Boolean(left.order.isSpecial))
+    Number(isSpecialOrder(right.order)) - Number(isSpecialOrder(left.order))
     || left.index - right.index
   ))
   .map(({ order }) => order);
 
 const renderOrder = (order) => {
-  const isSpecial = Boolean(order.isSpecial);
+  const isSpecial = isSpecialOrder(order);
   const specialLabel = order.specialLabel || SPECIAL_ORDER_LABEL;
 
   return `
@@ -75,7 +77,7 @@ export const renderOrders = () => {
 export const renderOrderDetail = (order) => {
   const sourceUrl = normalizeOrderSourceUrl(order.sourceUrl);
   const isPlaceholderSource = sourceUrl === "#";
-  const isSpecial = Boolean(order.isSpecial);
+  const isSpecial = isSpecialOrder(order);
   const orderStatus = isSpecial
     ? `${order.specialLabel || SPECIAL_ORDER_LABEL} · ${getOrderStatusLabel(order.status)}`
     : getOrderStatusLabel(order.status);
