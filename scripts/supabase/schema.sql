@@ -201,7 +201,8 @@ begin
     end if;
 
     update public.teams
-    set points = coalesce(points, 0) + points_to_add
+    set points = coalesce(points, 0) + points_to_add,
+        updated_at = now()
     where id = team_id_in;
 
     if not found then
@@ -211,7 +212,7 @@ begin
     insert into public.coin_transactions (team_id, type, title, amount)
     values (
         team_id_in,
-        'adjustment',
+        case when points_to_add > 0 then 'income' else 'adjustment' end,
         case when points_to_add > 0 then 'Admin cộng coin' else 'Admin trừ coin' end,
         points_to_add
     );

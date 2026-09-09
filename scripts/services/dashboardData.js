@@ -155,8 +155,8 @@ const hydrateCoinLedger = (transactions, { weekStart, weekEnd, settlement, weekl
         const occurredAt = new Date(transaction.occurredAt);
         return weekStart && !Number.isNaN(occurredAt.getTime()) && occurredAt >= weekStart && occurredAt < weekEnd;
     });
-    const totalIncome = weeklyTransactions.filter((transaction) => transaction.amount > 0).reduce((total, transaction) => total + transaction.amount, 0);
-    const totalExpense = weeklyTransactions.filter((transaction) => transaction.amount < 0).reduce((total, transaction) => total + Math.abs(transaction.amount), 0);
+    const totalIncome = transactions.filter((transaction) => transaction.amount > 0).reduce((total, transaction) => total + transaction.amount, 0);
+    const totalExpense = transactions.filter((transaction) => transaction.amount < 0).reduce((total, transaction) => total + Math.abs(transaction.amount), 0);
     const weeklyRevenue = weeklyTransactions.filter((transaction) => transaction.type === "income" && transaction.amount > 0).reduce((total, transaction) => total + transaction.amount, 0);
 
     Object.assign(weeklyCoinSummary, {
@@ -193,13 +193,14 @@ export const loadDashboardData = async () => {
     const currentWeekStart = getCafeWeekStart();
     const currentWeekEnd = getNextCafeWeekStart();
 
-    let transactionQuery = supabase.from("coin_transactions").select("*").eq("team_id", teamId).order("occurred_at", { ascending: false });
-
-    if (currentWeekStart) {
-        transactionQuery = transactionQuery.gte("occurred_at", currentWeekStart.toISOString()).lt("occurred_at", currentWeekEnd.toISOString()).limit(1000);
-    } else {
-        transactionQuery = transactionQuery.limit(50);
-    }
+    // Lấy cả các kỳ trước để nhật ký vẫn hiện khoản cộng tay đã được khôi phục.
+    // Phần tổng hợp tuần tiếp tục được lọc theo currentWeekStart/currentWeekEnd trong hydrateCoinLedger.
+    const transactionQuery = supabase
+        .from("coin_transactions")
+        .select("*")
+        .eq("team_id", teamId)
+        .order("occurred_at", { ascending: false })
+        .limit(1000);
 
     try {
         const [teamResult, memberResult, transactionResult, settlementResult] = await Promise.all([
