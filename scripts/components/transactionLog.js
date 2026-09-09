@@ -55,7 +55,7 @@ export const renderTransactionLog = () => `
       ${transactionLogs.length ? transactionLogs.slice(0, 4).map(renderTransaction).join("") : renderEmptyLog()}
     </div>
 
-    <div class="transaction-summary" aria-label="Tổng kết coin trong tuần">
+    <div class="transaction-summary" aria-label="Tổng kết các biến động trong nhật ký coin">
       <div><span>Tổng coin vào</span><strong class="positive-text">${formatSignedCoin(weeklyCoinSummary.totalIncome)}</strong></div>
       <div><span>Tổng coin ra</span><strong class="negative-text">${formatSignedCoin(-weeklyCoinSummary.totalExpense)}</strong></div>
       <div><span>Thay đổi ròng</span><strong class="${getNetSummaryClass()}">${formatSignedCoin(weeklyCoinSummary.totalProfit)}</strong></div>
