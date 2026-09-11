@@ -1,4 +1,4 @@
-import { WEEKLY_ORDER_TOTAL, createWeeklyOrders } from "../services/weeklyOrders.js?v=order-summary-stat";
+import { WEEKLY_ORDER_TOTAL, createWeeklyOrders } from "../services/weeklyOrders.js?v=team-zalo-links";
 
 export const DEFAULT_CAFE_REPUTATION = 1;
 export const MAX_CAFE_REPUTATION = 5;

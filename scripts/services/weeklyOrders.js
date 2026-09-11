@@ -1,7 +1,23 @@
 export const WEEKLY_ORDER_TOTAL = 10;
 export const WEEKLY_ORDER_REWARD_POOL = 200;
 export const ORDER_REWARD = WEEKLY_ORDER_REWARD_POOL / WEEKLY_ORDER_TOTAL;
-export const ORDER_SOURCE_URL = "https://zalo.me/0703500256";
+
+export const ORDER_CONTACTS_BY_TEAM = Object.freeze({
+  A: Object.freeze({ name: "Mai Thị Yến Nhi", phone: "0395789435" }),
+  B: Object.freeze({ name: "Huỳnh Thị Thúy Vy", phone: "0394350988" }),
+  C: Object.freeze({ name: "Tống Minh Duy", phone: "0913182030" }),
+  D: Object.freeze({ name: "Lê Minh Khang", phone: "0948313971" }),
+  E: Object.freeze({ name: "Nguyễn Đăng Dương", phone: "0339744676" }),
+  F: Object.freeze({ name: "Lê Hồng Cường", phone: "0368944409" }),
+  G: Object.freeze({ name: "Tống Hoàng Phước Sang", phone: "0819813331" }),
+  // Ảnh người dùng gửi hiện chỉ có 7 liên hệ; giữ link cũ cho H để tránh gán nhầm.
+  H: Object.freeze({ name: "Chưa cập nhật", phone: "0703500256" }),
+});
+
+export const getOrderContact = (teamId = "A") => ORDER_CONTACTS_BY_TEAM[String(teamId).toUpperCase()]
+  || ORDER_CONTACTS_BY_TEAM.A;
+
+export const getOrderSourceUrl = (teamId = "A") => `https://zalo.me/${getOrderContact(teamId).phone}`;
 
 const FIRST_ORDER_MONDAY = new Date(2026, 7, 31, 0, 0, 0, 0);
 
@@ -123,7 +139,7 @@ const shuffle = (items, random) => {
   return result;
 };
 
-export const createWeeklyOrders = (now = new Date()) => {
+export const createWeeklyOrders = (now = new Date(), teamId = "A") => {
   const schedule = getOrderWeekSchedule(now);
   const { weekKey } = schedule;
   const random = createSeededRandom(hashText(`cafe-orders:${weekKey}`));
@@ -141,7 +157,7 @@ export const createWeeklyOrders = (now = new Date()) => {
       title: item.title,
       description: item.description,
       requirements: item.requirements.join("\n"),
-      sourceUrl: ORDER_SOURCE_URL,
+      sourceUrl: getOrderSourceUrl(teamId),
       reward: ORDER_REWARD,
       startsAt: schedule.startsAt,
       deadline: schedule.deadline,

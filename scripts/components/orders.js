@@ -1,5 +1,5 @@
 import { orders } from "../data/dashboard.js";
-import { summarizeWeeklyOrders } from "../services/weeklyOrders.js?v=order-summary-stat";
+import { summarizeWeeklyOrders } from "../services/weeklyOrders.js?v=team-zalo-links";
 import { escapeHtml, formatNumber } from "../utils/format.js";
 import {
   formatOrderDeadline,
@@ -10,7 +10,7 @@ import {
 import { icon } from "./icons.js";
 
 const SPECIAL_ORDER_LABEL = "Đơn đặc biệt";
-const ENABLE_SPECIAL_ORDER_DEMO = false;
+const ENABLE_SPECIAL_ORDER_DEMO = true;
 const isSpecialOrder = (order) => ENABLE_SPECIAL_ORDER_DEMO && Boolean(order.isSpecial);
 
 const ensureSpecialOrderDemo = (orderItems) => {

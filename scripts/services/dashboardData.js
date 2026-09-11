@@ -3,7 +3,7 @@ import { getTeamIdFromLocation } from "../routes/teamRoutes.js";
 import { getCafeWeekStart, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=cafe-cycle";
 import { supabase } from "../supabase/supabase.js";
 import { getWeeklyCostEstimate, isManagerRole } from "./weeklyCosts.js";
-import { createWeeklyOrders } from "./weeklyOrders.js?v=order-summary-stat";
+import { createWeeklyOrders } from "./weeklyOrders.js?v=team-zalo-links";
 
 const memberPalettes = [
     ["#936d55", "#2e3b5c"],
@@ -51,9 +51,9 @@ const updateStat = (statId, values) => {
     if (stat) Object.assign(stat, values);
 };
 
-const resetSharedData = () => {
+const resetSharedData = (teamId) => {
     members.splice(0, members.length);
-    orders.splice(0, orders.length, ...createWeeklyOrders());
+    orders.splice(0, orders.length, ...createWeeklyOrders(new Date(), teamId));
     transactionLogs.splice(0, transactionLogs.length);
     Object.assign(weeklyCoinSummary, {
         totalIncome: 0,
@@ -188,8 +188,8 @@ const normalizeMember = (member, index) => ({
 });
 
 export const loadDashboardData = async () => {
-    resetSharedData();
     const teamId = getTeamId();
+    resetSharedData(teamId);
     const currentWeekStart = getCafeWeekStart();
     const currentWeekEnd = getNextCafeWeekStart();
 

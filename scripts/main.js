@@ -25,5 +25,5 @@ if (isAdminLoginHash) {
 } else {
   appRoot.innerHTML = renderCafePage();
 
-  await import("./app.js?v=20260908-ledger-summary-fix");
+  await import("./app.js?v=20260912-special-order-zalo-links");
 }
