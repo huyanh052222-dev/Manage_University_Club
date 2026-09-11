@@ -1,12 +1,13 @@
-import { renderDashboard } from "./components/dashboard.js?v=special-card-no-deadline";
-import { renderMemberDirectory, renderMemberList } from "./components/memberDirectory.js";
-import { renderOrderDetail } from "./components/orders.js?v=special-card-no-deadline";
-import { renderSidebar } from "./components/sidebar.js";
-import { renderTopbar } from "./components/topbar.js?v=profit-salary";
+import { renderDashboard } from "./components/dashboard.js?v=cafe-visit";
+import { renderMemberDirectory, renderMemberList } from "./components/memberDirectory.js?v=cafe-visit";
+import { renderOrderDetail } from "./components/orders.js?v=cafe-visit";
+import { renderSidebar } from "./components/sidebar.js?v=cafe-visit";
+import { renderTopbar } from "./components/topbar.js?v=cafe-visit";
 import { renderWeeklyCostModal } from "./components/weeklyCosts.js?v=profit-salary";
 import { renderWeeklyProfitModal } from "./components/weeklyProfit.js?v=profit-salary";
 import { club, demoNotifications, orders } from "./data/dashboard.js";
-import { loadDashboardData } from "./services/dashboardData.js?v=the-vortex-the-ora";
+import { getCafeVisitContext } from "./routes/teamRoutes.js?v=cafe-visit";
+import { loadDashboardData } from "./services/dashboardData.js?v=cafe-visit";
 import { closeModal, showModal, showToast } from "./ui/feedback.js";
 import { getCafeWeekContext, getNextCafeWeekStart } from "./utils/cafeWeek.js?v=cafe-cycle";
 import { escapeHtml } from "./utils/format.js";
@@ -17,9 +18,18 @@ const elements = {
   dashboard: document.querySelector("#dashboard"),
 };
 
+const visitContext = getCafeVisitContext({
+  pathname: window.location.pathname,
+  search: window.location.search,
+  hostname: window.location.hostname,
+  fallback: document.querySelector("#app")?.dataset.teamId || "A",
+});
+
+document.body.classList.toggle("visitor-mode", visitContext.isVisiting);
+
 const renderApp = () => {
-  elements.sidebar.innerHTML = renderSidebar();
-  elements.topbar.innerHTML = renderTopbar();
+  elements.sidebar.innerHTML = renderSidebar(visitContext);
+  elements.topbar.innerHTML = renderTopbar({ isVisiting: visitContext.isVisiting });
   renderCurrentView();
 };
 
@@ -31,7 +41,7 @@ const scheduleCafeWeekRefresh = () => {
   const delay = Math.max(1000, nextWeekStart.getTime() - Date.now() + 1000);
 
   cafeWeekRefreshTimer = window.setTimeout(async () => {
-    await loadDashboardData();
+    await loadDashboardData({ visitorMode: visitContext.isVisiting });
     renderApp();
     scheduleCafeWeekRefresh();
   }, Math.min(delay, 2_147_000_000));
@@ -52,17 +62,23 @@ const setPageHeading = (title, subtitle) => {
 };
 
 const renderOverviewView = () => {
-  elements.dashboard.innerHTML = renderDashboard();
+  elements.dashboard.innerHTML = renderDashboard({ isVisiting: visitContext.isVisiting });
   const weekContext = getCafeWeekContext();
-  setPageHeading(weekContext.title, weekContext.subtitle);
+  setPageHeading(
+    visitContext.isVisiting ? `Ghé thăm ${club.name}` : weekContext.title,
+    visitContext.isVisiting ? "Chế độ xem công khai của quán" : weekContext.subtitle,
+  );
   const requestedSection = window.location.hash.slice(1);
   const activeSection = requestedSection === "overview" ? requestedSection : "overview";
   updateActiveNavigation(document.querySelector(`[data-nav-id="${activeSection}"]`));
 };
 
 const renderPersonnelView = () => {
-  elements.dashboard.innerHTML = renderMemberDirectory();
-  setPageHeading("Nhân sự", `Quản lý chi tiết thành viên ${club.name}`);
+  elements.dashboard.innerHTML = renderMemberDirectory({ isVisiting: visitContext.isVisiting });
+  setPageHeading(
+    visitContext.isVisiting ? "Thành viên quán" : "Nhân sự",
+    visitContext.isVisiting ? `Danh sách công khai của ${club.name}` : `Quản lý chi tiết thành viên ${club.name}`,
+  );
   updateActiveNavigation(document.querySelector('[data-nav-id="personnel"]'));
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
@@ -109,6 +125,19 @@ const refreshPersonnelDirectory = () => {
 const handleAction = (actionElement) => {
   const action = actionElement.dataset.action;
   if (!action) return;
+
+  const protectedVisitorActions = new Set([
+    "edit-club",
+    "manage-resources",
+    "order-source",
+    "transactions",
+    "weekly-costs",
+    "weekly-profit",
+  ]);
+  if (visitContext.isVisiting && protectedVisitorActions.has(action)) {
+    showToast("Thao tác này đã được khóa trong chế độ ghé thăm.");
+    return;
+  }
 
   if (action === "toggle-sidebar") {
     document.body.classList.toggle("sidebar-open");
@@ -165,7 +194,7 @@ const handleAction = (actionElement) => {
     }
     showModal({
       title: `Yêu cầu đơn hàng: ${escapeHtml(order.title)}`,
-      content: renderOrderDetail(order),
+      content: renderOrderDetail(order, { isVisiting: visitContext.isVisiting }),
     });
     return;
   }
@@ -196,7 +225,6 @@ const handleAction = (actionElement) => {
 document.addEventListener("click", (event) => {
   const navItem = event.target.closest("[data-nav-id]");
   if (navItem) {
-    updateActiveNavigation(navItem);
     closeSidebar();
     const targetHash = navItem.getAttribute("href");
     if (targetHash === "#personnel") {
@@ -206,7 +234,8 @@ document.addEventListener("click", (event) => {
     }
     if (["#events", "#ranking"].includes(targetHash)) {
       event.preventDefault();
-      updateActiveNavigation(document.querySelector('[data-nav-id="overview"]'));
+      const currentNavId = document.querySelector(".management-view") ? "personnel" : "overview";
+      updateActiveNavigation(document.querySelector(`[data-nav-id="${currentNavId}"]`));
       showToast(`${navItem.textContent.trim()} đang được phát triển.`);
       return;
     }
@@ -219,7 +248,9 @@ document.addEventListener("click", (event) => {
     if (!document.querySelector(navItem.getAttribute("href"))) {
       event.preventDefault();
       showToast(`Mục “${navItem.textContent.trim()}” đang được phát triển.`);
+      return;
     }
+    updateActiveNavigation(navItem);
     return;
   }
 
@@ -262,6 +293,6 @@ if (!window.location.hash || window.location.hash === "#login") {
   window.history.replaceState({ view: "overview" }, "", "#overview");
 }
 
-await loadDashboardData();
+await loadDashboardData({ visitorMode: visitContext.isVisiting });
 renderApp();
 scheduleCafeWeekRefresh();

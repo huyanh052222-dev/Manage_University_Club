@@ -44,6 +44,7 @@ Khi deploy Vercel, `vercel.json` ánh xạ thành:
 │   ├── components.css  # Component UI
 │   ├── auth.css        # Giao diện đăng nhập Admin
 │   ├── member-directory.css # Danh sách hồ sơ thành viên
+│   ├── visitor.css     # Component ghé thăm và chế độ chỉ xem
 │   └── responsive.css  # Breakpoint responsive
 ├── assets/images/      # Ảnh hero Cafe Horizon
 ├── pages/admin/        # Admin Panel dùng dữ liệu Supabase
@@ -69,6 +70,8 @@ Admin: `pages/admin/login.html` → `login.js` → Supabase Auth → `pages/admi
 `index.html` chỉ giữ điểm mount `#app`. Landing đọc công khai `teams` và `members` từ Supabase nhưng không yêu cầu đăng nhập và không liên kết sang Admin. Luồng xác thực chỉ tồn tại trong entry point riêng của Admin.
 
 Landing mặc định đọc quán The Vortex Coffee (`team_id=A`). Trên Vercel, tám endpoint dùng token opaque, phân biệt hoa–thường và ánh xạ nội bộ tới `team_id` A–H. Bộ phân giải đường dẫn chấp nhận token thường hoặc token được percent-encode đúng chuẩn. Các alias cũ `/a`, `/b`… và query `?team=A`… không còn được chấp nhận; đường dẫn không hợp lệ sẽ hiện trang 404. Toàn bộ tên quán, số coin và danh sách nhân sự trên trang đều được hydrate từ cùng một lần tải dữ liệu. Khi bảng chưa có dòng, truy vấn thất bại hoặc cột mở rộng chưa có dữ liệu, các chỉ số liên quan giữ giá trị `0`.
+
+Component **Ghé thăm quán khác** nằm dưới thanh điều hướng. Mỗi lần bấm sẽ mở quán kế tiếp theo thứ tự A → H, giữ lại mã quán gốc và bỏ qua quán gốc khi đi hết một vòng. Trong chế độ ghé thăm, nút **Quay về quán chính** đưa người xem về đúng quán ban đầu; giao diện chỉ dựng uy tín, thành viên và đơn hàng. Ứng dụng không truy vấn `coin_transactions`, `weekly_financial_settlements` hay các cột tài chính của `teams` trong chế độ này, đồng thời khóa nguồn và thao tác đơn hàng. Đây là giới hạn ở tầng giao diện dành cho luồng demo; nếu cần chống truy cập dữ liệu tuyệt đối thì phải bổ sung đăng nhập riêng cho từng quán và chính sách RLS tương ứng trên Supabase.
 
 Menu mobile, thông báo, modal, toast và các nút điều hướng chính đã có tương tác demo.
 

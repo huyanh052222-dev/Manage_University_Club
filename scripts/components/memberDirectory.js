@@ -24,13 +24,13 @@ export const renderMemberList = ({ query = "" } = {}) => {
   return filteredMembers.map(renderMemberRow).join("");
 };
 
-export const renderMemberDirectory = () => `
+export const renderMemberDirectory = ({ isVisiting = false } = {}) => `
   <section class="management-view" aria-labelledby="management-title">
     <header class="management-heading">
       <div>
         <button class="back-link" type="button" data-action="back-overview">${icon("arrowLeft")} Quay lại tổng quan</button>
-        <h2 id="management-title">Quản lý thành viên</h2>
-        <p>Danh sách chi tiết thành viên của ${club.name}.</p>
+        <h2 id="management-title">${isVisiting ? "Thành viên quán" : "Quản lý thành viên"}</h2>
+        <p>${isVisiting ? "Danh sách thành viên được chia sẻ trong chế độ ghé thăm." : `Danh sách chi tiết thành viên của ${club.name}.`}</p>
       </div>
     </header>
 
@@ -38,7 +38,7 @@ export const renderMemberDirectory = () => `
       <span>${icon("users")}</span>
       <div>
         <strong>${members.length} hồ sơ thành viên</strong>
-        <p>Quản lý tập trung một danh sách duy nhất; thành viên không được chia theo nhóm.</p>
+        <p>${isVisiting ? "Bạn chỉ có thể xem thông tin thành viên của quán này." : "Quản lý tập trung một danh sách duy nhất; thành viên không được chia theo nhóm."}</p>
       </div>
     </div>
 

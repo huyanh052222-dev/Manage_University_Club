@@ -1,0 +1,160 @@
+.cafe-visit-card {
+  display: grid;
+  gap: 10px;
+  margin: 16px 16px 0;
+  padding: 15px;
+  border: 1px solid rgba(226, 196, 154, .2);
+  border-radius: 16px;
+  color: #f7ecdd;
+  background: linear-gradient(145deg, rgba(255, 248, 236, .11), rgba(255, 255, 255, .035));
+  box-shadow: 0 14px 28px rgba(13, 10, 8, .12);
+}
+
+.cafe-visit-icon {
+  display: grid;
+  width: 35px;
+  height: 35px;
+  place-items: center;
+  border-radius: 11px;
+  color: #2f281f;
+  background: #e4c498;
+}
+
+.cafe-visit-icon .icon { width: 19px; height: 19px; }
+.cafe-visit-copy strong { display: block; font-size: 13px; }
+.cafe-visit-copy p { margin: 5px 0 0; color: #cdbdab; font-size: 10px; line-height: 1.5; }
+
+.cafe-visit-link,
+.cafe-return-link {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 11px;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform var(--transition), background var(--transition);
+}
+
+.cafe-visit-link { color: #30281f; background: #f1d8b4; }
+.cafe-return-link { border: 1px solid rgba(240, 216, 184, .24); color: #f2deca; background: rgba(255, 255, 255, .045); }
+.cafe-visit-link:hover,
+.cafe-return-link:hover { transform: translateY(-1px); }
+.cafe-visit-link:hover { background: #f7e2c4; }
+.cafe-return-link:hover { background: rgba(255, 255, 255, .09); }
+.cafe-visit-link .icon,
+.cafe-return-link .icon { width: 15px; height: 15px; }
+
+.visitor-finance-lock {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-self: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border: 1px solid #dfd3c5;
+  border-radius: 13px;
+  color: var(--brown);
+  background: rgba(250, 245, 237, .86);
+}
+
+.visitor-finance-lock > span {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 9px;
+  color: var(--green);
+  background: #eaf3e6;
+}
+
+.visitor-finance-lock > span .icon { width: 16px; height: 16px; }
+.visitor-finance-lock strong,
+.visitor-finance-lock small { display: block; }
+.visitor-finance-lock strong { font-size: 11px; }
+.visitor-finance-lock small { margin-top: 2px; color: var(--muted); font-size: 8px; }
+
+.visitor-mode-badge {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 11px;
+  border-radius: 999px;
+  color: var(--green);
+  background: #eaf3e6;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.visitor-mode-badge .icon { width: 15px; height: 15px; }
+
+.visitor-notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 17px;
+  border: 1px solid #dce8d7;
+  border-radius: 16px;
+  color: #466245;
+  background: #f1f7ee;
+}
+
+.visitor-notice-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 12px;
+  background: #dfeeda;
+}
+
+.visitor-notice-icon .icon { width: 19px; height: 19px; }
+.visitor-notice strong { font-size: 12px; }
+.visitor-notice p { margin: 3px 0 0; color: #70826f; font-size: 10px; line-height: 1.45; }
+
+.visitor-detail-grid { grid-template-columns: minmax(280px, .82fr) minmax(420px, 1.18fr); }
+.visitor-score-grid { grid-template-columns: 1fr; }
+.visitor-score-grid .cafe-score-item { border-right: 0; }
+
+.visitor-order-lock {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--brown);
+  background: #faf6f0;
+}
+
+.visitor-order-lock > .icon { width: 19px; height: 19px; flex: 0 0 auto; color: var(--green); }
+.visitor-order-lock strong,
+.visitor-order-lock span { display: block; }
+.visitor-order-lock strong { font-size: 11px; }
+.visitor-order-lock span { margin-top: 2px; color: var(--muted); font-size: 9px; line-height: 1.4; }
+
+@media (max-height: 820px) and (min-width: 1021px) {
+  .cafe-sidebar-art { display: none; }
+  .cafe-visit-card { margin-top: 10px; }
+}
+
+@media (max-width: 1200px) {
+  .visitor-detail-grid { grid-template-columns: 1fr 1.1fr; }
+}
+
+@media (max-width: 780px) {
+  .visitor-finance-lock { display: none; }
+  .visitor-detail-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  .visitor-mode-badge { padding-inline: 9px; font-size: 9px; }
+  .visitor-notice { align-items: flex-start; }
+  .visitor-score-grid { grid-template-columns: 1fr; }
+}

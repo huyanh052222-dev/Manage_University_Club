@@ -10,7 +10,7 @@ const formatSignedCoin = (amount) => {
   return `${amount > 0 ? "+" : "−"}${formatNumber(Math.abs(amount))} coin`;
 };
 
-export const renderTopbar = () => {
+export const renderTopbar = ({ isVisiting = false } = {}) => {
   const weekContext = getCafeWeekContext();
   return `
   <div class="topbar-heading">
@@ -26,6 +26,12 @@ export const renderTopbar = () => {
     </div>
   </div>
 
+  ${isVisiting ? `
+  <div class="visitor-finance-lock" aria-label="Dữ liệu tài chính đã khóa trong chế độ ghé thăm">
+    <span>${icon("lock")}</span>
+    <div><strong>Tài chính được bảo mật</strong><small>Chế độ ghé thăm không hiển thị doanh thu, chi phí hay số dư.</small></div>
+  </div>
+  ` : `
   <div class="top-finance" aria-label="Tổng hợp tài chính tuần">
     <div class="top-finance-item"><span>${icon("wallet")}</span><div><small>Tiền mặt</small><strong>${formatNumber(finance.currentFund)} coin</strong></div></div>
     <div class="top-finance-item positive"><span>${icon("trendingUp")}</span><div><small>Doanh thu tuần</small><strong>${formatSignedCoin(finance.income)}</strong></div></div>
@@ -54,12 +60,13 @@ export const renderTopbar = () => {
       ${renderWeeklyProfitPopover()}
     </div>
   </div>
+  `}
 
   <div class="topbar-actions">
-    <button class="notification-button" type="button" data-action="show-notifications" aria-label="Xem thông báo">
+    ${isVisiting ? `<span class="visitor-mode-badge">${icon("eye")} Đang ghé thăm</span>` : `<button class="notification-button" type="button" data-action="show-notifications" aria-label="Xem thông báo">
       ${icon("bell")}
       <span class="notification-dot"></span>
-    </button>
+    </button>`}
   </div>
 `;
 };

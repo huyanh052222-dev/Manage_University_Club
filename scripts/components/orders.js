@@ -78,7 +78,7 @@ export const renderOrders = () => {
   `;
 };
 
-export const renderOrderDetail = (order) => {
+export const renderOrderDetail = (order, { isVisiting = false } = {}) => {
   const sourceUrl = normalizeOrderSourceUrl(order.sourceUrl);
   const isPlaceholderSource = sourceUrl === "#";
   const isSpecial = isSpecialOrder(order);
@@ -118,7 +118,12 @@ export const renderOrderDetail = (order) => {
         </section>
       </div>
 
-      <div class="order-detail-actions">
+      ${isVisiting ? `
+      <div class="visitor-order-lock">
+        ${icon("lock")}
+        <div><strong>Chế độ chỉ xem</strong><span>Bạn có thể xem nội dung đơn nhưng không thể mở nguồn hay thao tác với đơn của quán khác.</span></div>
+      </div>
+      ` : `<div class="order-detail-actions">
         <a
           class="primary-button order-source-link"
           href="${escapeHtml(sourceUrl)}"
@@ -130,7 +135,7 @@ export const renderOrderDetail = (order) => {
           disabled
           title="Chức năng hoàn thành đơn hàng đang được phát triển"
         >${icon("checkCircle")} Hoàn thành đơn hàng</button>
-      </div>
+      </div>`}
     </div>
   `;
 };
