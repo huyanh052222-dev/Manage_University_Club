@@ -225,7 +225,6 @@ const handleAction = (actionElement) => {
 document.addEventListener("click", (event) => {
   const navItem = event.target.closest("[data-nav-id]");
   if (navItem) {
-    updateActiveNavigation(navItem);
     closeSidebar();
     const targetHash = navItem.getAttribute("href");
     if (targetHash === "#personnel") {
@@ -235,7 +234,8 @@ document.addEventListener("click", (event) => {
     }
     if (["#events", "#ranking"].includes(targetHash)) {
       event.preventDefault();
-      updateActiveNavigation(document.querySelector('[data-nav-id="overview"]'));
+      const currentNavId = document.querySelector(".management-view") ? "personnel" : "overview";
+      updateActiveNavigation(document.querySelector(`[data-nav-id="${currentNavId}"]`));
       showToast(`${navItem.textContent.trim()} đang được phát triển.`);
       return;
     }
@@ -248,7 +248,9 @@ document.addEventListener("click", (event) => {
     if (!document.querySelector(navItem.getAttribute("href"))) {
       event.preventDefault();
       showToast(`Mục “${navItem.textContent.trim()}” đang được phát triển.`);
+      return;
     }
+    updateActiveNavigation(navItem);
     return;
   }
 

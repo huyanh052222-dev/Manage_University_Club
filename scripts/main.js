@@ -25,5 +25,5 @@ if (isAdminLoginHash) {
 } else {
   appRoot.innerHTML = renderCafePage();
 
-  await import("./app.js?v=20260912-cafe-visit");
+  await import("./app.js?v=20260912-nav-state-fix");
 }
