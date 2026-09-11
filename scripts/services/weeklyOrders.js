@@ -3,8 +3,8 @@ export const WEEKLY_ORDER_REWARD_POOL = 200;
 export const ORDER_REWARD = WEEKLY_ORDER_REWARD_POOL / WEEKLY_ORDER_TOTAL;
 
 export const ORDER_CONTACTS_BY_TEAM = Object.freeze({
-  A: Object.freeze({ name: "Mai Thị Yến Nhi", phone: "0395789435" }),
-  B: Object.freeze({ name: "Huỳnh Thị Thúy Vy", phone: "0394350988" }),
+  A: Object.freeze({ name: "Huỳnh Thị Thúy Vy", phone: "0394350988" }),
+  B: Object.freeze({ name: "Mai Thị Yến Nhi", phone: "0395789435" }),
   C: Object.freeze({ name: "Tống Minh Duy", phone: "0913182030" }),
   D: Object.freeze({ name: "Lê Minh Khang", phone: "0948313971" }),
   E: Object.freeze({ name: "Nguyễn Đăng Dương", phone: "0339744676" }),

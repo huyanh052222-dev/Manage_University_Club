@@ -4,7 +4,7 @@ import { getCafeWeekStart, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=c
 import { resolveCafeName } from "../utils/cafeNames.js?v=the-vortex-the-ora";
 import { supabase } from "../supabase/supabase.js";
 import { getWeeklyCostEstimate, isManagerRole } from "./weeklyCosts.js";
-import { createWeeklyOrders } from "./weeklyOrders.js?v=team-zalo-links";
+import { createWeeklyOrders } from "./weeklyOrders.js?v=team-zalo-swap";
 
 const memberPalettes = [
     ["#936d55", "#2e3b5c"],

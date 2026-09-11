@@ -1,5 +1,5 @@
 import { orders } from "../data/dashboard.js";
-import { summarizeWeeklyOrders } from "../services/weeklyOrders.js?v=team-zalo-links";
+import { summarizeWeeklyOrders } from "../services/weeklyOrders.js?v=team-zalo-swap";
 import { escapeHtml, formatNumber } from "../utils/format.js";
 import {
   formatOrderDeadline,
