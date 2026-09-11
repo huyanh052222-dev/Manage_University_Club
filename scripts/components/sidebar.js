@@ -1,7 +1,9 @@
 import { club, navigationItems } from "../data/dashboard.js";
+import { renderCafeVisitCard } from "./cafeVisitCard.js?v=cafe-visit";
 import { icon } from "./icons.js";
 
-const navigationMarkup = navigationItems
+const renderNavigationMarkup = (isVisiting) => navigationItems
+  .filter((item) => !isVisiting || ["overview", "personnel"].includes(item.id))
   .map(
     (item, index) => `
       <a class="nav-item${index === 0 ? " active" : ""}" href="#${item.id}" data-nav-id="${item.id}">
@@ -11,7 +13,12 @@ const navigationMarkup = navigationItems
   )
   .join("");
 
-export const renderSidebar = () => `
+export const renderSidebar = (visitContext = {
+  currentTeamId: "A",
+  originTeamId: "",
+  isVisiting: false,
+  localStaticServer: false,
+}) => `
   <div class="brand">
     <div class="brand-mark" aria-hidden="true">
       ${icon("coffee")}
@@ -23,8 +30,10 @@ export const renderSidebar = () => `
   </div>
 
   <nav class="sidebar-nav">
-    ${navigationMarkup}
+    ${renderNavigationMarkup(visitContext.isVisiting)}
   </nav>
+
+  ${renderCafeVisitCard(visitContext)}
 
   <div class="sidebar-bottom cafe-sidebar-art" aria-hidden="true">
     <div class="cup-illustration">${icon("coffee")}</div>

@@ -1,5 +1,5 @@
 import { DEFAULT_CAFE_REPUTATION, MAX_CAFE_REPUTATION, cafeStats, club, finance, members, orders, transactionLogs, weeklyCoinSummary } from "../data/dashboard.js";
-import { getTeamIdFromLocation } from "../routes/teamRoutes.js";
+import { getTeamIdFromLocation } from "../routes/teamRoutes.js?v=cafe-visit";
 import { getCafeWeekStart, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=cafe-cycle";
 import { resolveCafeName } from "../utils/cafeNames.js?v=the-vortex-the-ora";
 import { supabase } from "../supabase/supabase.js";
@@ -43,6 +43,7 @@ const getTeamId = () => {
     const defaultTeamId = document.querySelector("#app")?.dataset.teamId || "A";
     return getTeamIdFromLocation({
         pathname: window.location.pathname,
+        search: window.location.search,
         fallback: defaultTeamId,
     });
 };
@@ -189,7 +190,7 @@ const normalizeMember = (member, index) => ({
     colors: memberPalettes[index % memberPalettes.length],
 });
 
-export const loadDashboardData = async () => {
+export const loadDashboardData = async ({ visitorMode = false } = {}) => {
     const teamId = getTeamId();
     resetSharedData(teamId);
     const currentWeekStart = getCafeWeekStart();
@@ -197,19 +198,33 @@ export const loadDashboardData = async () => {
 
     // Lấy cả các kỳ trước để nhật ký vẫn hiện khoản cộng tay đã được khôi phục.
     // Phần tổng hợp tuần tiếp tục được lọc theo currentWeekStart/currentWeekEnd trong hydrateCoinLedger.
-    const transactionQuery = supabase
-        .from("coin_transactions")
-        .select("*")
-        .eq("team_id", teamId)
-        .order("occurred_at", { ascending: false })
-        .limit(1000);
+    const transactionQuery = visitorMode
+        ? Promise.resolve({ data: [], error: null })
+        : supabase
+            .from("coin_transactions")
+            .select("*")
+            .eq("team_id", teamId)
+            .order("occurred_at", { ascending: false })
+            .limit(1000);
+    const settlementQuery = visitorMode
+        ? Promise.resolve({ data: null, error: null })
+        : supabase
+            .from("weekly_financial_settlements")
+            .select("income, expense, profit, member_count, period_start, period_end, settled_at")
+            .eq("team_id", teamId)
+            .order("period_start", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+    const teamColumns = visitorMode
+        ? "id, name, reputation, member_limit"
+        : "*";
 
     try {
         const [teamResult, memberResult, transactionResult, settlementResult] = await Promise.all([
-            supabase.from("teams").select("*").eq("id", teamId).maybeSingle(),
+            supabase.from("teams").select(teamColumns).eq("id", teamId).maybeSingle(),
             supabase.from("members").select("*").eq("team_id", teamId).order("name", { ascending: true }),
             transactionQuery,
-            supabase.from("weekly_financial_settlements").select("income, expense, profit, member_count, period_start, period_end, settled_at").eq("team_id", teamId).order("period_start", { ascending: false }).limit(1).maybeSingle(),
+            settlementQuery,
         ]);
 
         const team = teamResult.data;
@@ -231,19 +246,23 @@ export const loadDashboardData = async () => {
             Object.assign(club, {
                 name: resolveCafeName(team, club.name),
                 code: `Nhóm ${team.id || teamId}`,
-                xp: numberOrZero(team.xp),
-                xpTarget: numberOrZero(team.xp_target),
                 memberLimit: numberOrZero(team.member_limit),
-                startingFund: numberOrZero(team.points),
                 reputation,
             });
-            Object.assign(finance, {
-                currentFund: numberOrZero(team.points),
-                updatedAt: team.updated_at || "Chưa có dữ liệu cập nhật",
-            });
+            if (!visitorMode) {
+                Object.assign(club, {
+                    xp: numberOrZero(team.xp),
+                    xpTarget: numberOrZero(team.xp_target),
+                    startingFund: numberOrZero(team.points),
+                });
+                Object.assign(finance, {
+                    currentFund: numberOrZero(team.points),
+                    updatedAt: team.updated_at || "Chưa có dữ liệu cập nhật",
+                });
 
-            const energy = clamp(team.energy, 0, 100);
-            updateStat("energy", { value: String(energy), progress: energy });
+                const energy = clamp(team.energy, 0, 100);
+                updateStat("energy", { value: String(energy), progress: energy });
+            }
             updateStat("reputation", {
                 value: String(reputation),
                 total: `/ ${MAX_CAFE_REPUTATION} sao`,
@@ -255,12 +274,14 @@ export const loadDashboardData = async () => {
 
         const resolvedTransactions = (transactionResult.data || []).map(normalizeTransaction);
         const weeklyCost = getWeeklyCostEstimate(resolvedMembers);
-        hydrateCoinLedger(resolvedTransactions, {
-            weekStart: currentWeekStart,
-            weekEnd: currentWeekEnd,
-            settlement: settlementResult.data,
-            weeklyExpense: weeklyCost.total,
-        });
+        if (!visitorMode) {
+            hydrateCoinLedger(resolvedTransactions, {
+                weekStart: currentWeekStart,
+                weekEnd: currentWeekEnd,
+                settlement: settlementResult.data,
+                weeklyExpense: weeklyCost.total,
+            });
+        }
 
         updateStat("orders", {
             value: String(orders.length),
@@ -283,8 +304,9 @@ export const loadDashboardData = async () => {
             connected: !teamResult.error && !memberResult.error && !transactionResult.error,
             teamFound: Boolean(team),
             ordersConnected: true,
-            ledgerConnected: !transactionResult.error,
-            settlementConnected: !settlementResult.error,
+            ledgerConnected: visitorMode || !transactionResult.error,
+            settlementConnected: visitorMode || !settlementResult.error,
+            visitorMode,
         };
     } catch {
         return { teamId, connected: false, teamFound: false };

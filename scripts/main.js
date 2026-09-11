@@ -1,5 +1,5 @@
 import { renderCafePage } from "./pages/cafePage.js";
-import { isSupportedLandingPath } from "./routes/teamRoutes.js";
+import { isSupportedLandingPath } from "./routes/teamRoutes.js?v=cafe-visit";
 
 const appRoot = document.querySelector("#app");
 
@@ -25,5 +25,5 @@ if (isAdminLoginHash) {
 } else {
   appRoot.innerHTML = renderCafePage();
 
-  await import("./app.js?v=20260912-special-card-no-deadline");
+  await import("./app.js?v=20260912-cafe-visit");
 }
