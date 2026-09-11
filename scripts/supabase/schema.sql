@@ -117,6 +117,10 @@ create index if not exists weekly_settlements_team_period_idx
 -- Dọn đơn lập trình demo cũ. Danh sách 10 đơn đồ uống được sinh đồng nhất theo tuần ở frontend.
 delete from public.orders where id = 'c-hello-world';
 
+-- Tên thương hiệu hiện hành của hai quán từng dùng tên chủ quán.
+update public.teams set name = 'The Vortex Coffee', updated_at = now() where id = 'A';
+update public.teams set name = 'The Ora café', updated_at = now() where id = 'F';
+
 update public.teams set icon = '🔥', color = '#FF5533', bg = '#FFE8E4' where id = 'A';
 update public.teams set icon = '⚡', color = '#FFCC00', bg = '#FFF8E1' where id = 'B';
 update public.teams set icon = '🌊', color = '#22C4A0', bg = '#E8FBF5' where id = 'C';
