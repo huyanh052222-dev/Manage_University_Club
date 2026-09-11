@@ -10,8 +10,12 @@ import {
 import { icon } from "./icons.js";
 
 const SPECIAL_ORDER_LABEL = "Đơn đặc biệt";
+const SPECIAL_ORDER_REWARD_LABEL = "Từ 200-800 coin";
 const ENABLE_SPECIAL_ORDER_DEMO = true;
 const isSpecialOrder = (order) => ENABLE_SPECIAL_ORDER_DEMO && Boolean(order.isSpecial);
+const getOrderRewardLabel = (order) => isSpecialOrder(order)
+  ? SPECIAL_ORDER_REWARD_LABEL
+  : `+${formatNumber(order.reward)} coin`;
 
 const ensureSpecialOrderDemo = (orderItems) => {
   if (!ENABLE_SPECIAL_ORDER_DEMO || !orderItems.length || orderItems.some(isSpecialOrder)) return;
@@ -44,7 +48,7 @@ const renderOrder = (order) => {
         <span>${escapeHtml(order.description)}</span>
       </span>
       <span class="order-row-meta">
-        <b>+${formatNumber(order.reward)} coin</b>
+        <b>${getOrderRewardLabel(order)}</b>
         <small>Hạn: <em>${escapeHtml(formatOrderDeadline(order.deadline, { short: true }))}</em></small>
       </span>
     </button>
@@ -59,7 +63,7 @@ export const renderOrders = () => {
     <section class="cafe-panel orders-panel" id="orders" aria-labelledby="orders-title">
       <header class="cafe-panel-header">
         <span class="section-icon coral">${icon("receipt")}</span>
-        <div><h2 id="orders-title">Đơn hàng</h2><p>Thứ Hai–Thứ Bảy · 10 đơn · 20 coin/đơn</p></div>
+        <div><h2 id="orders-title">Đơn hàng</h2><p>Thứ Hai–Thứ Bảy · 10 đơn · Đơn thường 20 coin</p></div>
       </header>
       <div class="order-allocation" aria-label="Phân bổ 10 đơn hàng tuần">
         ${summarizeWeeklyOrders(orders).map((item) => `
@@ -109,7 +113,7 @@ export const renderOrderDetail = (order) => {
         </section>
         <section>
           <span>${icon("wallet")} Mức thưởng</span>
-          <strong class="positive-text">+${formatNumber(order.reward)} coin</strong>
+          <strong class="positive-text">${getOrderRewardLabel(order)}</strong>
           <small>Ghi vào số dư khi hoàn thành</small>
         </section>
       </div>

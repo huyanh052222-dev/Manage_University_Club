@@ -1,6 +1,7 @@
 import { supabase } from "../../scripts/supabase/supabase.js";
 import { isAdminAuthenticated, logoutAdmin } from "../../scripts/services/authService.js";
 import { getCafeWeekKey, getNextCafeWeekStart } from "../../scripts/utils/cafeWeek.js?v=cafe-cycle";
+import { resolveCafeName } from "../../scripts/utils/cafeNames.js?v=the-vortex-the-ora";
 import { adminLoginUrl } from "./adminRoutes.js";
 
 document.addEventListener("DOMContentLoaded", async function () {
@@ -32,7 +33,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             return [];
         }
         // Đổi tên cột 'points' thành 'pts' để tương thích với code hiện tại
-        return data.map((team) => ({ ...team, pts: team.points }));
+        return data.map((team) => ({ ...team, name: resolveCafeName(team), pts: team.points }));
     }
 
     async function renderLeaderboardAdmin() {
