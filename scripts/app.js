@@ -1,6 +1,6 @@
-import { renderDashboard } from "./components/dashboard.js?v=special-order-reward";
+import { renderDashboard } from "./components/dashboard.js?v=special-card-no-deadline";
 import { renderMemberDirectory, renderMemberList } from "./components/memberDirectory.js";
-import { renderOrderDetail } from "./components/orders.js?v=special-order-reward";
+import { renderOrderDetail } from "./components/orders.js?v=special-card-no-deadline";
 import { renderSidebar } from "./components/sidebar.js";
 import { renderTopbar } from "./components/topbar.js?v=profit-salary";
 import { renderWeeklyCostModal } from "./components/weeklyCosts.js?v=profit-salary";

@@ -49,7 +49,7 @@ const renderOrder = (order) => {
       </span>
       <span class="order-row-meta">
         <b>${getOrderRewardLabel(order)}</b>
-        <small>Hạn: <em>${escapeHtml(formatOrderDeadline(order.deadline, { short: true }))}</em></small>
+        ${isSpecial ? "" : `<small>Hạn: <em>${escapeHtml(formatOrderDeadline(order.deadline, { short: true }))}</em></small>`}
       </span>
     </button>
   `;
@@ -105,12 +105,12 @@ export const renderOrderDetail = (order) => {
         <ul>${requirementLines.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>
       </section>
 
-      <div class="order-detail-grid">
-        <section>
+      <div class="order-detail-grid${isSpecial ? " reward-only" : ""}">
+        ${isSpecial ? "" : `<section>
           <span>${icon("clock")} Deadline</span>
           <strong>${escapeHtml(formatOrderDeadline(order.deadline))}</strong>
           <small>${escapeHtml(getOrderDeadlineStatus(order.deadline))}</small>
-        </section>
+        </section>`}
         <section>
           <span>${icon("wallet")} Mức thưởng</span>
           <strong class="positive-text">${getOrderRewardLabel(order)}</strong>

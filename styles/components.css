@@ -268,6 +268,7 @@
 .order-requirement h3 { margin:0 0 6px; font-size:10px; }
 .order-requirement ul { display:grid; gap:5px; padding-left:18px; margin:0; line-height:1.55; }
 .order-detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.order-detail-grid.reward-only { grid-template-columns:1fr; }
 .order-detail-grid section { display:grid; gap:4px; padding:12px; border:1px solid var(--border); border-radius:10px; }
 .order-detail-grid span { display:flex; align-items:center; gap:5px; color:var(--muted); font-size:8px; }
 .order-detail-grid .icon { width:14px; height:14px; }
