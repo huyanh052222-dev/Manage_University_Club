@@ -23,12 +23,14 @@ create table if not exists public.coin_transactions (
     order_id text,
     type text not null check (type in ('income', 'expense', 'adjustment')),
     title text not null,
+    reason text check (reason is null or char_length(btrim(reason)) between 1 and 200),
     amount integer not null check (amount <> 0),
     occurred_at timestamptz not null default now()
 );
 
 alter table public.coin_transactions
-    add column if not exists order_id text;
+    add column if not exists order_id text,
+    add column if not exists reason text;
 
 create index if not exists coin_transactions_team_occurred_at_idx
     on public.coin_transactions (team_id, occurred_at desc);
@@ -280,7 +282,8 @@ set period_end = excluded.period_end,
 -- Từ lần triển khai này, Admin cộng coin là doanh thu; Admin trừ coin vẫn là điều chỉnh.
 create or replace function public.add_points_to_team(
     team_id_in text,
-    points_to_add integer
+    points_to_add integer,
+    reason_in text
 )
 returns void
 language plpgsql
@@ -300,6 +303,14 @@ begin
         raise exception 'points_to_add must not be zero';
     end if;
 
+    if nullif(btrim(coalesce(reason_in, '')), '') is null then
+        raise exception 'reason is required';
+    end if;
+
+    if char_length(btrim(reason_in)) > 200 then
+        raise exception 'reason must not exceed 200 characters';
+    end if;
+
     update public.teams
     set points = coalesce(points, 0) + points_to_add,
         updated_at = now()
@@ -309,19 +320,21 @@ begin
         raise exception 'team not found';
     end if;
 
-    insert into public.coin_transactions (team_id, type, title, amount)
+    insert into public.coin_transactions (team_id, type, title, reason, amount)
     values (
         team_id_in,
         case when points_to_add > 0 then 'income' else 'adjustment' end,
         case when points_to_add > 0 then 'Admin cộng coin' else 'Admin trừ coin' end,
+        btrim(reason_in),
         points_to_add
     );
 end;
 $$;
 
-revoke all on function public.add_points_to_team(text, integer) from public;
-revoke all on function public.add_points_to_team(text, integer) from anon;
-grant execute on function public.add_points_to_team(text, integer) to authenticated;
+drop function if exists public.add_points_to_team(text, integer);
+revoke all on function public.add_points_to_team(text, integer, text) from public;
+revoke all on function public.add_points_to_team(text, integer, text) from anon;
+grant execute on function public.add_points_to_team(text, integer, text) to authenticated;
 
 -- Giữ logic các tuần sau: chốt tuần cũ, trừ đúng 200 + 20/nhân viên,
 -- ghi cả doanh thu, chi phí và lợi nhuận vào database.

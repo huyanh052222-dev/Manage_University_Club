@@ -140,6 +140,7 @@ const normalizeTransaction = (transaction) => {
         id: transaction.id,
         type: resolvedType,
         title: transaction.title || "Biến động coin",
+        reason: transaction.reason?.trim() || "",
         group: club.name,
         amount,
         date: getTransactionDateLabel(occurredAt),

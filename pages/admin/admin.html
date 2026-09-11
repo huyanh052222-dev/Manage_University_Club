@@ -6,7 +6,7 @@
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
         <title>Trang Quản Trị Sự Kiện</title>
         <link rel="stylesheet" href="/styles/tokens.css" />
-        <link rel="stylesheet" href="/pages/admin/admin.css" />
+        <link rel="stylesheet" href="/pages/admin/admin.css?v=coin-reason" />
     </head>
     <body>
         <button class="admin-menu-button" id="adminMenuButton" type="button" aria-label="Mở menu quản trị" aria-controls="adminSidebar" aria-expanded="false">
@@ -38,7 +38,7 @@
             <main class="admin-main-content">
                 <div class="tab-content">
                     <div class="tab-pane" id="leaderboard-management">
-                        <h1>Bảng xếp hạng và Cộng điểm</h1>
+                        <h1>Bảng xếp hạng và Cộng coin</h1>
                         <section class="weekly-countdown" aria-live="polite" hidden>
                             <div>
                                 <span class="weekly-countdown-label">Thời gian đến tuần mới</span>
@@ -48,7 +48,7 @@
                         </section>
                         <div class="leaderboard-grid">
                             <div class="leaderboard-column">
-                                <h4>Cộng điểm thủ công</h4>
+                                <h4>Cộng coin thủ công</h4>
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="form-field">
@@ -61,7 +61,20 @@
                                             <label for="pointsToAdd" class="form-label">Cộng coin</label>
                                             <input type="number" class="form-control" id="pointsToAdd" placeholder="Nhập số coin" />
                                         </div>
-                                        <button class="admin-button primary-button" id="addPointsBtn">Cộng coin</button>
+                                        <div class="form-field">
+                                            <label for="pointsReason" class="form-label">Lý do</label>
+                                            <textarea
+                                                class="form-control coin-reason-input"
+                                                id="pointsReason"
+                                                maxlength="200"
+                                                rows="3"
+                                                placeholder="Ví dụ: Doanh thu bán hàng tuần 2"
+                                                aria-describedby="pointsReasonHint"
+                                                required
+                                            ></textarea>
+                                            <small class="form-hint" id="pointsReasonHint">Bắt buộc, tối đa 200 ký tự. Lý do sẽ hiện trong Nhật ký coin của quán.</small>
+                                        </div>
+                                        <button class="admin-button primary-button" id="addPointsBtn" type="button">Cộng coin</button>
                                     </div>
                                 </div>
                             </div>
@@ -85,6 +98,6 @@
         </div>
 
         <script src="https://kit.fontawesome.com/c4edd7a73c.js" crossorigin="anonymous"></script>
-        <script type="module" src="/pages/admin/admin.js"></script>
+        <script type="module" src="/pages/admin/admin.js?v=coin-reason"></script>
     </body>
 </html>

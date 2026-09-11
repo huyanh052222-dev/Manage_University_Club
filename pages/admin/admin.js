@@ -75,36 +75,54 @@ document.addEventListener("DOMContentLoaded", async function () {
     const addPointsBtn = document.getElementById("addPointsBtn");
     if (addPointsBtn)
         addPointsBtn.addEventListener("click", async function () {
-            const teamId = document.getElementById("teamSelect").value;
-            const pointsToAdd = parseInt(document.getElementById("pointsToAdd").value, 10);
+            const teamSelect = document.getElementById("teamSelect");
+            const pointsInput = document.getElementById("pointsToAdd");
+            const reasonInput = document.getElementById("pointsReason");
+            const teamId = teamSelect?.value;
+            const pointsToAdd = Number(pointsInput?.value);
+            const reason = reasonInput?.value.trim() || "";
             const addPointsBtn = this;
 
-            if (!teamId || isNaN(pointsToAdd)) {
+            if (!teamId || !Number.isInteger(pointsToAdd) || pointsToAdd === 0) {
                 alert("Vui lòng chọn đội và nhập số coin hợp lệ.");
+                return;
+            }
+
+            if (!reason) {
+                alert("Vui lòng nhập lý do cộng hoặc trừ coin.");
+                reasonInput?.focus();
+                return;
+            }
+
+            if (reason.length > 200) {
+                alert("Lý do không được dài quá 200 ký tự.");
+                reasonInput?.focus();
                 return;
             }
 
             addPointsBtn.disabled = true;
             addPointsBtn.textContent = "Đang cập nhật...";
 
-            // Gọi RPC function để cập nhật điểm (an toàn hơn)
-            // Giả sử bạn có một function `add_points_to_team(team_id_in text, points_to_add integer)`
+            // RPC cập nhật số dư và ghi lý do vào sổ cái trong cùng một transaction.
             const { error } = await supabase.rpc("add_points_to_team", {
                 team_id_in: teamId,
                 points_to_add: pointsToAdd,
+                reason_in: reason,
             });
 
             addPointsBtn.disabled = false;
-            addPointsBtn.textContent = "Cộng điểm";
+            addPointsBtn.textContent = "Cộng coin";
 
             if (error) {
-                console.error("Lỗi khi cập nhật điểm:", error);
-                alert(`Đã xảy ra lỗi khi cập nhật điểm: ${error.message}`);
+                console.error("Lỗi khi cập nhật coin:", error);
+                alert(`Đã xảy ra lỗi khi cập nhật coin: ${error.message}`);
             } else {
                 // Tải lại bảng xếp hạng từ database
                 await renderLeaderboardAdmin();
-                document.getElementById("pointsToAdd").value = "";
-                alert(`Đã cộng thành công ${pointsToAdd} điểm.`);
+                pointsInput.value = "";
+                reasonInput.value = "";
+                const action = pointsToAdd > 0 ? "cộng" : "trừ";
+                alert(`Đã ${action} thành công ${Math.abs(pointsToAdd).toLocaleString("vi-VN")} coin.`);
             }
         });
 
