@@ -1,4 +1,4 @@
-import { renderDashboard } from "./components/dashboard.js?v=special-order-zalo-links";
+import { renderDashboard } from "./components/dashboard.js?v=coin-reason";
 import { renderMemberDirectory, renderMemberList } from "./components/memberDirectory.js";
 import { renderOrderDetail } from "./components/orders.js?v=special-order-zalo-links";
 import { renderSidebar } from "./components/sidebar.js";
@@ -6,7 +6,7 @@ import { renderTopbar } from "./components/topbar.js?v=profit-salary";
 import { renderWeeklyCostModal } from "./components/weeklyCosts.js?v=profit-salary";
 import { renderWeeklyProfitModal } from "./components/weeklyProfit.js?v=profit-salary";
 import { club, demoNotifications, orders } from "./data/dashboard.js";
-import { loadDashboardData } from "./services/dashboardData.js?v=special-order-zalo-links";
+import { loadDashboardData } from "./services/dashboardData.js?v=coin-reason";
 import { closeModal, showModal, showToast } from "./ui/feedback.js";
 import { getCafeWeekContext, getNextCafeWeekStart } from "./utils/cafeWeek.js?v=cafe-cycle";
 import { escapeHtml } from "./utils/format.js";

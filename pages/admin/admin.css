@@ -374,6 +374,17 @@ a {
     border-color: var(--brown-light);
     box-shadow: 0 0 0 3px rgba(189, 128, 87, 0.14);
 }
+.coin-reason-input {
+    min-height: 86px;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.5;
+}
+.form-hint {
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.5;
+}
 .leaderboard-box {
     overflow: hidden;
     padding: 0;

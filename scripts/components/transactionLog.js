@@ -18,6 +18,7 @@ const renderTransaction = (transaction) => `
     <span class="transaction-log-icon">${icon(transaction.icon)}</span>
     <div class="transaction-log-copy">
       <div><strong>${escapeHtml(transaction.title)}</strong><span class="transaction-kind">${transactionLabel[transaction.type] || "Biến động"}</span></div>
+      ${transaction.reason ? `<p class="transaction-reason" title="${escapeHtml(transaction.reason)}">${escapeHtml(transaction.reason)}</p>` : ""}
       <small>${escapeHtml(transaction.group)} · ${escapeHtml(transaction.time)}</small>
     </div>
     <div class="transaction-log-value">

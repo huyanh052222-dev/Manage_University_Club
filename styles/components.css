@@ -222,7 +222,7 @@
 .transaction-log-list { position:relative; display:grid; flex:1; padding:4px 16px; }
 .transaction-log-list::before { position:absolute; top:34px; bottom:34px; left:31px; width:1px; background:#e6ddd2; content:""; }
 .transaction-log-list.empty::before { display:none; }
-.transaction-log-row { position:relative; display:grid; min-height:58px; grid-template-columns:31px minmax(120px,1fr) auto; align-items:center; gap:9px; border-bottom:1px solid var(--border); }
+.transaction-log-row { position:relative; display:grid; min-height:58px; grid-template-columns:31px minmax(120px,1fr) auto; align-items:center; gap:9px; padding:6px 0; border-bottom:1px solid var(--border); }
 .transaction-log-row:last-child { border-bottom:0; }
 .transaction-log-icon { z-index:1; display:grid; width:29px; height:29px; place-items:center; border:3px solid #fffdf9; border-radius:50%; }
 .transaction-log-icon .icon { width:13px; height:13px; }
@@ -232,6 +232,7 @@
 .transaction-log-copy { display:grid; min-width:0; gap:2px; }
 .transaction-log-copy>div { display:flex; min-width:0; align-items:center; gap:6px; }
 .transaction-log-copy strong { overflow:hidden; font-size:8px; text-overflow:ellipsis; white-space:nowrap; }
+.transaction-reason { overflow:hidden; margin:0; color:var(--text-soft); font-size:7px; line-height:1.35; text-overflow:ellipsis; white-space:nowrap; }
 .transaction-log-copy small { overflow:hidden; color:var(--muted); font-size:7px; text-overflow:ellipsis; white-space:nowrap; }
 .transaction-kind { flex:0 0 auto; padding:2px 5px; border-radius:999px; background:#f2ede7; color:#8c7c70; font-size:6px; }
 .transaction-log-row.income .transaction-kind { background:#edf5e9; color:var(--green); }

@@ -3,7 +3,7 @@ import { renderCafeStats } from "./cafeStats.js?v=order-summary-stat";
 import { renderMemberOverview } from "./memberOverview.js";
 import { renderOrders } from "./orders.js?v=special-order-zalo-links";
 import { renderCafeTip } from "./cafeTip.js?v=orders";
-import { renderTransactionLog } from "./transactionLog.js?v=ledger-summary-fix";
+import { renderTransactionLog } from "./transactionLog.js?v=coin-reason";
 
 export const renderDashboard = () => `
   <div class="cafe-dashboard">
