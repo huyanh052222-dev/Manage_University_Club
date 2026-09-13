@@ -1,6 +1,25 @@
 export const WEEKLY_ORDER_TOTAL = 10;
-export const WEEKLY_ORDER_REWARD_POOL = 200;
-export const ORDER_REWARD = WEEKLY_ORDER_REWARD_POOL / WEEKLY_ORDER_TOTAL;
+export const MIN_CAFE_REPUTATION = 1;
+export const MAX_CAFE_REPUTATION = 5;
+export const BASE_WEEKLY_ORDER_REWARD_POOL = 200;
+export const REPUTATION_REWARD_POOL_STEP = 100;
+
+const normalizeReputation = (value) => Math.min(
+  MAX_CAFE_REPUTATION,
+  Math.max(MIN_CAFE_REPUTATION, Math.round(Number(value) || MIN_CAFE_REPUTATION)),
+);
+
+export const getWeeklyOrderRewardPool = (reputation = MIN_CAFE_REPUTATION) => (
+  BASE_WEEKLY_ORDER_REWARD_POOL
+  + ((normalizeReputation(reputation) - MIN_CAFE_REPUTATION) * REPUTATION_REWARD_POOL_STEP)
+);
+
+export const getRegularOrderReward = (reputation = MIN_CAFE_REPUTATION) => (
+  getWeeklyOrderRewardPool(reputation) / WEEKLY_ORDER_TOTAL
+);
+
+export const WEEKLY_ORDER_REWARD_POOL = getWeeklyOrderRewardPool();
+export const ORDER_REWARD = getRegularOrderReward();
 
 export const ORDER_CONTACTS_BY_TEAM = Object.freeze({
   A: Object.freeze({ name: "Huỳnh Thị Thúy Vy", phone: "0394350988" }),
@@ -10,14 +29,17 @@ export const ORDER_CONTACTS_BY_TEAM = Object.freeze({
   E: Object.freeze({ name: "Nguyễn Đăng Dương", phone: "0339744676" }),
   F: Object.freeze({ name: "Lê Hồng Cường", phone: "0368944409" }),
   G: Object.freeze({ name: "Tống Hoàng Phước Sang", phone: "0819813331" }),
-  // Ảnh người dùng gửi hiện chỉ có 7 liên hệ; giữ link cũ cho H để tránh gán nhầm.
-  H: Object.freeze({ name: "Chưa cập nhật", phone: "0703500256" }),
+  // Liên hệ H dùng URL hồ sơ được giải mã trực tiếp từ QR Zalo người dùng cung cấp.
+  H: Object.freeze({ name: "Liên hệ QR thay NPC Hiếu", url: "http://zaloapp.com/qr/p/t22cf13d4l8c" }),
 });
 
 export const getOrderContact = (teamId = "A") => ORDER_CONTACTS_BY_TEAM[String(teamId).toUpperCase()]
   || ORDER_CONTACTS_BY_TEAM.A;
 
-export const getOrderSourceUrl = (teamId = "A") => `https://zalo.me/${getOrderContact(teamId).phone}`;
+export const getOrderSourceUrl = (teamId = "A") => {
+  const contact = getOrderContact(teamId);
+  return contact.url || `https://zalo.me/${contact.phone}`;
+};
 
 const FIRST_ORDER_MONDAY = new Date(2026, 7, 31, 0, 0, 0, 0);
 
@@ -139,11 +161,12 @@ const shuffle = (items, random) => {
   return result;
 };
 
-export const createWeeklyOrders = (now = new Date(), teamId = "A") => {
+export const createWeeklyOrders = (now = new Date(), teamId = "A", reputation = MIN_CAFE_REPUTATION) => {
   const schedule = getOrderWeekSchedule(now);
   const { weekKey } = schedule;
   const random = createSeededRandom(hashText(`cafe-orders:${weekKey}`));
   const quantities = menuOrderCatalog.map(() => 1);
+  const regularOrderReward = getRegularOrderReward(reputation);
 
   for (let index = menuOrderCatalog.length; index < WEEKLY_ORDER_TOTAL; index += 1) {
     quantities[Math.floor(random() * quantities.length)] += 1;
@@ -158,7 +181,7 @@ export const createWeeklyOrders = (now = new Date(), teamId = "A") => {
       description: item.description,
       requirements: item.requirements.join("\n"),
       sourceUrl: getOrderSourceUrl(teamId),
-      reward: ORDER_REWARD,
+      reward: regularOrderReward,
       startsAt: schedule.startsAt,
       deadline: schedule.deadline,
       status: "available",

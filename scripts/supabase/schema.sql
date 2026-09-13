@@ -61,7 +61,7 @@ create table if not exists public.orders (
     created_at timestamptz not null default now()
 );
 
--- Đồng bộ giá trị mặc định: quỹ 200 coin được chia đều cho 10 đơn, tức 20 coin/đơn.
+-- Giá trị mặc định của bảng orders tương ứng quán 1 sao: 200 coin / 10 đơn = 20 coin/đơn.
 alter table public.orders alter column reward set default 20;
 
 -- Cho phép chạy lại migration trên database đã tạo bảng orders từ phiên bản trước.
@@ -242,3 +242,46 @@ drop function if exists public.add_points_to_team(text, integer);
 revoke all on function public.add_points_to_team(text, integer, text) from public;
 revoke all on function public.add_points_to_team(text, integer, text) from anon;
 grant execute on function public.add_points_to_team(text, integer, text) to authenticated;
+
+-- Admin thay đổi uy tín quán trong khoảng 1–5 sao.
+create or replace function public.update_team_reputation(
+    team_id_in text,
+    reputation_in integer
+)
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    saved_reputation integer;
+begin
+    if auth.uid() is null then
+        raise exception 'not authenticated';
+    end if;
+
+    if not coalesce((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin', false) then
+        raise exception 'admin access required';
+    end if;
+
+    if reputation_in is null or reputation_in < 1 or reputation_in > 5 then
+        raise exception 'reputation must be between 1 and 5';
+    end if;
+
+    update public.teams
+    set reputation = reputation_in,
+        updated_at = now()
+    where id = team_id_in
+    returning reputation into saved_reputation;
+
+    if not found then
+        raise exception 'team not found';
+    end if;
+
+    return saved_reputation;
+end;
+$$;
+
+revoke all on function public.update_team_reputation(text, integer) from public;
+revoke all on function public.update_team_reputation(text, integer) from anon;
+grant execute on function public.update_team_reputation(text, integer) to authenticated;

@@ -25,5 +25,5 @@ if (isAdminLoginHash) {
 } else {
   appRoot.innerHTML = renderCafePage();
 
-  await import("./app.js?v=20260912-team-zalo-swap");
+  await import("./app.js?v=20260914-reputation-rewards");
 }

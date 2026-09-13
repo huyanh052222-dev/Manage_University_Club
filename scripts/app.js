@@ -1,15 +1,15 @@
-import { renderDashboard } from "./components/dashboard.js?v=team-zalo-swap";
+import { renderDashboard } from "./components/dashboard.js?v=reputation-rewards";
 import { renderMemberDirectory, renderMemberList } from "./components/memberDirectory.js?v=cafe-visit";
-import { renderOrderDetail } from "./components/orders.js?v=team-zalo-swap";
+import { renderOrderDetail } from "./components/orders.js?v=reputation-rewards";
 import { renderSidebar } from "./components/sidebar.js?v=cafe-visit";
-import { renderTopbar } from "./components/topbar.js?v=cafe-visit";
+import { renderTopbar } from "./components/topbar.js?v=monday-cycle";
 import { renderWeeklyCostModal } from "./components/weeklyCosts.js?v=profit-salary";
-import { renderWeeklyProfitModal } from "./components/weeklyProfit.js?v=profit-salary";
+import { renderWeeklyProfitModal } from "./components/weeklyProfit.js?v=monday-cycle";
 import { club, demoNotifications, orders } from "./data/dashboard.js";
 import { getCafeVisitContext } from "./routes/teamRoutes.js?v=cafe-visit";
-import { loadDashboardData } from "./services/dashboardData.js?v=team-zalo-swap";
+import { loadDashboardData } from "./services/dashboardData.js?v=reputation-rewards";
 import { closeModal, showModal, showToast } from "./ui/feedback.js";
-import { getCafeWeekContext, getNextCafeWeekStart } from "./utils/cafeWeek.js?v=cafe-cycle";
+import { getCafeWeekContext, getNextCafeWeekStart } from "./utils/cafeWeek.js?v=monday-cycle";
 import { escapeHtml } from "./utils/format.js";
 
 const elements = {

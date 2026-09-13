@@ -14,6 +14,7 @@ const formatPeriod = ({ periodStart, periodEnd, hasSettlement }) => {
   const start = new Date(`${periodStart}T00:00:00`);
   const end = new Date(`${periodEnd}T00:00:00`);
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return "Kỳ kết toán gần nhất";
+  end.setDate(end.getDate() - 1);
   return `Kỳ ${periodFormatter.format(start)} – ${periodFormatter.format(end)}`;
 };
 

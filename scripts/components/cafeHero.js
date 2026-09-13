@@ -1,5 +1,5 @@
 import { club } from "../data/dashboard.js";
-import { getCafeWeekContext } from "../utils/cafeWeek.js";
+import { getCafeWeekContext } from "../utils/cafeWeek.js?v=monday-cycle";
 import { percentage } from "../utils/format.js";
 import { icon } from "./icons.js";
 

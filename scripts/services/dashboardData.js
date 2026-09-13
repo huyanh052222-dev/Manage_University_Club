@@ -1,10 +1,10 @@
 import { DEFAULT_CAFE_REPUTATION, MAX_CAFE_REPUTATION, cafeStats, club, finance, members, orders, transactionLogs, weeklyCoinSummary } from "../data/dashboard.js";
 import { getTeamIdFromLocation } from "../routes/teamRoutes.js?v=cafe-visit";
-import { getCafeWeekStart, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=cafe-cycle";
+import { getCafeWeekStart, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=monday-cycle";
 import { resolveCafeName } from "../utils/cafeNames.js?v=the-vortex-the-ora";
 import { supabase } from "../supabase/supabase.js";
 import { getWeeklyCostEstimate, isManagerRole } from "./weeklyCosts.js";
-import { createWeeklyOrders } from "./weeklyOrders.js?v=team-zalo-swap";
+import { createWeeklyOrders } from "./weeklyOrders.js?v=reputation-rewards";
 
 const memberPalettes = [
     ["#936d55", "#2e3b5c"],
@@ -271,6 +271,8 @@ export const loadDashboardData = async ({ visitorMode = false } = {}) => {
                 isDeveloping: false,
             });
         }
+
+        orders.splice(0, orders.length, ...createWeeklyOrders(new Date(), teamId, club.reputation));
 
         const resolvedTransactions = (transactionResult.data || []).map(normalizeTransaction);
         const weeklyCost = getWeeklyCostEstimate(resolvedMembers);
