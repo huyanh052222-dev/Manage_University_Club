@@ -9,6 +9,7 @@ import {
 import { getCafeWeekKey, getNextCafeWeekStart } from "../../scripts/utils/cafeWeek.js?v=monday-cycle";
 import { resolveCafeName } from "../../scripts/utils/cafeNames.js?v=the-vortex-the-ora";
 import { escapeHtml, formatNumber } from "../../scripts/utils/format.js";
+import { getStoredCafeReputation, setStoredCafeReputation } from "../../scripts/utils/reputationStorage.js?v=ui-only";
 import { adminLoginUrl } from "./adminRoutes.js";
 
 document.addEventListener("DOMContentLoaded", async function () {
@@ -71,7 +72,12 @@ document.addEventListener("DOMContentLoaded", async function () {
             return [];
         }
         // Đổi tên cột 'points' thành 'pts' để tương thích với code hiện tại
-        return data.map((team) => ({ ...team, name: resolveCafeName(team), pts: team.points }));
+        return data.map((team) => ({
+            ...team,
+            name: resolveCafeName(team),
+            pts: team.points,
+            reputation: getStoredCafeReputation(team.id, team.reputation),
+        }));
     }
 
     async function renderLeaderboardAdmin() {
@@ -195,7 +201,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         renderSelectedReputation();
     }
 
-    async function changeSelectedReputation(step, button) {
+    function changeSelectedReputation(step) {
         const teamSelect = document.getElementById("reputationTeamSelect");
         const team = reputationTeams.find((item) => String(item.id) === teamSelect?.value);
         if (!team) return;
@@ -204,37 +210,29 @@ document.addEventListener("DOMContentLoaded", async function () {
         const nextReputation = clampReputation(currentReputation + step);
         if (nextReputation === currentReputation) return;
 
-        const originalContent = button.innerHTML;
         const reputationButtons = [
             document.getElementById("decreaseReputationBtn"),
             document.getElementById("increaseReputationBtn"),
         ].filter(Boolean);
         reputationButtons.forEach((item) => { item.disabled = true; });
-        button.innerHTML = '<span class="button-spinner" role="status" aria-hidden="true"></span> Đang lưu...';
-
-        const { data, error } = await supabase.rpc("update_team_reputation", {
-            team_id_in: team.id,
-            reputation_in: nextReputation,
-        });
-
-        button.innerHTML = originalContent;
-        if (error) {
+        if (!setStoredCafeReputation(team.id, nextReputation)) {
             renderSelectedReputation();
-            console.error("Lỗi khi cập nhật sao:", error);
-            alert(`Không thể cập nhật sao: ${error.message}`);
+            alert("Trình duyệt không cho phép lưu số sao cục bộ.");
             return;
         }
 
-        await renderReputationAdmin(team.id);
-        alert(`Đã cập nhật ${team.name} thành ${Number(data) || nextReputation} sao.`);
+        team.reputation = nextReputation;
+        renderSelectedReputation();
+        void renderReputationAdmin(team.id);
+        alert(`Đã cập nhật ${team.name} thành ${nextReputation} sao trên trình duyệt này.`);
     }
 
     document.getElementById("reputationTeamSelect")?.addEventListener("change", renderSelectedReputation);
     document.getElementById("decreaseReputationBtn")?.addEventListener("click", function () {
-        void changeSelectedReputation(-1, this);
+        changeSelectedReputation(-1);
     });
     document.getElementById("increaseReputationBtn")?.addEventListener("click", function () {
-        void changeSelectedReputation(1, this);
+        changeSelectedReputation(1);
     });
 
     const addPointsBtn = document.getElementById("addPointsBtn");

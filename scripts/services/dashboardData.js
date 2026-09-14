@@ -2,6 +2,7 @@ import { DEFAULT_CAFE_REPUTATION, MAX_CAFE_REPUTATION, cafeStats, club, finance,
 import { getTeamIdFromLocation } from "../routes/teamRoutes.js?v=cafe-visit";
 import { getCafeWeekStart, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=monday-cycle";
 import { resolveCafeName } from "../utils/cafeNames.js?v=the-vortex-the-ora";
+import { getStoredCafeReputation } from "../utils/reputationStorage.js?v=ui-only";
 import { supabase } from "../supabase/supabase.js";
 import { getWeeklyCostEstimate, isManagerRole } from "./weeklyCosts.js";
 import { createWeeklyOrders } from "./weeklyOrders.js?v=reputation-rewards";
@@ -237,17 +238,20 @@ export const loadDashboardData = async ({ visitorMode = false } = {}) => {
         members.splice(0, members.length, ...resolvedMembers);
         club.memberCount = resolvedMembers.length;
 
-        if (team) {
-            const reputation = clamp(
+        const databaseReputation = team
+            ? clamp(
                 numberOrDefault(team.reputation, DEFAULT_CAFE_REPUTATION),
                 DEFAULT_CAFE_REPUTATION,
                 MAX_CAFE_REPUTATION,
-            );
+            )
+            : DEFAULT_CAFE_REPUTATION;
+        const reputation = getStoredCafeReputation(teamId, databaseReputation);
+
+        if (team) {
             Object.assign(club, {
                 name: resolveCafeName(team, club.name),
                 code: `Nhóm ${team.id || teamId}`,
                 memberLimit: numberOrZero(team.member_limit),
-                reputation,
             });
             if (!visitorMode) {
                 Object.assign(club, {
@@ -263,14 +267,16 @@ export const loadDashboardData = async ({ visitorMode = false } = {}) => {
                 const energy = clamp(team.energy, 0, 100);
                 updateStat("energy", { value: String(energy), progress: energy });
             }
-            updateStat("reputation", {
-                value: String(reputation),
-                total: `/ ${MAX_CAFE_REPUTATION} sao`,
-                progress: (reputation / MAX_CAFE_REPUTATION) * 100,
-                note: reputation === DEFAULT_CAFE_REPUTATION ? "Mức khởi đầu" : "Uy tín hiện tại",
-                isDeveloping: false,
-            });
         }
+
+        club.reputation = reputation;
+        updateStat("reputation", {
+            value: String(reputation),
+            total: `/ ${MAX_CAFE_REPUTATION} sao`,
+            progress: (reputation / MAX_CAFE_REPUTATION) * 100,
+            note: reputation === DEFAULT_CAFE_REPUTATION ? "Mức khởi đầu" : "Uy tín hiện tại",
+            isDeveloping: false,
+        });
 
         orders.splice(0, orders.length, ...createWeeklyOrders(new Date(), teamId, club.reputation));
 
