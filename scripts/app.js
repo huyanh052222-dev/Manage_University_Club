@@ -7,11 +7,11 @@ import { renderWeeklyCostModal } from "./components/weeklyCosts.js?v=profit-sala
 import { renderWeeklyProfitModal } from "./components/weeklyProfit.js?v=monday-cycle";
 import { club, demoNotifications, orders } from "./data/dashboard.js";
 import { getCafeVisitContext } from "./routes/teamRoutes.js?v=cafe-visit";
-import { loadDashboardData } from "./services/dashboardData.js?v=reputation-rewards";
+import { loadDashboardData } from "./services/dashboardData.js?v=reputation-hardcoded-v1";
 import { closeModal, showModal, showToast } from "./ui/feedback.js";
 import { getCafeWeekContext, getNextCafeWeekStart } from "./utils/cafeWeek.js?v=monday-cycle";
 import { escapeHtml } from "./utils/format.js";
-import { REPUTATION_STORAGE_KEY } from "./utils/reputationStorage.js?v=ui-only";
+import { REPUTATION_STORAGE_KEY } from "./utils/reputationStorage.js?v=hardcoded-v1";
 
 const elements = {
   sidebar: document.querySelector("#sidebar"),

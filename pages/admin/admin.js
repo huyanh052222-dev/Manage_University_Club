@@ -9,7 +9,7 @@ import {
 import { getCafeWeekKey, getNextCafeWeekStart } from "../../scripts/utils/cafeWeek.js?v=monday-cycle";
 import { resolveCafeName } from "../../scripts/utils/cafeNames.js?v=the-vortex-the-ora";
 import { escapeHtml, formatNumber } from "../../scripts/utils/format.js";
-import { getStoredCafeReputation, setStoredCafeReputation } from "../../scripts/utils/reputationStorage.js?v=ui-only";
+import { getStoredCafeReputation, setStoredCafeReputation } from "../../scripts/utils/reputationStorage.js?v=hardcoded-v1";
 import { adminLoginUrl } from "./adminRoutes.js";
 
 document.addEventListener("DOMContentLoaded", async function () {

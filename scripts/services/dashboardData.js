@@ -2,7 +2,7 @@ import { DEFAULT_CAFE_REPUTATION, MAX_CAFE_REPUTATION, cafeStats, club, finance,
 import { getTeamIdFromLocation } from "../routes/teamRoutes.js?v=cafe-visit";
 import { getCafeWeekStart, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=monday-cycle";
 import { resolveCafeName } from "../utils/cafeNames.js?v=the-vortex-the-ora";
-import { getStoredCafeReputation } from "../utils/reputationStorage.js?v=ui-only";
+import { getStoredCafeReputation } from "../utils/reputationStorage.js?v=hardcoded-v1";
 import { supabase } from "../supabase/supabase.js";
 import { getWeeklyCostEstimate, isManagerRole } from "./weeklyCosts.js";
 import { createWeeklyOrders } from "./weeklyOrders.js?v=reputation-rewards";

@@ -1,0 +1,59 @@
+HƯỚNG DẪN DEMO HỆ THỐNG SAO CỦA QUÁN
+=====================================
+
+1. MỨC SAO MẶC ĐỊNH SAU KHI DEPLOY
+
+- Team A - The Vortex Coffee - Nguyễn Văn Bảo: 2 sao
+- Team B - Chuột Ôm Cheese Coffee: 1 sao
+- Team C - AUREXA Coffee: 1 sao
+- Team D - Tabulous Beasts: 1 sao
+- Team E - Ngự Hoa Viên: 1 sao
+- Team F - The Ora café - Nguyễn Quốc Quỳnh: 2 sao
+- Team G - 7-Byte Brew - Ngô Văn Quân: 2 sao
+- Team H - Fortuna (Rise & Concordia) - Nguyễn Trọng Nhân: 2 sao
+
+Các giá trị trên được hardcode trong biến HARDCODED_CAFE_REPUTATIONS tại:
+scripts/utils/reputationStorage.js
+
+Vì cấu hình nằm trong source code, tất cả người truy cập bản Vercel sau khi
+deploy sẽ nhìn thấy mức sao mặc định giống nhau.
+
+2. THỨ TỰ ƯU TIÊN DỮ LIỆU
+
+Khi trang quán được mở, hệ thống chọn mức sao theo thứ tự:
+
+1) Nếu trình duyệt đã từng nâng/hạ sao trong Admin, dùng giá trị localStorage.
+2) Nếu chưa có giá trị localStorage, dùng cấu hình hardcode theo team A-H.
+3) Với team không có trong cấu hình, mới dùng giá trị fallback.
+
+Vì vậy cấu hình hardcode là mức mặc định chung sau deploy. Thao tác trong Admin
+chỉ là lớp ghi đè để demo trên một trình duyệt, không ghi vào Supabase.
+
+3. ADMIN NÂNG/HẠ SAO HOẠT ĐỘNG NHƯ THẾ NÀO
+
+- Admin chọn quán và bấm "Nâng 1 sao" hoặc "Hạ 1 sao".
+- Trình duyệt lưu một object theo team_id vào localStorage với khóa:
+  cafe-reputation-overrides-v1
+- Tất cả link quán trên cùng domain và cùng trình duyệt sẽ đọc được giá trị này.
+- Giá trị vẫn còn sau khi tải lại trang.
+- Trình duyệt hoặc thiết bị khác vẫn thấy cấu hình hardcode mặc định.
+
+Muốn xóa toàn bộ thay đổi demo trên trình duyệt, mở DevTools Console và chạy:
+
+localStorage.removeItem("cafe-reputation-overrides-v1");
+location.reload();
+
+4. SAO ẢNH HƯỞNG ĐẾN ĐƠN HÀNG
+
+- 1 sao: 200 coin / 10 đơn = 20 coin mỗi đơn thường
+- 2 sao: 300 coin / 10 đơn = 30 coin mỗi đơn thường
+- 3 sao: 400 coin / 10 đơn = 40 coin mỗi đơn thường
+- 4 sao: 500 coin / 10 đơn = 50 coin mỗi đơn thường
+- 5 sao: 600 coin / 10 đơn = 60 coin mỗi đơn thường
+
+Đơn đặc biệt không dùng công thức trên và luôn hiện "Từ 200-1000 coin".
+
+5. MUỐN ĐỔI MỨC MẶC ĐỊNH CHO MỌI NGƯỜI
+
+Sửa số sao của team cần đổi trong HARDCODED_CAFE_REPUTATIONS, commit, push và
+deploy lại Vercel. Không cần chạy SQL cho phần sao.
