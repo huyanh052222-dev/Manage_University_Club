@@ -19,6 +19,7 @@ Sau đó mở:
 Khi deploy Vercel, `vercel.json` ánh xạ thành:
 
 - Landing: `https://manage-university-club.vercel.app/`
+- Danh sách 8 quán: `https://manage-university-club.vercel.app/cafes`
 - The Vortex Coffee (`team_id=A`): `https://manage-university-club.vercel.app/cafe/zzhaSdhdaskMZkasdojASDU00129`
 - Chuột Ôm Cheese Coffee (`team_id=B`): `https://manage-university-club.vercel.app/cafe/zzhaSdhdbskMZkasdojASDV00821`
 - AUREXA Coffee (`team_id=C`): `https://manage-university-club.vercel.app/cafe/zzhbSdhdaskNZkasdojASDU00492`
