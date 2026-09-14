@@ -10,7 +10,7 @@ import {
 import { icon } from "./icons.js";
 
 const SPECIAL_ORDER_LABEL = "Đơn đặc biệt";
-const SPECIAL_ORDER_REWARD_LABEL = "Từ 200-1000 coin";
+const SPECIAL_ORDER_REWARD_LABEL = "Từ 200-800 coin";
 const ENABLE_SPECIAL_ORDER_DEMO = true;
 const isSpecialOrder = (order) => ENABLE_SPECIAL_ORDER_DEMO && Boolean(order.isSpecial);
 const getOrderRewardLabel = (order) => isSpecialOrder(order)

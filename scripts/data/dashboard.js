@@ -41,6 +41,9 @@ export const finance = {
   settlementPeriodStart: "",
   settlementPeriodEnd: "",
   settledAt: "",
+  settlementStatus: "not_due",
+  expectedSettlementPeriodStart: "",
+  expectedSettlementPeriodEnd: "",
   updatedAt: "Chưa có dữ liệu",
 };
 
@@ -62,6 +65,8 @@ export const weeklyCoinSummary = {
   totalIncome: 0,
   totalExpense: 0,
   totalProfit: 0,
+  incomeCount: 0,
+  expenseCount: 0,
 };
 
 export const transactionLogs = [];

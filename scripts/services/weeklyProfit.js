@@ -17,6 +17,9 @@ export const getWeeklyProfitBreakdown = () => {
     periodStart: finance.settlementPeriodStart,
     periodEnd: finance.settlementPeriodEnd,
     settledAt: finance.settledAt,
-    hasSettlement: Boolean(finance.settledAt || finance.settlementPeriodStart),
+    expectedPeriodStart: finance.expectedSettlementPeriodStart,
+    expectedPeriodEnd: finance.expectedSettlementPeriodEnd,
+    settlementStatus: finance.settlementStatus,
+    hasSettlement: finance.settlementStatus === "settled",
   };
 };

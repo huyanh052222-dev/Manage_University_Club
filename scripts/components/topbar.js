@@ -12,6 +12,8 @@ const formatSignedCoin = (amount) => {
 
 export const renderTopbar = ({ isVisiting = false } = {}) => {
   const weekContext = getCafeWeekContext();
+  const hasSettlement = finance.settlementStatus === "settled";
+  const settlementDisplay = hasSettlement ? formatSignedCoin(finance.weeklyFlow) : "Chờ kết toán";
   return `
   <div class="topbar-heading">
     <button class="menu-button" type="button" data-action="toggle-sidebar" aria-label="Mở thanh điều hướng">
@@ -47,15 +49,15 @@ export const renderTopbar = ({ isVisiting = false } = {}) => {
       </button>
       ${renderWeeklyCostPopover()}
     </div>
-    <div class="top-finance-item profit weekly-profit-container ${finance.weeklyFlow < 0 ? "is-negative" : "is-positive"}">
+    <div class="top-finance-item profit weekly-profit-container ${hasSettlement ? (finance.weeklyFlow < 0 ? "is-negative" : "is-positive") : "is-pending"}">
       <button
         class="weekly-profit-trigger"
         type="button"
         data-action="weekly-profit"
-        aria-label="Lợi nhuận kết toán ${formatSignedCoin(finance.weeklyFlow)}. Xem chi tiết kỳ kết toán"
+        aria-label="Lợi nhuận kết toán ${settlementDisplay}. Xem chi tiết kỳ kết toán"
       >
         <span class="weekly-profit-trigger-icon">${icon("coffee")}</span>
-        <span class="weekly-profit-trigger-copy"><small>Lợi nhuận kết toán</small><strong>${formatSignedCoin(finance.weeklyFlow)}</strong></span>
+        <span class="weekly-profit-trigger-copy"><small>Lợi nhuận kết toán</small><strong>${settlementDisplay}</strong></span>
       </button>
       ${renderWeeklyProfitPopover()}
     </div>

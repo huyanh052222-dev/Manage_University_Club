@@ -57,8 +57,8 @@ export const renderTransactionLog = () => `
     </div>
 
     <div class="transaction-summary" aria-label="Tổng kết các biến động trong nhật ký coin">
-      <div><span>Tổng coin vào</span><strong class="positive-text">${formatSignedCoin(weeklyCoinSummary.totalIncome)}</strong></div>
-      <div><span>Tổng coin ra</span><strong class="negative-text">${formatSignedCoin(-weeklyCoinSummary.totalExpense)}</strong></div>
+      <div><span>Tổng coin vào</span><strong class="positive-text">${formatSignedCoin(weeklyCoinSummary.totalIncome)}</strong><small>${weeklyCoinSummary.incomeCount} lần cộng</small></div>
+      <div><span>Tổng coin ra</span><strong class="negative-text">${formatSignedCoin(-weeklyCoinSummary.totalExpense)}</strong><small>${weeklyCoinSummary.expenseCount} lần trừ</small></div>
       <div><span>Thay đổi ròng</span><strong class="${getNetSummaryClass()}">${formatSignedCoin(weeklyCoinSummary.totalProfit)}</strong></div>
     </div>
   </section>

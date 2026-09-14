@@ -35,6 +35,9 @@ create table if not exists public.weekly_financial_settlements (
     check (period_end > period_start)
 );
 
+alter table public.coin_transactions
+    add column if not exists reason text;
+
 alter table public.weekly_coin_deductions enable row level security;
 alter table public.weekly_financial_settlements enable row level security;
 
@@ -173,8 +176,14 @@ begin
             where id = team_record.id;
 
             if actual_deduction > 0 then
-                insert into public.coin_transactions (team_id, type, title, amount)
-                values (team_record.id, 'expense', 'Phí vận hành tuần', -actual_deduction);
+                insert into public.coin_transactions (team_id, type, title, reason, amount)
+                values (
+                    team_record.id,
+                    'expense',
+                    'Phí vận hành tuần',
+                    'Hệ thống tự trừ chi phí vận hành cho tuần bắt đầu ' || to_char(week_key, 'DD/MM/YYYY'),
+                    -actual_deduction
+                );
             end if;
         end loop;
     end if;
