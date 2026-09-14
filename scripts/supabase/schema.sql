@@ -61,7 +61,7 @@ create table if not exists public.orders (
     created_at timestamptz not null default now()
 );
 
--- Đồng bộ giá trị mặc định: quỹ 200 coin được chia đều cho 10 đơn, tức 20 coin/đơn.
+-- Giá trị mặc định của bảng orders tương ứng quán 1 sao: 200 coin / 10 đơn = 20 coin/đơn.
 alter table public.orders alter column reward set default 20;
 
 -- Cho phép chạy lại migration trên database đã tạo bảng orders từ phiên bản trước.

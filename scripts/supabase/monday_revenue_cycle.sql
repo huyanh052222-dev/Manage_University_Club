@@ -1,60 +1,67 @@
--- Run this script once in Supabase SQL Editor.
--- It makes the weekly deduction idempotent: a week can only be charged once.
+-- Chạy MỘT LẦN trong Supabase SQL Editor TRƯỚC KHI deploy frontend mới.
+-- Chuyển chu kỳ cũ Chủ nhật–Thứ bảy sang Thứ hai–Chủ nhật mà không trừ coin lại.
 
--- The login code expects this function to return true for admin users.
--- Set the user's app_metadata.role to "admin" in Supabase Auth.
-create or replace function public.is_admin()
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-    select coalesce((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin', false);
+begin;
+
+-- Dừng an toàn nếu database đã có đồng thời cả mốc Chủ nhật cũ và Thứ hai mới.
+-- Trường hợp này có thể là đã bị trừ hai lần và cần đối soát thủ công trước khi tiếp tục.
+do $$
+begin
+    if exists (
+        select 1
+        from public.weekly_coin_deductions as sunday_cycle
+        join public.weekly_coin_deductions as monday_cycle
+            on monday_cycle.week_key = sunday_cycle.week_key + 1
+        where extract(isodow from sunday_cycle.week_key) = 7
+    ) then
+        raise exception 'both Sunday and Monday deduction markers exist; review possible duplicate deduction first';
+    end if;
+
+    if exists (
+        select 1
+        from public.weekly_financial_settlements as sunday_period
+        join public.weekly_financial_settlements as monday_period
+            on monday_period.team_id = sunday_period.team_id
+            and monday_period.period_start = sunday_period.period_start + 1
+        where extract(isodow from sunday_period.period_start) = 7
+    ) then
+        raise exception 'both Sunday and Monday settlements exist; review overlapping periods first';
+    end if;
+end;
 $$;
 
-grant execute on function public.is_admin() to authenticated;
+-- Chỉ dời khóa chu kỳ, không tạo giao dịch chi phí mới và không đổi teams.points.
+update public.weekly_coin_deductions
+set week_key = week_key + 1
+where extract(isodow from week_key) = 7;
 
-create table if not exists public.weekly_coin_deductions (
-    week_key date primary key,
-    deduction_amount integer not null,
-    created_at timestamptz not null default now()
-);
+update public.weekly_financial_settlements
+set period_start = period_start + 1,
+    period_end = period_end + 1,
+    settled_at = now()
+where extract(isodow from period_start) = 7;
 
-create table if not exists public.weekly_financial_settlements (
-    id uuid primary key default gen_random_uuid(),
-    team_id text not null references public.teams(id) on delete cascade,
-    period_start date not null,
-    period_end date not null,
-    income integer not null default 0 check (income >= 0),
-    expense integer not null default 0 check (expense >= 0),
-    profit integer not null default 0,
-    member_count integer not null default 0 check (member_count >= 0),
-    settled_at timestamptz not null default now(),
-    unique (team_id, period_start),
-    check (period_end > period_start)
-);
-
-alter table public.weekly_coin_deductions enable row level security;
-alter table public.weekly_financial_settlements enable row level security;
-
-drop policy if exists "admin" on public.weekly_coin_deductions;
-create policy "admin" on public.weekly_coin_deductions
-    as permissive
-    for select
-    to authenticated
-    using (coalesce((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin', false));
-
-grant select on public.weekly_coin_deductions to authenticated;
-
-drop policy if exists "public_read_weekly_financial_settlements" on public.weekly_financial_settlements;
-create policy "public_read_weekly_financial_settlements"
-    on public.weekly_financial_settlements
-    for select
-    to anon, authenticated
-    using (true);
-
-grant select on public.weekly_financial_settlements to anon, authenticated;
+-- Tính lại doanh thu/lợi nhuận theo [Thứ hai 00:00, Thứ hai kế tiếp 00:00).
+with recalculated as (
+    select
+        settlements.id,
+        coalesce(sum(transactions.amount) filter (
+            where transactions.type = 'income' and transactions.amount > 0
+        ), 0)::integer as income
+    from public.weekly_financial_settlements as settlements
+    left join public.coin_transactions as transactions
+        on transactions.team_id = settlements.team_id
+        and transactions.occurred_at >= (settlements.period_start::timestamp at time zone 'Asia/Ho_Chi_Minh')
+        and transactions.occurred_at < (settlements.period_end::timestamp at time zone 'Asia/Ho_Chi_Minh')
+    where extract(isodow from settlements.period_start) = 1
+    group by settlements.id
+)
+update public.weekly_financial_settlements as settlements
+set income = recalculated.income,
+    profit = recalculated.income - settlements.expense,
+    settled_at = now()
+from recalculated
+where settlements.id = recalculated.id;
 
 create or replace function public.deduct_weekly_coins(
     deduction_amount integer,
@@ -120,10 +127,8 @@ begin
             left join public.members as members on members.team_id = teams.id
             group by teams.id, teams.points
         loop
-            -- Quản lý/trưởng nhóm không nhận lương; chỉ nhân viên được tính 20 coin/người.
             weekly_cost := deduction_amount + (20 * team_record.paid_staff_count);
 
-            -- Khi mở tuần mới, chốt doanh thu và chi phí của chu kỳ 7 ngày vừa kết thúc.
             if week_key > date '2026-08-31' then
                 previous_week_start := week_key - 7;
 
@@ -184,3 +189,15 @@ end;
 $$;
 
 grant execute on function public.deduct_weekly_coins(integer, date) to authenticated;
+grant select on public.weekly_coin_deductions to authenticated;
+
+commit;
+
+-- Kết quả đối chiếu: mọi week_key/period_start phải là Thứ hai (isodow = 1).
+select week_key, extract(isodow from week_key) as iso_day, deduction_amount
+from public.weekly_coin_deductions
+order by week_key desc;
+
+select team_id, period_start, period_end, income, expense, profit
+from public.weekly_financial_settlements
+order by period_start desc, team_id;

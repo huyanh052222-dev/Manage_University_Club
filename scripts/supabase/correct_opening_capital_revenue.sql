@@ -1,6 +1,5 @@
 -- Chạy MỘT LẦN sau manual_coin_revenue.sql nếu khoản khôi phục cũ đã tính
 -- cả 1.000 coin vốn ban đầu vào doanh thu. Script không thay đổi teams.points.
-C
 begin;
 
 -- Ghi vốn ban đầu thành điều chỉnh số dư, không phải doanh thu.
@@ -24,7 +23,7 @@ select
             order by settlements.period_start asc
             limit 1
         ),
-        (date '2026-08-30')::timestamp at time zone 'Asia/Ho_Chi_Minh'
+        (date '2026-08-31')::timestamp at time zone 'Asia/Ho_Chi_Minh'
     )
 from recovered_teams as recovered
 where not exists (

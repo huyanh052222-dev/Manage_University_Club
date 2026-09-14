@@ -1,5 +1,5 @@
 import { orders } from "../data/dashboard.js";
-import { summarizeWeeklyOrders } from "../services/weeklyOrders.js?v=team-zalo-links";
+import { summarizeWeeklyOrders } from "../services/weeklyOrders.js?v=reputation-rewards";
 import { escapeHtml, formatNumber } from "../utils/format.js";
 import {
   formatOrderDeadline,
@@ -10,7 +10,7 @@ import {
 import { icon } from "./icons.js";
 
 const SPECIAL_ORDER_LABEL = "Đơn đặc biệt";
-const SPECIAL_ORDER_REWARD_LABEL = "Từ 200-800 coin";
+const SPECIAL_ORDER_REWARD_LABEL = "Từ 200-1000 coin";
 const ENABLE_SPECIAL_ORDER_DEMO = true;
 const isSpecialOrder = (order) => ENABLE_SPECIAL_ORDER_DEMO && Boolean(order.isSpecial);
 const getOrderRewardLabel = (order) => isSpecialOrder(order)
@@ -58,12 +58,13 @@ const renderOrder = (order) => {
 export const renderOrders = () => {
   ensureSpecialOrderDemo(orders);
   const prioritizedOrders = prioritizeSpecialOrders(orders);
+  const regularOrderReward = orders[0]?.reward || 0;
 
   return `
     <section class="cafe-panel orders-panel" id="orders" aria-labelledby="orders-title">
       <header class="cafe-panel-header">
         <span class="section-icon coral">${icon("receipt")}</span>
-        <div><h2 id="orders-title">Đơn hàng</h2><p>Thứ Hai–Thứ Bảy · 10 đơn · Đơn thường 20 coin</p></div>
+        <div><h2 id="orders-title">Đơn hàng</h2><p>Thứ Hai–Thứ Bảy · 10 đơn · Đơn thường ${formatNumber(regularOrderReward)} coin</p></div>
       </header>
       <div class="order-allocation" aria-label="Phân bổ 10 đơn hàng tuần">
         ${summarizeWeeklyOrders(orders).map((item) => `

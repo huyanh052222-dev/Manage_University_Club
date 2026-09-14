@@ -1,4 +1,5 @@
 const OPENING_DATE = Object.freeze({ year: 2026, month: 7, day: 30 });
+const FIRST_REVENUE_WEEK_START = Object.freeze({ year: 2026, month: 7, day: 31 });
 const DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
 
 const toUtcDateOnly = ({ year, month, day }) => Date.UTC(year, month, day);
@@ -9,6 +10,16 @@ const createLocalOpeningDate = () => new Date(
   OPENING_DATE.year,
   OPENING_DATE.month,
   OPENING_DATE.day,
+  0,
+  0,
+  0,
+  0,
+);
+
+const createLocalFirstRevenueWeekStart = () => new Date(
+  FIRST_REVENUE_WEEK_START.year,
+  FIRST_REVENUE_WEEK_START.month,
+  FIRST_REVENUE_WEEK_START.day,
   0,
   0,
   0,
@@ -34,14 +45,14 @@ const formatDateKey = (date) => {
 
 export const getCafeWeekStart = (now = new Date()) => {
   const today = getLocalToday(now);
-  const openingDate = createLocalOpeningDate();
-  if (today < openingDate) return null;
+  const firstWeekStart = createLocalFirstRevenueWeekStart();
+  if (today < firstWeekStart) return null;
 
   const todayUtc = toUtcDateOnly({ year: today.getFullYear(), month: today.getMonth(), day: today.getDate() });
-  const openingUtc = toUtcDateOnly(OPENING_DATE);
-  const elapsedDays = Math.floor((todayUtc - openingUtc) / DAY_IN_MILLISECONDS);
+  const firstWeekUtc = toUtcDateOnly(FIRST_REVENUE_WEEK_START);
+  const elapsedDays = Math.floor((todayUtc - firstWeekUtc) / DAY_IN_MILLISECONDS);
   const elapsedWeeks = Math.floor(elapsedDays / 7);
-  const weekStart = createLocalOpeningDate();
+  const weekStart = createLocalFirstRevenueWeekStart();
   weekStart.setDate(weekStart.getDate() + (elapsedWeeks * 7));
   return weekStart;
 };
@@ -53,7 +64,7 @@ export const getCafeWeekKey = (now = new Date()) => {
 
 export const getNextCafeWeekStart = (now = new Date()) => {
   const weekStart = getCafeWeekStart(now);
-  if (!weekStart) return createLocalOpeningDate();
+  if (!weekStart) return createLocalFirstRevenueWeekStart();
 
   const nextWeekStart = new Date(weekStart);
   nextWeekStart.setDate(nextWeekStart.getDate() + 7);
@@ -63,10 +74,11 @@ export const getNextCafeWeekStart = (now = new Date()) => {
 export const getCafeWeekContext = (now = new Date()) => {
   const today = toUtcDateOnly({ year: now.getFullYear(), month: now.getMonth(), day: now.getDate() });
   const openingDay = toUtcDateOnly(OPENING_DATE);
-  const elapsedDays = Math.floor((today - openingDay) / DAY_IN_MILLISECONDS);
+  const firstWeekDay = toUtcDateOnly(FIRST_REVENUE_WEEK_START);
+  const daysUntilOpening = Math.floor((today - openingDay) / DAY_IN_MILLISECONDS);
 
-  if (elapsedDays < 0) {
-    const remainingDays = Math.abs(elapsedDays);
+  if (daysUntilOpening < 0) {
+    const remainingDays = Math.abs(daysUntilOpening);
     return {
       week: 1,
       day: 0,
@@ -76,6 +88,17 @@ export const getCafeWeekContext = (now = new Date()) => {
     };
   }
 
+  if (today < firstWeekDay) {
+    return {
+      week: 1,
+      day: 0,
+      hasOpened: true,
+      title: "Tuần 1",
+      subtitle: "Ngày mở bán · Kỳ doanh thu bắt đầu Thứ Hai 31/08/2026",
+    };
+  }
+
+  const elapsedDays = Math.floor((today - firstWeekDay) / DAY_IN_MILLISECONDS);
   const week = Math.floor(elapsedDays / 7) + 1;
   const day = (elapsedDays % 7) + 1;
   return {

@@ -55,6 +55,14 @@ create index if not exists weekly_settlements_team_period_idx
 
 alter table public.coin_transactions enable row level security;
 alter table public.weekly_financial_settlements enable row level security;
+alter table public.weekly_coin_deductions enable row level security;
+
+drop policy if exists "admin" on public.weekly_coin_deductions;
+create policy "admin" on public.weekly_coin_deductions
+    as permissive
+    for select
+    to authenticated
+    using (coalesce((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin', false));
 
 drop policy if exists "public_read_coin_transactions" on public.coin_transactions;
 create policy "public_read_coin_transactions"
@@ -72,6 +80,7 @@ create policy "public_read_weekly_financial_settlements"
 
 grant select on public.coin_transactions to anon, authenticated;
 grant select on public.weekly_financial_settlements to anon, authenticated;
+grant select on public.weekly_coin_deductions to authenticated;
 
 -- Nếu một bản schema trung gian đã ghi Admin cộng coin là adjustment thì sửa lại loại.
 update public.coin_transactions
@@ -80,16 +89,16 @@ where type = 'adjustment'
     and amount > 0
     and title = 'Admin cộng coin';
 
--- Xác định tuần vừa kết toán. Nếu bảng cũ chưa lưu mốc, dùng chu kỳ hiện tại
--- tính từ ngày mở bán 30/08/2026. Đây chỉ là dữ liệu tạm trong transaction.
+-- Xác định tuần vừa kết toán. Nếu bảng cũ chưa lưu mốc, dùng chu kỳ Thứ Hai–Chủ nhật
+-- bắt đầu từ 31/08/2026. Đây chỉ là dữ liệu tạm trong transaction.
 create temporary table finance_recovery_context on commit drop as
 with current_cycle as (
-    select date '2026-08-30'
-        + (((timezone('Asia/Ho_Chi_Minh', now())::date - date '2026-08-30') / 7) * 7) as period_end
+    select date '2026-08-31'
+        + (((timezone('Asia/Ho_Chi_Minh', now())::date - date '2026-08-31') / 7) * 7) as period_end
 ), recorded_cycle as (
     select deductions.week_key as period_end, deductions.deduction_amount as base_cost
     from public.weekly_coin_deductions as deductions
-    where deductions.week_key > date '2026-08-30'
+    where deductions.week_key > date '2026-08-31'
     order by deductions.week_key desc
     limit 1
 )
@@ -99,7 +108,7 @@ select
     1000::integer as opening_capital
 from current_cycle
 left join recorded_cycle on true
-where coalesce(recorded_cycle.period_end, current_cycle.period_end) > date '2026-08-30';
+where coalesce(recorded_cycle.period_end, current_cycle.period_end) > date '2026-08-31';
 
 -- Ghi riêng vốn ban đầu để sổ cái khớp số dư nhưng không tính vốn là doanh thu.
 insert into public.coin_transactions (team_id, type, title, amount, occurred_at)
@@ -380,8 +389,8 @@ begin
         raise exception 'deduction amount must be positive';
     end if;
 
-    if week_key < date '2026-08-30' then
-        raise exception 'week_key is before the cafe opening date';
+    if week_key < date '2026-08-31' or extract(isodow from week_key) <> 1 then
+        raise exception 'week_key must be a Monday on or after 2026-08-31';
     end if;
 
     insert into public.weekly_coin_deductions (week_key, deduction_amount)
@@ -416,7 +425,7 @@ begin
         loop
             weekly_cost := deduction_amount + (20 * team_record.paid_staff_count);
 
-            if week_key > date '2026-08-30' then
+            if week_key > date '2026-08-31' then
                 previous_week_start := week_key - 7;
 
                 select coalesce(sum(amount), 0)::integer

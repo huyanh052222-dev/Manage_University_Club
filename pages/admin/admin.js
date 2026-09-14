@@ -1,7 +1,15 @@
 import { supabase } from "../../scripts/supabase/supabase.js";
 import { isAdminAuthenticated, logoutAdmin } from "../../scripts/services/authService.js";
-import { getCafeWeekKey, getNextCafeWeekStart } from "../../scripts/utils/cafeWeek.js?v=cafe-cycle";
+import {
+    MAX_CAFE_REPUTATION,
+    MIN_CAFE_REPUTATION,
+    getRegularOrderReward,
+    getWeeklyOrderRewardPool,
+} from "../../scripts/services/weeklyOrders.js?v=reputation-rewards";
+import { getCafeWeekKey, getNextCafeWeekStart } from "../../scripts/utils/cafeWeek.js?v=monday-cycle";
 import { resolveCafeName } from "../../scripts/utils/cafeNames.js?v=the-vortex-the-ora";
+import { escapeHtml, formatNumber } from "../../scripts/utils/format.js";
+import { getStoredCafeReputation, setStoredCafeReputation } from "../../scripts/utils/reputationStorage.js?v=hardcoded-v1";
 import { adminLoginUrl } from "./adminRoutes.js";
 
 document.addEventListener("DOMContentLoaded", async function () {
@@ -23,7 +31,38 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     menuButton?.addEventListener("click", toggleSidebar);
     sidebarOverlay?.addEventListener("click", closeSidebar);
-    document.querySelectorAll(".admin-sidebar .nav-link").forEach((link) => link.addEventListener("click", closeSidebar));
+
+    const adminNavLinks = [...document.querySelectorAll(".admin-sidebar .nav-link[data-tab-target]")];
+    const adminTabPanes = [...document.querySelectorAll(".tab-pane")];
+    const activateAdminTab = (tabId, { updateHistory = true } = {}) => {
+        const resolvedTabId = adminTabPanes.some((pane) => pane.id === tabId)
+            ? tabId
+            : "leaderboard-management";
+
+        adminNavLinks.forEach((link) => {
+            const isActive = link.dataset.tabTarget === resolvedTabId;
+            link.classList.toggle("active", isActive);
+            if (isActive) {
+                link.setAttribute("aria-current", "page");
+            } else {
+                link.removeAttribute("aria-current");
+            }
+        });
+        adminTabPanes.forEach((pane) => {
+            pane.hidden = pane.id !== resolvedTabId;
+        });
+
+        if (updateHistory && window.location.hash !== `#${resolvedTabId}`) {
+            window.history.replaceState({ adminTab: resolvedTabId }, "", `#${resolvedTabId}`);
+        }
+        closeSidebar();
+    };
+
+    adminNavLinks.forEach((link) => link.addEventListener("click", (event) => {
+        event.preventDefault();
+        activateAdminTab(link.dataset.tabTarget);
+    }));
+    activateAdminTab(window.location.hash.slice(1), { updateHistory: false });
 
     // Lấy dữ liệu team từ Supabase
     async function getTeams() {
@@ -33,7 +72,12 @@ document.addEventListener("DOMContentLoaded", async function () {
             return [];
         }
         // Đổi tên cột 'points' thành 'pts' để tương thích với code hiện tại
-        return data.map((team) => ({ ...team, name: resolveCafeName(team), pts: team.points }));
+        return data.map((team) => ({
+            ...team,
+            name: resolveCafeName(team),
+            pts: team.points,
+            reputation: getStoredCafeReputation(team.id, team.reputation),
+        }));
     }
 
     async function renderLeaderboardAdmin() {
@@ -72,6 +116,124 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         teamSelect.innerHTML = teams.map((team) => `<option value="${team.id}">${team.name}</option>`).join("");
     }
+
+    const clampReputation = (value) => Math.min(
+        MAX_CAFE_REPUTATION,
+        Math.max(MIN_CAFE_REPUTATION, Math.round(Number(value) || MIN_CAFE_REPUTATION)),
+    );
+    const renderAdminStars = (reputation) => Array.from(
+        { length: MAX_CAFE_REPUTATION },
+        (_, index) => `<span class="${index < clampReputation(reputation) ? "active" : ""}" aria-hidden="true">★</span>`,
+    ).join("");
+
+    let reputationTeams = [];
+
+    function renderSelectedReputation() {
+        const teamSelect = document.getElementById("reputationTeamSelect");
+        const starContainer = document.getElementById("reputationStars");
+        const rewardPreview = document.getElementById("reputationRewardPreview");
+        const decreaseButton = document.getElementById("decreaseReputationBtn");
+        const increaseButton = document.getElementById("increaseReputationBtn");
+        const team = reputationTeams.find((item) => String(item.id) === teamSelect?.value);
+
+        if (!starContainer || !rewardPreview) return;
+        if (!team) {
+            starContainer.textContent = "Chưa có dữ liệu";
+            starContainer.setAttribute("aria-label", "Chưa có dữ liệu uy tín");
+            rewardPreview.innerHTML = "";
+            if (decreaseButton) decreaseButton.disabled = true;
+            if (increaseButton) increaseButton.disabled = true;
+            return;
+        }
+
+        const reputation = clampReputation(team.reputation);
+        const weeklyPool = getWeeklyOrderRewardPool(reputation);
+        const regularOrderReward = getRegularOrderReward(reputation);
+        starContainer.innerHTML = renderAdminStars(reputation);
+        starContainer.setAttribute("aria-label", `${reputation} trên ${MAX_CAFE_REPUTATION} sao`);
+        rewardPreview.innerHTML = `
+            <div><span>Doanh thu tối đa / 10 đơn thường</span><strong>${formatNumber(weeklyPool)} coin</strong></div>
+            <div><span>Thưởng mỗi đơn thường</span><strong>${formatNumber(regularOrderReward)} coin</strong></div>
+        `;
+        if (decreaseButton) decreaseButton.disabled = reputation <= MIN_CAFE_REPUTATION;
+        if (increaseButton) increaseButton.disabled = reputation >= MAX_CAFE_REPUTATION;
+    }
+
+    async function renderReputationAdmin(preferredTeamId = "") {
+        const teamSelect = document.getElementById("reputationTeamSelect");
+        const reputationList = document.getElementById("reputationAdminList");
+        if (!teamSelect || !reputationList) return;
+
+        reputationTeams = await getTeams();
+        if (!reputationTeams.length) {
+            teamSelect.innerHTML = "";
+            reputationList.innerHTML = '<p class="reputation-empty">Chưa tải được danh sách quán.</p>';
+            renderSelectedReputation();
+            return;
+        }
+
+        const preferredId = String(preferredTeamId);
+        const currentId = String(teamSelect.value);
+        const selectedTeamId = reputationTeams.some((team) => String(team.id) === preferredId)
+            ? preferredId
+            : reputationTeams.some((team) => String(team.id) === currentId)
+                ? currentId
+                : String(reputationTeams[0].id);
+        teamSelect.innerHTML = reputationTeams
+            .map((team) => `<option value="${escapeHtml(team.id)}">${escapeHtml(team.name)}</option>`)
+            .join("");
+        teamSelect.value = selectedTeamId;
+
+        reputationList.innerHTML = reputationTeams.map((team) => {
+            const reputation = clampReputation(team.reputation);
+            return `
+                <div class="reputation-list-row">
+                    <div class="reputation-list-team">
+                        <span class="lb-avatar" style="background-color:${escapeHtml(team.bg || "#f4ece2")};color:${escapeHtml(team.color || "#76533c")}">${escapeHtml(team.icon || team.name.charAt(0))}</span>
+                        <strong>${escapeHtml(team.name)}</strong>
+                    </div>
+                    <span class="reputation-list-stars" aria-label="${reputation} sao">${renderAdminStars(reputation)}</span>
+                    <span class="reputation-list-reward"><strong>${formatNumber(getRegularOrderReward(reputation))} coin/đơn</strong>${formatNumber(getWeeklyOrderRewardPool(reputation))} coin/10 đơn</span>
+                </div>
+            `;
+        }).join("");
+
+        renderSelectedReputation();
+    }
+
+    function changeSelectedReputation(step) {
+        const teamSelect = document.getElementById("reputationTeamSelect");
+        const team = reputationTeams.find((item) => String(item.id) === teamSelect?.value);
+        if (!team) return;
+
+        const currentReputation = clampReputation(team.reputation);
+        const nextReputation = clampReputation(currentReputation + step);
+        if (nextReputation === currentReputation) return;
+
+        const reputationButtons = [
+            document.getElementById("decreaseReputationBtn"),
+            document.getElementById("increaseReputationBtn"),
+        ].filter(Boolean);
+        reputationButtons.forEach((item) => { item.disabled = true; });
+        if (!setStoredCafeReputation(team.id, nextReputation)) {
+            renderSelectedReputation();
+            alert("Trình duyệt không cho phép lưu số sao cục bộ.");
+            return;
+        }
+
+        team.reputation = nextReputation;
+        renderSelectedReputation();
+        void renderReputationAdmin(team.id);
+        alert(`Đã cập nhật ${team.name} thành ${nextReputation} sao trên trình duyệt này.`);
+    }
+
+    document.getElementById("reputationTeamSelect")?.addEventListener("change", renderSelectedReputation);
+    document.getElementById("decreaseReputationBtn")?.addEventListener("click", function () {
+        changeSelectedReputation(-1);
+    });
+    document.getElementById("increaseReputationBtn")?.addEventListener("click", function () {
+        changeSelectedReputation(1);
+    });
 
     const addPointsBtn = document.getElementById("addPointsBtn");
     if (addPointsBtn)
@@ -148,6 +310,31 @@ document.addEventListener("DOMContentLoaded", async function () {
     let currentWeekKey = getCafeWeekKey();
     let countdownTarget = getNextCafeWeekStart();
 
+    const getPreviousDateKey = (dateKey) => {
+        const date = new Date(`${dateKey}T00:00:00`);
+        date.setDate(date.getDate() - 1);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    };
+
+    async function hasLegacySundayMarker(weekKey) {
+        const legacySundayKey = getPreviousDateKey(weekKey);
+        const { data, error } = await supabase
+            .from("weekly_coin_deductions")
+            .select("week_key")
+            .eq("week_key", legacySundayKey)
+            .maybeSingle();
+
+        if (error) {
+            console.error("Không thể kiểm tra mốc tuần cũ:", error);
+            return null;
+        }
+
+        return Boolean(data);
+    }
+
     function updateCountdown() {
         const remaining = countdownTarget.getTime() - Date.now();
         const shouldShow = remaining > 0 && remaining <= countdownVisibilityWindow;
@@ -173,8 +360,19 @@ document.addEventListener("DOMContentLoaded", async function () {
         const weekKey = getCafeWeekKey();
         if (!weekKey) {
             if (weeklyDeductionStatus) {
-                weeklyDeductionStatus.textContent = "Chi phí bắt đầu tính từ ngày mở bán 30/08/2026.";
+                weeklyDeductionStatus.textContent = "Kỳ doanh thu và chi phí bắt đầu từ Thứ Hai 31/08/2026.";
             }
+            return false;
+        }
+
+        const legacySundayMarker = await hasLegacySundayMarker(weekKey);
+        if (legacySundayMarker !== false) {
+            if (weeklyDeductionStatus) {
+                weeklyDeductionStatus.textContent = legacySundayMarker
+                    ? "Đã phát hiện chu kỳ Chủ nhật cũ. Hãy chạy monday_revenue_cycle.sql trước để tránh trừ coin hai lần."
+                    : "Không thể kiểm tra chu kỳ database nên đã dừng kết toán để bảo vệ số dư.";
+            }
+            console.warn("Đã dừng kết toán tự động vì chưa xác nhận được chu kỳ Thứ Hai an toàn.");
             return false;
         }
 
@@ -213,5 +411,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Khởi tạo bảng và bộ đếm tuần.
     await deductWeeklyCoins();
     await renderLeaderboardAdmin();
+    await renderReputationAdmin();
     startWeeklyCountdown();
 });

@@ -1,9 +1,9 @@
 import { finance } from "../data/dashboard.js";
-import { getCafeWeekContext } from "../utils/cafeWeek.js?v=cafe-cycle";
+import { getCafeWeekContext } from "../utils/cafeWeek.js?v=monday-cycle";
 import { formatNumber } from "../utils/format.js";
 import { icon } from "./icons.js";
 import { renderWeeklyCostPopover } from "./weeklyCosts.js?v=profit-salary";
-import { renderWeeklyProfitPopover } from "./weeklyProfit.js?v=profit-salary";
+import { renderWeeklyProfitPopover } from "./weeklyProfit.js?v=monday-cycle";
 
 const formatSignedCoin = (amount) => {
   if (amount === 0) return "0 coin";

@@ -1,16 +1,17 @@
-import { renderDashboard } from "./components/dashboard.js?v=cafe-visit";
+import { renderDashboard } from "./components/dashboard.js?v=reputation-rewards";
 import { renderMemberDirectory, renderMemberList } from "./components/memberDirectory.js?v=cafe-visit";
-import { renderOrderDetail } from "./components/orders.js?v=cafe-visit";
+import { renderOrderDetail } from "./components/orders.js?v=reputation-rewards";
 import { renderSidebar } from "./components/sidebar.js?v=cafe-visit";
-import { renderTopbar } from "./components/topbar.js?v=cafe-visit";
+import { renderTopbar } from "./components/topbar.js?v=monday-cycle";
 import { renderWeeklyCostModal } from "./components/weeklyCosts.js?v=profit-salary";
-import { renderWeeklyProfitModal } from "./components/weeklyProfit.js?v=profit-salary";
+import { renderWeeklyProfitModal } from "./components/weeklyProfit.js?v=monday-cycle";
 import { club, demoNotifications, orders } from "./data/dashboard.js";
 import { getCafeVisitContext } from "./routes/teamRoutes.js?v=cafe-visit";
-import { loadDashboardData } from "./services/dashboardData.js?v=cafe-visit";
+import { loadDashboardData } from "./services/dashboardData.js?v=reputation-hardcoded-v1";
 import { closeModal, showModal, showToast } from "./ui/feedback.js";
-import { getCafeWeekContext, getNextCafeWeekStart } from "./utils/cafeWeek.js?v=cafe-cycle";
+import { getCafeWeekContext, getNextCafeWeekStart } from "./utils/cafeWeek.js?v=monday-cycle";
 import { escapeHtml } from "./utils/format.js";
+import { REPUTATION_STORAGE_KEY } from "./utils/reputationStorage.js?v=hardcoded-v1";
 
 const elements = {
   sidebar: document.querySelector("#sidebar"),
@@ -287,6 +288,12 @@ window.addEventListener("popstate", () => {
     window.history.replaceState({ view: "overview" }, "", "#overview");
   }
   renderCurrentView();
+});
+
+window.addEventListener("storage", async (event) => {
+  if (event.key !== REPUTATION_STORAGE_KEY) return;
+  await loadDashboardData({ visitorMode: visitContext.isVisiting });
+  renderApp();
 });
 
 if (!window.location.hash || window.location.hash === "#login") {

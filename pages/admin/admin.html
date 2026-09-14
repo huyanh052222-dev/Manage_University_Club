@@ -6,7 +6,7 @@
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
         <title>Trang Quản Trị Sự Kiện</title>
         <link rel="stylesheet" href="/styles/tokens.css" />
-        <link rel="stylesheet" href="/pages/admin/admin.css?v=coin-reason" />
+        <link rel="stylesheet" href="/pages/admin/admin.css?v=reputation-management" />
     </head>
     <body>
         <button class="admin-menu-button" id="adminMenuButton" type="button" aria-label="Mở menu quản trị" aria-controls="adminSidebar" aria-expanded="false">
@@ -24,6 +24,12 @@
                         <a class="nav-link active" data-tab-target="leaderboard-management" href="#leaderboard-management">
                             <i class="fa-solid fa-trophy"></i>
                             Bảng xếp hạng
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-tab-target="reputation-management" href="#reputation-management">
+                            <i class="fa-solid fa-star"></i>
+                            Quản lý sao
                         </a>
                     </li>
                 </ul>
@@ -93,11 +99,57 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="tab-pane" id="reputation-management" hidden>
+                        <div class="reputation-page-heading">
+                            <div>
+                                <h1>Quản lý sao và mức thưởng</h1>
+                                <p>Nâng hoặc hạ uy tín từng quán trên trình duyệt này. Mức doanh thu tối đa của 10 đơn thường tự thay đổi theo số sao.</p>
+                            </div>
+                            <span class="reputation-week-rule"><i class="fa-solid fa-calendar-week"></i> Doanh thu tính Thứ Hai–Chủ nhật</span>
+                        </div>
+
+                        <div class="reputation-admin-grid">
+                            <section>
+                                <h4>Điều chỉnh uy tín quán</h4>
+                                <div class="card reputation-control-card">
+                                    <div class="card-body">
+                                        <div class="form-field">
+                                            <label for="reputationTeamSelect" class="form-label">Chọn quán</label>
+                                            <select class="form-control" id="reputationTeamSelect"></select>
+                                        </div>
+
+                                        <div class="reputation-current" aria-live="polite">
+                                            <span>Uy tín hiện tại</span>
+                                            <strong id="reputationStars" class="admin-reputation-stars" aria-label="Đang tải số sao">Đang tải...</strong>
+                                        </div>
+
+                                        <div class="reputation-reward-preview" id="reputationRewardPreview"></div>
+
+                                        <div class="reputation-actions">
+                                            <button class="admin-button secondary-button" id="decreaseReputationBtn" type="button">
+                                                <i class="fa-solid fa-minus"></i> Hạ 1 sao
+                                            </button>
+                                            <button class="admin-button primary-button" id="increaseReputationBtn" type="button">
+                                                <i class="fa-solid fa-plus"></i> Nâng 1 sao
+                                            </button>
+                                        </div>
+                                        <small class="form-hint">Giới hạn từ 1 đến 5 sao và lưu cục bộ trên trình duyệt. Đơn đặc biệt luôn hiển thị mức 200–1000 coin.</small>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section>
+                                <h4>Uy tín và mức thưởng hiện tại</h4>
+                                <div class="reputation-list card" id="reputationAdminList" aria-live="polite"></div>
+                            </section>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>
 
         <script src="https://kit.fontawesome.com/c4edd7a73c.js" crossorigin="anonymous"></script>
-        <script type="module" src="/pages/admin/admin.js?v=the-vortex-the-ora"></script>
+        <script type="module" src="/pages/admin/admin.js?v=reputation-hardcoded-v1"></script>
     </body>
 </html>
