@@ -21,6 +21,7 @@ export const getRegularOrderReward = (reputation = MIN_CAFE_REPUTATION) => (
 export const WEEKLY_ORDER_REWARD_POOL = getWeeklyOrderRewardPool();
 export const ORDER_REWARD = getRegularOrderReward();
 
+// NPC Contact
 export const ORDER_CONTACTS_BY_TEAM = Object.freeze({
   A: Object.freeze({ name: "Huỳnh Thị Thúy Vy", phone: "0394350988" }),
   B: Object.freeze({ name: "Mai Thị Yến Nhi", phone: "0395789435" }),
@@ -30,7 +31,7 @@ export const ORDER_CONTACTS_BY_TEAM = Object.freeze({
   F: Object.freeze({ name: "Lê Hồng Cường", phone: "0368944409" }),
   G: Object.freeze({ name: "Tống Hoàng Phước Sang", phone: "0819813331" }),
   // Liên hệ H dùng URL hồ sơ được giải mã trực tiếp từ QR Zalo người dùng cung cấp.
-  H: Object.freeze({ name: "Liên hệ QR thay NPC Hiếu", url: "http://zaloapp.com/qr/p/t22cf13d4l8c" }),
+  H: Object.freeze({ name: "Lợi", phone: "0335383315" }),
 });
 
 export const getOrderContact = (teamId = "A") => ORDER_CONTACTS_BY_TEAM[String(teamId).toUpperCase()]
