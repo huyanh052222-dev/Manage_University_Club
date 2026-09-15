@@ -1,5 +1,5 @@
 import { club, navigationItems } from "../data/dashboard.js";
-import { renderCafeVisitCard } from "./cafeVisitCard.js?v=cafe-visit";
+// import { renderCafeVisitCard } from "./cafeVisitCard.js?v=cafe-visit";
 import { icon } from "./icons.js";
 
 const renderNavigationMarkup = (isVisiting) => navigationItems
@@ -33,7 +33,7 @@ export const renderSidebar = (visitContext = {
     ${renderNavigationMarkup(visitContext.isVisiting)}
   </nav>
 
-  ${renderCafeVisitCard(visitContext)}
+ 
 
   <div class="sidebar-bottom cafe-sidebar-art" aria-hidden="true">
     <div class="cup-illustration">${icon("coffee")}</div>
@@ -42,3 +42,5 @@ export const renderSidebar = (visitContext = {
     <p>Cùng nhau xây dựng<br />tiệm café của sinh viên!</p>
   </div>
 `;
+
+// ${renderCafeVisitCard(visitContext)}
