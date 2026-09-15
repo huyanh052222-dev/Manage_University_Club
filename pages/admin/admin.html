@@ -158,12 +158,12 @@
                                 <h1>Bổ sung doanh thu kỳ trễ</h1>
                                 <p>Chọn một tuần đã hoàn tất, sau đó soạn khoản điều chỉnh cho đúng quán và đúng kỳ.</p>
                             </div>
-                            <span class="late-settlement-demo-badge"><i class="fa-solid fa-flask"></i> Demo an toàn</span>
+                            <span class="late-settlement-demo-badge"><i class="fa-solid fa-database"></i> Đồng bộ Supabase</span>
                         </div>
 
                         <section class="late-settlement-notice" aria-label="Giới hạn của bản demo">
                             <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-                            <p><strong>Bản demo chỉ lưu bản nháp trên trình duyệt.</strong> Chưa ghi coin, chưa đổi số dư và chưa sửa kết toán trên Supabase.</p>
+                            <p><strong>Khoản mới sẽ cộng vào số dư và chốt lại đúng kỳ đã chọn.</strong> Các coin vào đã có chỉ được gán kỳ để tránh cộng trùng số dư.</p>
                         </section>
 
                         <div class="late-settlement-grid">
@@ -188,9 +188,9 @@
                                         <div class="form-field">
                                             <label class="form-label" for="lateSettlementReason">Lý do bổ sung</label>
                                             <textarea class="form-control coin-reason-input" id="lateSettlementReason" maxlength="200" rows="3" placeholder="Ví dụ: Bổ sung doanh thu bán hàng còn thiếu của tuần 2"></textarea>
-                                            <small class="form-hint">Bản ghi thật sau này sẽ được gắn đúng khoảng thời gian của kỳ đã chọn.</small>
+                                            <small class="form-hint">Khoản này được ghi là doanh thu hồi tố của kỳ đã chọn và cập nhật lại lợi nhuận.</small>
                                         </div>
-                                        <button class="admin-button primary-button" id="saveLateSettlementDraftBtn" type="button"><i class="fa-solid fa-file-pen"></i> Lưu bản nháp điều chỉnh</button>
+                                        <button class="admin-button primary-button" id="applyLateSettlementAdjustmentBtn" type="button"><i class="fa-solid fa-coins"></i> Cộng coin và chốt lại kỳ</button>
                                     </div>
                                 </div>
                             </section>
@@ -198,10 +198,11 @@
 
                         <section class="late-draft-section">
                             <div class="late-draft-heading">
-                                <div><h4>Bản nháp chờ áp dụng</h4><p>Đây là nơi kiểm tra trước khi triển khai chức năng ghi hồi tố thật.</p></div>
-                                <span id="lateSettlementDraftCount">0 bản nháp</span>
+                                <div><h4>Coin vào chưa gán vào kỳ</h4><p>Chọn các giao dịch có sẵn cần được tính vào kỳ đang chọn. Việc gán không làm thay đổi số dư.</p></div>
+                                <span id="lateSettlementCandidateTotal">0 coin được chọn</span>
                             </div>
-                            <div class="late-draft-list card" id="lateSettlementDraftList" aria-live="polite"></div>
+                            <div class="late-draft-list card" id="lateSettlementCandidateList" aria-live="polite"></div>
+                            <button class="admin-button secondary-button late-assign-button" id="assignLateSettlementTransactionsBtn" type="button" disabled><i class="fa-solid fa-link"></i> Gán coin đã chọn vào kỳ</button>
                         </section>
                     </div>
                 </div>

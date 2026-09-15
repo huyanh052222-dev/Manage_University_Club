@@ -149,6 +149,7 @@ const normalizeTransaction = (transaction) => {
         type: resolvedType,
         title: transaction.title || "Biến động coin",
         reason: transaction.reason?.trim() || "",
+        settlementPeriodStart: transaction.settlement_period_start || "",
         group: club.name,
         amount,
         date: getTransactionDateLabel(occurredAt),
@@ -168,7 +169,9 @@ const hydrateCoinLedger = (transactions, { weekStart, weekEnd, settlement, compl
     const totalExpense = transactions.filter((transaction) => transaction.amount < 0).reduce((total, transaction) => total + Math.abs(transaction.amount), 0);
     const incomeCount = transactions.filter((transaction) => transaction.amount > 0).length;
     const expenseCount = transactions.filter((transaction) => transaction.amount < 0).length;
-    const weeklyRevenue = weeklyTransactions.filter((transaction) => transaction.type === "income" && transaction.amount > 0).reduce((total, transaction) => total + transaction.amount, 0);
+    const weeklyRevenue = weeklyTransactions
+        .filter((transaction) => transaction.type === "income" && transaction.amount > 0 && !transaction.settlementPeriodStart)
+        .reduce((total, transaction) => total + transaction.amount, 0);
     const hasExpectedSettlement = Boolean(
         completedWeek
         && settlement?.period_start === completedWeek.periodStartKey

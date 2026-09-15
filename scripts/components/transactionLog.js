@@ -13,12 +13,23 @@ const formatSignedCoin = (amount) => {
   return `${amount > 0 ? "+" : "−"}${formatNumber(Math.abs(amount))} coin`;
 };
 
+const periodFormatter = new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+
+const formatSettlementPeriod = (periodStart) => {
+  const start = new Date(`${periodStart}T00:00:00`);
+  if (Number.isNaN(start.getTime())) return "Kỳ trễ đã chọn";
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  return `Tính vào kỳ ${periodFormatter.format(start)} – ${periodFormatter.format(end)}`;
+};
+
 const renderTransaction = (transaction) => `
   <article class="transaction-log-row ${transaction.type}">
     <span class="transaction-log-icon">${icon(transaction.icon)}</span>
     <div class="transaction-log-copy">
       <div><strong>${escapeHtml(transaction.title)}</strong><span class="transaction-kind">${transactionLabel[transaction.type] || "Biến động"}</span></div>
       ${transaction.reason ? `<p class="transaction-reason" title="${escapeHtml(transaction.reason)}">${escapeHtml(transaction.reason)}</p>` : ""}
+      ${transaction.settlementPeriodStart ? `<small class="transaction-settlement-period">${formatSettlementPeriod(transaction.settlementPeriodStart)}</small>` : ""}
       <small>${escapeHtml(transaction.group)} · ${escapeHtml(transaction.time)}</small>
     </div>
     <div class="transaction-log-value">

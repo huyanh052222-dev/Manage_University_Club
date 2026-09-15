@@ -245,38 +245,28 @@ document.addEventListener("DOMContentLoaded", async function () {
         changeSelectedReputation(1);
     });
 
-    // --- DEMO BỔ SUNG DOANH THU KỲ TRỄ ---
-    // Bản nháp chỉ nằm trong localStorage. Chưa có RPC/backdate để không làm thay đổi sổ cái thật.
-    const lateSettlementDraftKey = "admin-late-settlement-drafts-v1";
+    // --- BỔ SUNG DOANH THU KỲ TRỄ ---
+    // Coin mới dùng RPC riêng để tăng số dư một lần. Coin vào đã có chỉ được gán kỳ,
+    // nhờ đó ví dụ +103 và +93 có thể đi vào kỳ cũ mà không bị cộng trùng.
     let lateSettlementState = {
         periods: [],
         teams: [],
         settlementTeamIdsByPeriod: new Map(),
         settlementStatusKnown: true,
         selectedPeriodStart: "",
-    };
-
-    const readLateSettlementDrafts = () => {
-        try {
-            const drafts = JSON.parse(window.localStorage.getItem(lateSettlementDraftKey) || "[]");
-            return Array.isArray(drafts) ? drafts : [];
-        } catch {
-            return [];
-        }
-    };
-
-    const writeLateSettlementDrafts = (drafts) => {
-        try {
-            window.localStorage.setItem(lateSettlementDraftKey, JSON.stringify(drafts));
-            return true;
-        } catch {
-            return false;
-        }
+        candidates: [],
+        selectedCandidateIds: new Set(),
+        candidatesError: "",
     };
 
     const getLateSettlementPeriod = () => lateSettlementState.periods.find(
         (period) => period.periodStartKey === lateSettlementState.selectedPeriodStart,
     );
+
+    const getLateSettlementTeam = () => {
+        const teamId = document.getElementById("lateSettlementTeamSelect")?.value;
+        return lateSettlementState.teams.find((team) => String(team.id) === String(teamId));
+    };
 
     const getLateSettlementStatus = (period) => {
         if (!lateSettlementState.settlementStatusKnown) {
@@ -297,12 +287,11 @@ document.addEventListener("DOMContentLoaded", async function () {
             periodList.innerHTML = '<p class="late-period-empty">Chưa có kỳ doanh thu nào hoàn tất để chỉnh.</p>';
             return;
         }
-
         periodList.innerHTML = lateSettlementState.periods.map((period) => {
             const status = getLateSettlementStatus(period);
-            const selectedClass = period.periodStartKey === lateSettlementState.selectedPeriodStart ? " selected" : "";
+            const selected = period.periodStartKey === lateSettlementState.selectedPeriodStart;
             return `
-                <button class="late-period-option${selectedClass}" type="button" data-late-period="${escapeHtml(period.periodStartKey)}" aria-pressed="${String(Boolean(selectedClass))}">
+                <button class="late-period-option${selected ? " selected" : ""}" type="button" data-late-period="${escapeHtml(period.periodStartKey)}" aria-pressed="${selected}">
                     <span class="late-period-copy"><strong>${escapeHtml(formatCompletedWeek(period))}</strong><small>${escapeHtml(status.detail)}</small></span>
                     <span class="late-period-status ${status.className}">${escapeHtml(status.label)}</span>
                 </button>
@@ -313,60 +302,88 @@ document.addEventListener("DOMContentLoaded", async function () {
     const renderLateSettlementForm = () => {
         const selectedPeriodCopy = document.getElementById("lateSettlementSelectedPeriod");
         const teamSelect = document.getElementById("lateSettlementTeamSelect");
-        const saveButton = document.getElementById("saveLateSettlementDraftBtn");
+        const applyButton = document.getElementById("applyLateSettlementAdjustmentBtn");
         const selectedPeriod = getLateSettlementPeriod();
-        if (!selectedPeriodCopy || !teamSelect || !saveButton) return;
+        if (!selectedPeriodCopy || !teamSelect || !applyButton) return;
 
         const previousTeamId = teamSelect.value;
         teamSelect.innerHTML = lateSettlementState.teams.map((team) => (
             `<option value="${escapeHtml(String(team.id))}">${escapeHtml(team.name)}</option>`
         )).join("");
-        if (lateSettlementState.teams.some((team) => String(team.id) === previousTeamId)) {
-            teamSelect.value = previousTeamId;
-        }
-
+        if (lateSettlementState.teams.some((team) => String(team.id) === previousTeamId)) teamSelect.value = previousTeamId;
         if (!selectedPeriod) {
             selectedPeriodCopy.textContent = "Chưa có kỳ nào có thể chỉnh.";
             teamSelect.disabled = true;
-            saveButton.disabled = true;
+            applyButton.disabled = true;
             return;
         }
-
         const status = getLateSettlementStatus(selectedPeriod);
-        selectedPeriodCopy.textContent = `${formatCompletedWeek(selectedPeriod)} · ${status.label}. Bản nháp sẽ được gắn vào kỳ này.`;
+        selectedPeriodCopy.textContent = `${formatCompletedWeek(selectedPeriod)} · ${status.label}. Khoản mới sẽ tăng số dư và tính vào kỳ này.`;
         teamSelect.disabled = !lateSettlementState.teams.length;
-        saveButton.disabled = !lateSettlementState.teams.length;
+        applyButton.disabled = !lateSettlementState.teams.length;
     };
 
-    const renderLateSettlementDrafts = () => {
-        const draftList = document.getElementById("lateSettlementDraftList");
-        const draftCount = document.getElementById("lateSettlementDraftCount");
-        if (!draftList || !draftCount) return;
-        const drafts = readLateSettlementDrafts();
-        draftCount.textContent = `${drafts.length} bản nháp`;
-        if (!drafts.length) {
-            draftList.innerHTML = '<p class="late-draft-empty">Chưa có bản nháp điều chỉnh nào.</p>';
+    const renderLateSettlementCandidates = () => {
+        const candidateList = document.getElementById("lateSettlementCandidateList");
+        const totalCopy = document.getElementById("lateSettlementCandidateTotal");
+        const assignButton = document.getElementById("assignLateSettlementTransactionsBtn");
+        if (!candidateList || !totalCopy || !assignButton) return;
+
+        const selectedCandidates = lateSettlementState.candidates.filter((candidate) => lateSettlementState.selectedCandidateIds.has(candidate.id));
+        const selectedAmount = selectedCandidates.reduce((total, candidate) => total + Number(candidate.amount || 0), 0);
+        totalCopy.textContent = `${formatNumber(selectedAmount)} coin được chọn`;
+        assignButton.disabled = selectedCandidates.length === 0;
+
+        if (lateSettlementState.candidatesError) {
+            candidateList.innerHTML = `<p class="late-draft-empty">${escapeHtml(lateSettlementState.candidatesError)}</p>`;
             return;
         }
-
-        draftList.innerHTML = drafts.map((draft) => `
-            <article class="late-draft-row">
-                <div class="late-draft-copy">
-                    <strong>${escapeHtml(draft.teamName)} · ${escapeHtml(draft.periodLabel)}</strong>
-                    <small title="${escapeHtml(draft.reason)}">${escapeHtml(draft.reason)}</small>
-                </div>
-                <strong class="late-draft-amount">+${formatNumber(draft.amount)} coin</strong>
-                <button class="admin-button secondary-button late-draft-remove" type="button" data-remove-late-draft="${escapeHtml(draft.id)}">Bỏ</button>
-            </article>
+        if (!lateSettlementState.candidates.length) {
+            candidateList.innerHTML = '<p class="late-draft-empty">Không có coin vào chưa gán sau kỳ này.</p>';
+            return;
+        }
+        candidateList.innerHTML = lateSettlementState.candidates.map((candidate) => `
+            <label class="late-draft-row late-candidate-row">
+                <input type="checkbox" data-late-transaction="${escapeHtml(candidate.id)}" ${lateSettlementState.selectedCandidateIds.has(candidate.id) ? "checked" : ""} />
+                <span class="late-draft-copy">
+                    <strong>${escapeHtml(candidate.title || "Coin vào")}</strong>
+                    <small title="${escapeHtml(candidate.reason || "Chưa ghi lý do")}">${escapeHtml(candidate.reason || "Chưa ghi lý do")}</small>
+                </span>
+                <strong class="late-draft-amount">+${formatNumber(candidate.amount)} coin</strong>
+            </label>
         `).join("");
     };
+
+    async function loadLateSettlementCandidates() {
+        const selectedPeriod = getLateSettlementPeriod();
+        const team = getLateSettlementTeam();
+        lateSettlementState.candidates = [];
+        lateSettlementState.selectedCandidateIds = new Set();
+        lateSettlementState.candidatesError = "";
+        if (!selectedPeriod || !team) return;
+
+        const { data, error } = await supabase
+            .from("coin_transactions")
+            .select("id, title, reason, amount, occurred_at")
+            .eq("team_id", team.id)
+            .eq("type", "income")
+            .gt("amount", 0)
+            .is("settlement_period_start", null)
+            .gte("occurred_at", `${selectedPeriod.periodEndKey}T00:00:00+07:00`)
+            .order("occurred_at", { ascending: false });
+        if (error) {
+            console.warn("Không thể tải coin vào để gán kỳ trễ:", error);
+            lateSettlementState.candidatesError = "Chưa tải được coin vào. Hãy chạy late_settlement_adjustments.sql trước.";
+            return;
+        }
+        lateSettlementState.candidates = data || [];
+    }
 
     async function renderLateSettlementAdmin() {
         const periods = getCompletedCafeWeeks(new Date(), 8);
         const teams = await getTeams();
         let settlementRows = [];
         let settlementStatusKnown = true;
-
         if (periods.length) {
             const { data, error } = await supabase
                 .from("weekly_financial_settlements")
@@ -379,7 +396,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                 settlementRows = data || [];
             }
         }
-
         const settlementTeamIdsByPeriod = new Map();
         settlementRows.forEach((row) => {
             const periodStart = String(row.period_start || "");
@@ -387,6 +403,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             settlementTeamIdsByPeriod.get(periodStart).add(String(row.team_id));
         });
         lateSettlementState = {
+            ...lateSettlementState,
             periods,
             teams,
             settlementTeamIdsByPeriod,
@@ -397,64 +414,99 @@ document.addEventListener("DOMContentLoaded", async function () {
         };
         renderLateSettlementPeriodList();
         renderLateSettlementForm();
-        renderLateSettlementDrafts();
+        await loadLateSettlementCandidates();
+        renderLateSettlementCandidates();
     }
 
-    document.getElementById("lateSettlementPeriodList")?.addEventListener("click", (event) => {
+    document.getElementById("lateSettlementPeriodList")?.addEventListener("click", async (event) => {
         const periodButton = event.target.closest("[data-late-period]");
         if (!periodButton) return;
         lateSettlementState.selectedPeriodStart = periodButton.dataset.latePeriod || "";
         renderLateSettlementPeriodList();
         renderLateSettlementForm();
+        await loadLateSettlementCandidates();
+        renderLateSettlementCandidates();
     });
 
-    document.getElementById("saveLateSettlementDraftBtn")?.addEventListener("click", () => {
+    document.getElementById("lateSettlementTeamSelect")?.addEventListener("change", async () => {
+        await loadLateSettlementCandidates();
+        renderLateSettlementCandidates();
+    });
+
+    document.getElementById("lateSettlementCandidateList")?.addEventListener("change", (event) => {
+        const checkbox = event.target.closest("[data-late-transaction]");
+        if (!checkbox) return;
+        if (checkbox.checked) lateSettlementState.selectedCandidateIds.add(checkbox.dataset.lateTransaction);
+        else lateSettlementState.selectedCandidateIds.delete(checkbox.dataset.lateTransaction);
+        renderLateSettlementCandidates();
+    });
+
+    document.getElementById("applyLateSettlementAdjustmentBtn")?.addEventListener("click", async function () {
         const selectedPeriod = getLateSettlementPeriod();
-        const teamSelect = document.getElementById("lateSettlementTeamSelect");
+        const team = getLateSettlementTeam();
         const amountInput = document.getElementById("lateSettlementAmount");
         const reasonInput = document.getElementById("lateSettlementReason");
         const amount = Number(amountInput?.value);
         const reason = reasonInput?.value.trim() || "";
-        const team = lateSettlementState.teams.find((item) => String(item.id) === String(teamSelect?.value));
-
         if (!selectedPeriod || !team || !Number.isInteger(amount) || amount <= 0) {
             alert("Hãy chọn kỳ, quán và nhập số coin dương hợp lệ.");
             return;
         }
-        if (!reason) {
-            alert("Hãy ghi lý do bổ sung doanh thu.");
+        if (!reason || reason.length > 200) {
+            alert("Hãy nhập lý do từ 1 đến 200 ký tự.");
             reasonInput?.focus();
             return;
         }
+        if (!window.confirm(`Cộng +${formatNumber(amount)} coin cho ${team.name} và tính vào ${formatCompletedWeek(selectedPeriod)}? Số dư và kết toán sẽ được cập nhật.`)) return;
 
-        const drafts = readLateSettlementDrafts();
-        drafts.unshift({
-            id: `${selectedPeriod.periodStartKey}-${team.id}-${Date.now()}`,
-            periodStart: selectedPeriod.periodStartKey,
-            periodEnd: selectedPeriod.periodEndKey,
-            periodLabel: formatCompletedWeek(selectedPeriod),
-            teamId: String(team.id),
-            teamName: team.name,
-            amount,
-            reason,
-            createdAt: new Date().toISOString(),
+        this.disabled = true;
+        this.textContent = "Đang cập nhật...";
+        const { error } = await supabase.rpc("add_points_to_late_settlement", {
+            team_id_in: team.id,
+            period_start_in: selectedPeriod.periodStartKey,
+            points_to_add: amount,
+            reason_in: reason,
         });
-        if (!writeLateSettlementDrafts(drafts)) {
-            alert("Không thể lưu bản nháp do trình duyệt đang chặn localStorage.");
+        this.disabled = false;
+        this.innerHTML = '<i class="fa-solid fa-coins"></i> Cộng coin và chốt lại kỳ';
+        if (error) {
+            console.error("Không thể cộng coin kỳ trễ:", error);
+            alert(`Không thể cập nhật kỳ trễ: ${error.message}`);
             return;
         }
-        if (amountInput) amountInput.value = "";
-        if (reasonInput) reasonInput.value = "";
-        renderLateSettlementDrafts();
-        alert(`Đã lưu bản nháp bổ sung +${formatNumber(amount)} coin cho ${team.name}. Chưa có thay đổi nào trên Supabase.`);
+        amountInput.value = "";
+        reasonInput.value = "";
+        await renderLeaderboardAdmin();
+        await renderLateSettlementAdmin();
+        alert(`Đã cộng +${formatNumber(amount)} coin và tính lại ${formatCompletedWeek(selectedPeriod)}.`);
     });
 
-    document.getElementById("lateSettlementDraftList")?.addEventListener("click", (event) => {
-        const removeButton = event.target.closest("[data-remove-late-draft]");
-        if (!removeButton) return;
-        const nextDrafts = readLateSettlementDrafts().filter((draft) => draft.id !== removeButton.dataset.removeLateDraft);
-        writeLateSettlementDrafts(nextDrafts);
-        renderLateSettlementDrafts();
+    document.getElementById("assignLateSettlementTransactionsBtn")?.addEventListener("click", async function () {
+        const selectedPeriod = getLateSettlementPeriod();
+        const team = getLateSettlementTeam();
+        const transactionIds = [...lateSettlementState.selectedCandidateIds];
+        const selectedAmount = lateSettlementState.candidates
+            .filter((candidate) => lateSettlementState.selectedCandidateIds.has(candidate.id))
+            .reduce((total, candidate) => total + Number(candidate.amount || 0), 0);
+        if (!selectedPeriod || !team || !transactionIds.length) return;
+        if (!window.confirm(`Gán ${formatNumber(selectedAmount)} coin đã có vào ${formatCompletedWeek(selectedPeriod)}? Số dư không thay đổi, chỉ tính lại kết toán.`)) return;
+
+        this.disabled = true;
+        this.textContent = "Đang gán kỳ...";
+        const { error } = await supabase.rpc("assign_income_transactions_to_late_settlement", {
+            team_id_in: team.id,
+            period_start_in: selectedPeriod.periodStartKey,
+            transaction_ids_in: transactionIds,
+        });
+        this.disabled = false;
+        this.innerHTML = '<i class="fa-solid fa-link"></i> Gán coin đã chọn vào kỳ';
+        if (error) {
+            console.error("Không thể gán coin vào kỳ trễ:", error);
+            alert(`Không thể gán coin vào kỳ trễ: ${error.message}`);
+            return;
+        }
+        await renderLateSettlementAdmin();
+        alert(`Đã gán ${formatNumber(selectedAmount)} coin vào ${formatCompletedWeek(selectedPeriod)} và tính lại lợi nhuận.`);
     });
 
     const addPointsBtn = document.getElementById("addPointsBtn");

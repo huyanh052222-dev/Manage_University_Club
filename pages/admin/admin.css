@@ -497,6 +497,9 @@ a {
 .late-draft-copy small { overflow: hidden; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .late-draft-amount { color: var(--green); font-size: 13px; font-weight: 800; white-space: nowrap; }
 .late-draft-remove { min-height: 30px; padding-inline: 10px; color: var(--red); font-size: 10px; }
+.late-candidate-row { grid-template-columns: 20px minmax(0, 1fr) auto; cursor: pointer; }
+.late-candidate-row input { width: 15px; height: 15px; accent-color: var(--brown); cursor: pointer; }
+.late-assign-button { margin-top: 12px; }
 .reputation-control-card .form-field {
     margin-bottom: 0;
 }
