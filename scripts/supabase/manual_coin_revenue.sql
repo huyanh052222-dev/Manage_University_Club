@@ -111,11 +111,12 @@ left join recorded_cycle on true
 where coalesce(recorded_cycle.period_end, current_cycle.period_end) > date '2026-08-31';
 
 -- Ghi riêng vốn ban đầu để sổ cái khớp số dư nhưng không tính vốn là doanh thu.
-insert into public.coin_transactions (team_id, type, title, amount, occurred_at)
+insert into public.coin_transactions (team_id, type, title, reason, amount, occurred_at)
 select
     teams.id,
     'adjustment',
     'Vốn ban đầu',
+    'Vốn khởi tạo; không tính vào doanh thu',
     context.opening_capital,
     (context.period_end - 7)::timestamp at time zone 'Asia/Ho_Chi_Minh'
 from public.teams as teams
@@ -170,11 +171,12 @@ with paid_staff as (
                 and transactions.occurred_at < (context.period_end::timestamp at time zone 'Asia/Ho_Chi_Minh')
         )
 )
-insert into public.coin_transactions (team_id, type, title, amount, occurred_at)
+insert into public.coin_transactions (team_id, type, title, reason, amount, occurred_at)
 select
     recovered.team_id,
     'income',
     'Admin cộng coin (khôi phục)',
+    'Khôi phục doanh thu kỳ cũ từ số dư đã đối soát',
     recovered.income,
     (recovered.period_end::timestamp at time zone 'Asia/Ho_Chi_Minh') - interval '1 second'
 from recoverable_income as recovered;
@@ -201,11 +203,12 @@ with paid_staff as (
     left join public.members as members on members.team_id = teams.id
     group by teams.id
 )
-insert into public.coin_transactions (team_id, type, title, amount, occurred_at)
+insert into public.coin_transactions (team_id, type, title, reason, amount, occurred_at)
 select
     teams.id,
     'expense',
     'Phí vận hành tuần',
+    'Khôi phục chi phí vận hành đã trừ ở đầu kỳ',
     -(context.base_cost + (20 * paid_staff.staff_count)),
     context.period_end::timestamp at time zone 'Asia/Ho_Chi_Minh'
 from public.teams as teams
@@ -474,8 +477,14 @@ begin
             where id = team_record.id;
 
             if actual_deduction > 0 then
-                insert into public.coin_transactions (team_id, type, title, amount)
-                values (team_record.id, 'expense', 'Phí vận hành tuần', -actual_deduction);
+                insert into public.coin_transactions (team_id, type, title, reason, amount)
+                values (
+                    team_record.id,
+                    'expense',
+                    'Phí vận hành tuần',
+                    'Hệ thống tự trừ chi phí vận hành cho tuần bắt đầu ' || to_char(week_key, 'DD/MM/YYYY'),
+                    -actual_deduction
+                );
             end if;
         end loop;
     end if;

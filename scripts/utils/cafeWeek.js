@@ -71,6 +71,24 @@ export const getNextCafeWeekStart = (now = new Date()) => {
   return nextWeekStart;
 };
 
+// Lợi nhuận chỉ được chốt sau khi một tuần doanh thu đã kết thúc.
+// Ví dụ Thứ Hai 14/09 sẽ chốt kỳ 07/09 (bao gồm hết Chủ nhật 13/09).
+export const getLastCompletedCafeWeek = (now = new Date()) => {
+  const currentWeekStart = getCafeWeekStart(now);
+  const firstWeekStart = createLocalFirstRevenueWeekStart();
+  if (!currentWeekStart || currentWeekStart <= firstWeekStart) return null;
+
+  const periodStart = new Date(currentWeekStart);
+  periodStart.setDate(periodStart.getDate() - 7);
+
+  return {
+    periodStart,
+    periodEnd: new Date(currentWeekStart),
+    periodStartKey: formatDateKey(periodStart),
+    periodEndKey: formatDateKey(currentWeekStart),
+  };
+};
+
 export const getCafeWeekContext = (now = new Date()) => {
   const today = toUtcDateOnly({ year: now.getFullYear(), month: now.getMonth(), day: now.getDate() });
   const openingDay = toUtcDateOnly(OPENING_DATE);

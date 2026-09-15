@@ -1,6 +1,6 @@
 import { DEFAULT_CAFE_REPUTATION, MAX_CAFE_REPUTATION, cafeStats, club, finance, members, orders, transactionLogs, weeklyCoinSummary } from "../data/dashboard.js";
 import { getTeamIdFromLocation } from "../routes/teamRoutes.js?v=cafe-visit";
-import { getCafeWeekStart, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=monday-cycle";
+import { getCafeWeekStart, getLastCompletedCafeWeek, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=monday-cycle";
 import { resolveCafeName } from "../utils/cafeNames.js?v=the-vortex-the-ora";
 import { getStoredCafeReputation } from "../utils/reputationStorage.js?v=hardcoded-v1";
 import { supabase } from "../supabase/supabase.js";
@@ -62,6 +62,8 @@ const resetSharedData = (teamId) => {
         totalIncome: 0,
         totalExpense: 0,
         totalProfit: 0,
+        incomeCount: 0,
+        expenseCount: 0,
     });
     Object.assign(club, {
         name: "Cafe Horizon",
@@ -88,6 +90,9 @@ const resetSharedData = (teamId) => {
         settlementPeriodStart: "",
         settlementPeriodEnd: "",
         settledAt: "",
+        settlementStatus: "not_due",
+        expectedSettlementPeriodStart: "",
+        expectedSettlementPeriodEnd: "",
         updatedAt: "Chưa có dữ liệu",
     });
     updateStat("staff", {
@@ -153,7 +158,7 @@ const normalizeTransaction = (transaction) => {
     };
 };
 
-const hydrateCoinLedger = (transactions, { weekStart, weekEnd, settlement, weeklyExpense = 0 }) => {
+const hydrateCoinLedger = (transactions, { weekStart, weekEnd, settlement, completedWeek, weeklyExpense = 0 }) => {
     transactionLogs.splice(0, transactionLogs.length, ...transactions);
     const weeklyTransactions = transactions.filter((transaction) => {
         const occurredAt = new Date(transaction.occurredAt);
@@ -161,23 +166,35 @@ const hydrateCoinLedger = (transactions, { weekStart, weekEnd, settlement, weekl
     });
     const totalIncome = transactions.filter((transaction) => transaction.amount > 0).reduce((total, transaction) => total + transaction.amount, 0);
     const totalExpense = transactions.filter((transaction) => transaction.amount < 0).reduce((total, transaction) => total + Math.abs(transaction.amount), 0);
+    const incomeCount = transactions.filter((transaction) => transaction.amount > 0).length;
+    const expenseCount = transactions.filter((transaction) => transaction.amount < 0).length;
     const weeklyRevenue = weeklyTransactions.filter((transaction) => transaction.type === "income" && transaction.amount > 0).reduce((total, transaction) => total + transaction.amount, 0);
+    const hasExpectedSettlement = Boolean(
+        completedWeek
+        && settlement?.period_start === completedWeek.periodStartKey
+        && settlement?.period_end === completedWeek.periodEndKey,
+    );
 
     Object.assign(weeklyCoinSummary, {
         totalIncome,
         totalExpense,
         totalProfit: totalIncome - totalExpense,
+        incomeCount,
+        expenseCount,
     });
     Object.assign(finance, {
         income: weeklyRevenue,
         expense: weeklyExpense,
-        weeklyFlow: numberOrZero(settlement?.profit),
-        settledIncome: numberOrZero(settlement?.income),
-        settledExpense: numberOrZero(settlement?.expense),
-        settledMemberCount: numberOrZero(settlement?.member_count),
-        settlementPeriodStart: settlement?.period_start || "",
-        settlementPeriodEnd: settlement?.period_end || "",
-        settledAt: settlement?.settled_at || "",
+        weeklyFlow: hasExpectedSettlement ? numberOrZero(settlement?.profit) : 0,
+        settledIncome: hasExpectedSettlement ? numberOrZero(settlement?.income) : 0,
+        settledExpense: hasExpectedSettlement ? numberOrZero(settlement?.expense) : 0,
+        settledMemberCount: hasExpectedSettlement ? numberOrZero(settlement?.member_count) : 0,
+        settlementPeriodStart: hasExpectedSettlement ? settlement?.period_start || "" : "",
+        settlementPeriodEnd: hasExpectedSettlement ? settlement?.period_end || "" : "",
+        settledAt: hasExpectedSettlement ? settlement?.settled_at || "" : "",
+        settlementStatus: !completedWeek ? "not_due" : hasExpectedSettlement ? "settled" : "overdue",
+        expectedSettlementPeriodStart: completedWeek?.periodStartKey || "",
+        expectedSettlementPeriodEnd: completedWeek?.periodEndKey || "",
     });
 };
 
@@ -196,6 +213,7 @@ export const loadDashboardData = async ({ visitorMode = false } = {}) => {
     resetSharedData(teamId);
     const currentWeekStart = getCafeWeekStart();
     const currentWeekEnd = getNextCafeWeekStart();
+    const completedWeek = getLastCompletedCafeWeek();
 
     // Lấy cả các kỳ trước để nhật ký vẫn hiện khoản cộng tay đã được khôi phục.
     // Phần tổng hợp tuần tiếp tục được lọc theo currentWeekStart/currentWeekEnd trong hydrateCoinLedger.
@@ -287,6 +305,7 @@ export const loadDashboardData = async ({ visitorMode = false } = {}) => {
                 weekStart: currentWeekStart,
                 weekEnd: currentWeekEnd,
                 settlement: settlementResult.data,
+                completedWeek,
                 weeklyExpense: weeklyCost.total,
             });
         }

@@ -2,6 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
+      "source": "/cafes",
+      "destination": "/pages/cafes/index.html"
+    },
+    {
       "source": "/cafe/zzhaSdhdaskMZkasdojASDU00129",
       "destination": "/index.html?team=A"
     },

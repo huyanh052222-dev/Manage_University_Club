@@ -6,11 +6,21 @@ import {
     getRegularOrderReward,
     getWeeklyOrderRewardPool,
 } from "../../scripts/services/weeklyOrders.js?v=reputation-rewards";
-import { getCafeWeekKey, getNextCafeWeekStart } from "../../scripts/utils/cafeWeek.js?v=monday-cycle";
+import { getCafeWeekKey, getLastCompletedCafeWeek, getNextCafeWeekStart } from "../../scripts/utils/cafeWeek.js?v=monday-cycle";
 import { resolveCafeName } from "../../scripts/utils/cafeNames.js?v=the-vortex-the-ora";
 import { escapeHtml, formatNumber } from "../../scripts/utils/format.js";
 import { getStoredCafeReputation, setStoredCafeReputation } from "../../scripts/utils/reputationStorage.js?v=hardcoded-v1";
 import { adminLoginUrl } from "./adminRoutes.js";
+
+const adminPeriodFormatter = new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+
+const formatCompletedWeek = (completedWeek) => {
+    if (!completedWeek) return "kỳ đầu tiên";
+    const start = new Date(`${completedWeek.periodStartKey}T00:00:00`);
+    const end = new Date(`${completedWeek.periodEndKey}T00:00:00`);
+    end.setDate(end.getDate() - 1);
+    return `kỳ ${adminPeriodFormatter.format(start)}–${adminPeriodFormatter.format(end)}`;
+};
 
 document.addEventListener("DOMContentLoaded", async function () {
     if (!(await isAdminAuthenticated())) {
@@ -358,6 +368,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     async function deductWeeklyCoins() {
         const weekKey = getCafeWeekKey();
+        const completedWeek = getLastCompletedCafeWeek();
         if (!weekKey) {
             if (weeklyDeductionStatus) {
                 weeklyDeductionStatus.textContent = "Kỳ doanh thu và chi phí bắt đầu từ Thứ Hai 31/08/2026.";
@@ -388,7 +399,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
 
         if (weeklyDeductionStatus) {
-            weeklyDeductionStatus.textContent = wasDeducted ? "Đã kết toán tuần cũ và áp dụng 200 coin cố định + 20 coin/nhân viên cho tuần mới." : "Chi phí tuần hiện tại đã được áp dụng.";
+            const periodLabel = formatCompletedWeek(completedWeek);
+            weeklyDeductionStatus.textContent = wasDeducted
+                ? `Đã chốt ${periodLabel} và áp dụng 200 coin cố định + 20 coin/nhân viên cho tuần mới.`
+                : "Chi phí tuần hiện tại đã được áp dụng; kỳ trước đã có kết toán.";
         }
         await renderLeaderboardAdmin();
         return wasDeducted;

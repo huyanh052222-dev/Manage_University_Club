@@ -3,6 +3,10 @@
 
 begin;
 
+-- Giữ tương thích với database đã chuyển chu kỳ nhưng chưa có cột lý do.
+alter table public.coin_transactions
+    add column if not exists reason text;
+
 -- Dừng an toàn nếu database đã có đồng thời cả mốc Chủ nhật cũ và Thứ hai mới.
 -- Trường hợp này có thể là đã bị trừ hai lần và cần đối soát thủ công trước khi tiếp tục.
 do $$
@@ -178,8 +182,14 @@ begin
             where id = team_record.id;
 
             if actual_deduction > 0 then
-                insert into public.coin_transactions (team_id, type, title, amount)
-                values (team_record.id, 'expense', 'Phí vận hành tuần', -actual_deduction);
+                insert into public.coin_transactions (team_id, type, title, reason, amount)
+                values (
+                    team_record.id,
+                    'expense',
+                    'Phí vận hành tuần',
+                    'Hệ thống tự trừ chi phí vận hành cho tuần bắt đầu ' || to_char(week_key, 'DD/MM/YYYY'),
+                    -actual_deduction
+                );
             end if;
         end loop;
     end if;
