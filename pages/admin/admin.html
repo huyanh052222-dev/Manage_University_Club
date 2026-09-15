@@ -6,7 +6,7 @@
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
         <title>Trang Quản Trị Sự Kiện</title>
         <link rel="stylesheet" href="/styles/tokens.css" />
-        <link rel="stylesheet" href="/pages/admin/admin.css?v=reputation-management" />
+        <link rel="stylesheet" href="/pages/admin/admin.css?v=late-settlement-demo-v1" />
     </head>
     <body>
         <button class="admin-menu-button" id="adminMenuButton" type="button" aria-label="Mở menu quản trị" aria-controls="adminSidebar" aria-expanded="false">
@@ -30,6 +30,12 @@
                         <a class="nav-link" data-tab-target="reputation-management" href="#reputation-management">
                             <i class="fa-solid fa-star"></i>
                             Quản lý sao
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-tab-target="late-settlement-management" href="#late-settlement-management">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            Bổ sung kỳ trễ
                         </a>
                     </li>
                 </ul>
@@ -134,7 +140,7 @@
                                                 <i class="fa-solid fa-plus"></i> Nâng 1 sao
                                             </button>
                                         </div>
-                                        <small class="form-hint">Giới hạn từ 1 đến 5 sao và lưu cục bộ trên trình duyệt. Đơn đặc biệt luôn hiển thị mức 200–1000 coin.</small>
+                                        <small class="form-hint">Giới hạn từ 1 đến 5 sao và lưu cục bộ trên trình duyệt. Đơn đặc biệt luôn hiển thị mức 200–800 coin.</small>
                                     </div>
                                 </div>
                             </section>
@@ -145,11 +151,64 @@
                             </section>
                         </div>
                     </div>
+
+                    <div class="tab-pane" id="late-settlement-management" hidden>
+                        <div class="late-settlement-heading">
+                            <div>
+                                <h1>Bổ sung doanh thu kỳ trễ</h1>
+                                <p>Chọn một tuần đã hoàn tất, sau đó soạn khoản điều chỉnh cho đúng quán và đúng kỳ.</p>
+                            </div>
+                            <span class="late-settlement-demo-badge"><i class="fa-solid fa-flask"></i> Demo an toàn</span>
+                        </div>
+
+                        <section class="late-settlement-notice" aria-label="Giới hạn của bản demo">
+                            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                            <p><strong>Bản demo chỉ lưu bản nháp trên trình duyệt.</strong> Chưa ghi coin, chưa đổi số dư và chưa sửa kết toán trên Supabase.</p>
+                        </section>
+
+                        <div class="late-settlement-grid">
+                            <section>
+                                <h4>Các kỳ đã hoàn tất</h4>
+                                <div class="late-period-list card" id="lateSettlementPeriodList" aria-live="polite"></div>
+                            </section>
+
+                            <section>
+                                <h4>Soạn khoản bổ sung</h4>
+                                <div class="card late-settlement-form-card">
+                                    <div class="card-body">
+                                        <div class="late-selected-period" id="lateSettlementSelectedPeriod">Chọn một kỳ ở danh sách bên trái.</div>
+                                        <div class="form-field">
+                                            <label class="form-label" for="lateSettlementTeamSelect">Quán cần bổ sung</label>
+                                            <select class="form-control" id="lateSettlementTeamSelect"></select>
+                                        </div>
+                                        <div class="form-field">
+                                            <label class="form-label" for="lateSettlementAmount">Coin doanh thu bổ sung</label>
+                                            <input class="form-control" id="lateSettlementAmount" type="number" min="1" step="1" placeholder="Ví dụ: 250" />
+                                        </div>
+                                        <div class="form-field">
+                                            <label class="form-label" for="lateSettlementReason">Lý do bổ sung</label>
+                                            <textarea class="form-control coin-reason-input" id="lateSettlementReason" maxlength="200" rows="3" placeholder="Ví dụ: Bổ sung doanh thu bán hàng còn thiếu của tuần 2"></textarea>
+                                            <small class="form-hint">Bản ghi thật sau này sẽ được gắn đúng khoảng thời gian của kỳ đã chọn.</small>
+                                        </div>
+                                        <button class="admin-button primary-button" id="saveLateSettlementDraftBtn" type="button"><i class="fa-solid fa-file-pen"></i> Lưu bản nháp điều chỉnh</button>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+
+                        <section class="late-draft-section">
+                            <div class="late-draft-heading">
+                                <div><h4>Bản nháp chờ áp dụng</h4><p>Đây là nơi kiểm tra trước khi triển khai chức năng ghi hồi tố thật.</p></div>
+                                <span id="lateSettlementDraftCount">0 bản nháp</span>
+                            </div>
+                            <div class="late-draft-list card" id="lateSettlementDraftList" aria-live="polite"></div>
+                        </section>
+                    </div>
                 </div>
             </main>
         </div>
 
         <script src="https://kit.fontawesome.com/c4edd7a73c.js" crossorigin="anonymous"></script>
-        <script type="module" src="/pages/admin/admin.js?v=reputation-hardcoded-v1"></script>
+        <script type="module" src="/pages/admin/admin.js?v=late-settlement-demo-v1"></script>
     </body>
 </html>

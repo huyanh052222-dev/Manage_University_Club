@@ -89,6 +89,29 @@ export const getLastCompletedCafeWeek = (now = new Date()) => {
   };
 };
 
+// Danh sách các kỳ đã đóng để Admin đối soát hoặc soạn bản điều chỉnh trễ.
+export const getCompletedCafeWeeks = (now = new Date(), limit = 8) => {
+  const latestCompletedWeek = getLastCompletedCafeWeek(now);
+  const firstWeekStart = createLocalFirstRevenueWeekStart();
+  const maximum = Math.max(0, Math.floor(Number(limit) || 0));
+  if (!latestCompletedWeek || maximum === 0) return [];
+
+  const periods = [];
+  let periodEnd = new Date(latestCompletedWeek.periodEnd);
+  while (periodEnd > firstWeekStart && periods.length < maximum) {
+    const periodStart = new Date(periodEnd);
+    periodStart.setDate(periodStart.getDate() - 7);
+    periods.push({
+      periodStart,
+      periodEnd: new Date(periodEnd),
+      periodStartKey: formatDateKey(periodStart),
+      periodEndKey: formatDateKey(periodEnd),
+    });
+    periodEnd = periodStart;
+  }
+  return periods;
+};
+
 export const getCafeWeekContext = (now = new Date()) => {
   const today = toUtcDateOnly({ year: now.getFullYear(), month: now.getMonth(), day: now.getDate() });
   const openingDay = toUtcDateOnly(OPENING_DATE);

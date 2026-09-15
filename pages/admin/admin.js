@@ -6,7 +6,7 @@ import {
     getRegularOrderReward,
     getWeeklyOrderRewardPool,
 } from "../../scripts/services/weeklyOrders.js?v=reputation-rewards";
-import { getCafeWeekKey, getLastCompletedCafeWeek, getNextCafeWeekStart } from "../../scripts/utils/cafeWeek.js?v=monday-cycle";
+import { getCafeWeekKey, getCompletedCafeWeeks, getLastCompletedCafeWeek, getNextCafeWeekStart } from "../../scripts/utils/cafeWeek.js?v=monday-cycle";
 import { resolveCafeName } from "../../scripts/utils/cafeNames.js?v=the-vortex-the-ora";
 import { escapeHtml, formatNumber } from "../../scripts/utils/format.js";
 import { getStoredCafeReputation, setStoredCafeReputation } from "../../scripts/utils/reputationStorage.js?v=hardcoded-v1";
@@ -245,6 +245,218 @@ document.addEventListener("DOMContentLoaded", async function () {
         changeSelectedReputation(1);
     });
 
+    // --- DEMO BỔ SUNG DOANH THU KỲ TRỄ ---
+    // Bản nháp chỉ nằm trong localStorage. Chưa có RPC/backdate để không làm thay đổi sổ cái thật.
+    const lateSettlementDraftKey = "admin-late-settlement-drafts-v1";
+    let lateSettlementState = {
+        periods: [],
+        teams: [],
+        settlementTeamIdsByPeriod: new Map(),
+        settlementStatusKnown: true,
+        selectedPeriodStart: "",
+    };
+
+    const readLateSettlementDrafts = () => {
+        try {
+            const drafts = JSON.parse(window.localStorage.getItem(lateSettlementDraftKey) || "[]");
+            return Array.isArray(drafts) ? drafts : [];
+        } catch {
+            return [];
+        }
+    };
+
+    const writeLateSettlementDrafts = (drafts) => {
+        try {
+            window.localStorage.setItem(lateSettlementDraftKey, JSON.stringify(drafts));
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
+    const getLateSettlementPeriod = () => lateSettlementState.periods.find(
+        (period) => period.periodStartKey === lateSettlementState.selectedPeriodStart,
+    );
+
+    const getLateSettlementStatus = (period) => {
+        if (!lateSettlementState.settlementStatusKnown) {
+            return { label: "Chưa kiểm tra", className: "unknown", detail: "Không đọc được bảng kết toán" };
+        }
+        const settledTeamCount = lateSettlementState.settlementTeamIdsByPeriod.get(period.periodStartKey)?.size || 0;
+        const teamCount = lateSettlementState.teams.length;
+        if (teamCount > 0 && settledTeamCount >= teamCount) {
+            return { label: "Đã chốt", className: "settled", detail: `Đủ ${settledTeamCount}/${teamCount} quán` };
+        }
+        return { label: "Cần bổ sung", className: "pending", detail: `${settledTeamCount}/${teamCount || "?"} quán đã chốt` };
+    };
+
+    const renderLateSettlementPeriodList = () => {
+        const periodList = document.getElementById("lateSettlementPeriodList");
+        if (!periodList) return;
+        if (!lateSettlementState.periods.length) {
+            periodList.innerHTML = '<p class="late-period-empty">Chưa có kỳ doanh thu nào hoàn tất để chỉnh.</p>';
+            return;
+        }
+
+        periodList.innerHTML = lateSettlementState.periods.map((period) => {
+            const status = getLateSettlementStatus(period);
+            const selectedClass = period.periodStartKey === lateSettlementState.selectedPeriodStart ? " selected" : "";
+            return `
+                <button class="late-period-option${selectedClass}" type="button" data-late-period="${escapeHtml(period.periodStartKey)}" aria-pressed="${String(Boolean(selectedClass))}">
+                    <span class="late-period-copy"><strong>${escapeHtml(formatCompletedWeek(period))}</strong><small>${escapeHtml(status.detail)}</small></span>
+                    <span class="late-period-status ${status.className}">${escapeHtml(status.label)}</span>
+                </button>
+            `;
+        }).join("");
+    };
+
+    const renderLateSettlementForm = () => {
+        const selectedPeriodCopy = document.getElementById("lateSettlementSelectedPeriod");
+        const teamSelect = document.getElementById("lateSettlementTeamSelect");
+        const saveButton = document.getElementById("saveLateSettlementDraftBtn");
+        const selectedPeriod = getLateSettlementPeriod();
+        if (!selectedPeriodCopy || !teamSelect || !saveButton) return;
+
+        const previousTeamId = teamSelect.value;
+        teamSelect.innerHTML = lateSettlementState.teams.map((team) => (
+            `<option value="${escapeHtml(String(team.id))}">${escapeHtml(team.name)}</option>`
+        )).join("");
+        if (lateSettlementState.teams.some((team) => String(team.id) === previousTeamId)) {
+            teamSelect.value = previousTeamId;
+        }
+
+        if (!selectedPeriod) {
+            selectedPeriodCopy.textContent = "Chưa có kỳ nào có thể chỉnh.";
+            teamSelect.disabled = true;
+            saveButton.disabled = true;
+            return;
+        }
+
+        const status = getLateSettlementStatus(selectedPeriod);
+        selectedPeriodCopy.textContent = `${formatCompletedWeek(selectedPeriod)} · ${status.label}. Bản nháp sẽ được gắn vào kỳ này.`;
+        teamSelect.disabled = !lateSettlementState.teams.length;
+        saveButton.disabled = !lateSettlementState.teams.length;
+    };
+
+    const renderLateSettlementDrafts = () => {
+        const draftList = document.getElementById("lateSettlementDraftList");
+        const draftCount = document.getElementById("lateSettlementDraftCount");
+        if (!draftList || !draftCount) return;
+        const drafts = readLateSettlementDrafts();
+        draftCount.textContent = `${drafts.length} bản nháp`;
+        if (!drafts.length) {
+            draftList.innerHTML = '<p class="late-draft-empty">Chưa có bản nháp điều chỉnh nào.</p>';
+            return;
+        }
+
+        draftList.innerHTML = drafts.map((draft) => `
+            <article class="late-draft-row">
+                <div class="late-draft-copy">
+                    <strong>${escapeHtml(draft.teamName)} · ${escapeHtml(draft.periodLabel)}</strong>
+                    <small title="${escapeHtml(draft.reason)}">${escapeHtml(draft.reason)}</small>
+                </div>
+                <strong class="late-draft-amount">+${formatNumber(draft.amount)} coin</strong>
+                <button class="admin-button secondary-button late-draft-remove" type="button" data-remove-late-draft="${escapeHtml(draft.id)}">Bỏ</button>
+            </article>
+        `).join("");
+    };
+
+    async function renderLateSettlementAdmin() {
+        const periods = getCompletedCafeWeeks(new Date(), 8);
+        const teams = await getTeams();
+        let settlementRows = [];
+        let settlementStatusKnown = true;
+
+        if (periods.length) {
+            const { data, error } = await supabase
+                .from("weekly_financial_settlements")
+                .select("team_id, period_start")
+                .in("period_start", periods.map((period) => period.periodStartKey));
+            if (error) {
+                console.warn("Không thể tải trạng thái các kỳ kết toán:", error);
+                settlementStatusKnown = false;
+            } else {
+                settlementRows = data || [];
+            }
+        }
+
+        const settlementTeamIdsByPeriod = new Map();
+        settlementRows.forEach((row) => {
+            const periodStart = String(row.period_start || "");
+            if (!settlementTeamIdsByPeriod.has(periodStart)) settlementTeamIdsByPeriod.set(periodStart, new Set());
+            settlementTeamIdsByPeriod.get(periodStart).add(String(row.team_id));
+        });
+        lateSettlementState = {
+            periods,
+            teams,
+            settlementTeamIdsByPeriod,
+            settlementStatusKnown,
+            selectedPeriodStart: periods.some((period) => period.periodStartKey === lateSettlementState.selectedPeriodStart)
+                ? lateSettlementState.selectedPeriodStart
+                : periods[0]?.periodStartKey || "",
+        };
+        renderLateSettlementPeriodList();
+        renderLateSettlementForm();
+        renderLateSettlementDrafts();
+    }
+
+    document.getElementById("lateSettlementPeriodList")?.addEventListener("click", (event) => {
+        const periodButton = event.target.closest("[data-late-period]");
+        if (!periodButton) return;
+        lateSettlementState.selectedPeriodStart = periodButton.dataset.latePeriod || "";
+        renderLateSettlementPeriodList();
+        renderLateSettlementForm();
+    });
+
+    document.getElementById("saveLateSettlementDraftBtn")?.addEventListener("click", () => {
+        const selectedPeriod = getLateSettlementPeriod();
+        const teamSelect = document.getElementById("lateSettlementTeamSelect");
+        const amountInput = document.getElementById("lateSettlementAmount");
+        const reasonInput = document.getElementById("lateSettlementReason");
+        const amount = Number(amountInput?.value);
+        const reason = reasonInput?.value.trim() || "";
+        const team = lateSettlementState.teams.find((item) => String(item.id) === String(teamSelect?.value));
+
+        if (!selectedPeriod || !team || !Number.isInteger(amount) || amount <= 0) {
+            alert("Hãy chọn kỳ, quán và nhập số coin dương hợp lệ.");
+            return;
+        }
+        if (!reason) {
+            alert("Hãy ghi lý do bổ sung doanh thu.");
+            reasonInput?.focus();
+            return;
+        }
+
+        const drafts = readLateSettlementDrafts();
+        drafts.unshift({
+            id: `${selectedPeriod.periodStartKey}-${team.id}-${Date.now()}`,
+            periodStart: selectedPeriod.periodStartKey,
+            periodEnd: selectedPeriod.periodEndKey,
+            periodLabel: formatCompletedWeek(selectedPeriod),
+            teamId: String(team.id),
+            teamName: team.name,
+            amount,
+            reason,
+            createdAt: new Date().toISOString(),
+        });
+        if (!writeLateSettlementDrafts(drafts)) {
+            alert("Không thể lưu bản nháp do trình duyệt đang chặn localStorage.");
+            return;
+        }
+        if (amountInput) amountInput.value = "";
+        if (reasonInput) reasonInput.value = "";
+        renderLateSettlementDrafts();
+        alert(`Đã lưu bản nháp bổ sung +${formatNumber(amount)} coin cho ${team.name}. Chưa có thay đổi nào trên Supabase.`);
+    });
+
+    document.getElementById("lateSettlementDraftList")?.addEventListener("click", (event) => {
+        const removeButton = event.target.closest("[data-remove-late-draft]");
+        if (!removeButton) return;
+        const nextDrafts = readLateSettlementDrafts().filter((draft) => draft.id !== removeButton.dataset.removeLateDraft);
+        writeLateSettlementDrafts(nextDrafts);
+        renderLateSettlementDrafts();
+    });
+
     const addPointsBtn = document.getElementById("addPointsBtn");
     if (addPointsBtn)
         addPointsBtn.addEventListener("click", async function () {
@@ -426,5 +638,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     await deductWeeklyCoins();
     await renderLeaderboardAdmin();
     await renderReputationAdmin();
+    await renderLateSettlementAdmin();
     startWeeklyCountdown();
 });
