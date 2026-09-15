@@ -1,9 +1,10 @@
 -- Chạy MỘT LẦN trong Supabase SQL Editor trước khi deploy chức năng
--- "Bổ sung kỳ trễ". Toàn bộ script là một transaction.
+-- "Chốt lại kỳ trễ". Toàn bộ script là một transaction.
 --
 -- Quy tắc:
--- 1) Một coin vào cũ chỉ được gán vào một kỳ đã hoàn tất, không cộng lại số dư.
--- 2) Một khoản nhập mới sẽ cộng số dư một lần, ghi sổ cái một lần và chốt lại kỳ đó.
+-- 1) Coin đã cộng vào số dư trong tuần được hàm kết toán tuần tính tự động.
+-- 2) Khi kỳ đã qua bị chậm, chỉ những coin vào ĐÃ TỒN TẠI mới được gán lại kỳ,
+--    tuyệt đối không tạo coin mới hoặc sửa teams.points.
 -- 3) Kết toán luôn cộng toàn bộ income có settlement_period_start trùng kỳ,
 --    cộng thêm income bình thường phát sinh trong chính khoảng thời gian của kỳ.
 
@@ -26,6 +27,10 @@ alter table public.coin_transactions
 create index if not exists coin_transactions_settlement_period_idx
     on public.coin_transactions (team_id, settlement_period_start)
     where settlement_period_start is not null;
+
+-- Bản trước từng có RPC cộng coin hồi tố. Loại bỏ nó để mục "kỳ trễ"
+-- không thể làm thay đổi số dư; coin chỉ được cộng ở luồng Admin thông thường.
+drop function if exists public.add_points_to_late_settlement(text, date, integer, text);
 
 -- Tính doanh thu của một kỳ. Giao dịch được gán kỳ sẽ được ưu tiên hơn ngày phát sinh thật.
 create or replace function public.get_settlement_income(
@@ -120,63 +125,6 @@ begin
 end;
 $$;
 
--- Tạo khoản doanh thu bổ sung mới: tăng số dư đúng một lần rồi chốt lại kỳ đã chọn.
-create or replace function public.add_points_to_late_settlement(
-    team_id_in text,
-    period_start_in date,
-    points_to_add integer,
-    reason_in text
-)
-returns void
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-    if auth.uid() is null or not coalesce(public.is_admin(), false) then
-        raise exception 'admin access required';
-    end if;
-
-    if points_to_add is null or points_to_add <= 0 then
-        raise exception 'points_to_add must be positive';
-    end if;
-
-    if nullif(btrim(coalesce(reason_in, '')), '') is null then
-        raise exception 'reason is required';
-    end if;
-
-    if char_length(btrim(reason_in)) > 200 then
-        raise exception 'reason must not exceed 200 characters';
-    end if;
-
-    -- Hàm này cũng xác thực kỳ đã hoàn tất trước khi ghi dữ liệu.
-    perform public.refresh_late_financial_settlement(team_id_in, period_start_in);
-
-    update public.teams
-    set points = coalesce(points, 0) + points_to_add,
-        updated_at = now()
-    where id = team_id_in;
-
-    if not found then
-        raise exception 'team not found';
-    end if;
-
-    insert into public.coin_transactions (
-        team_id, type, title, reason, amount, settlement_period_start
-    )
-    values (
-        team_id_in,
-        'income',
-        'Admin cộng coin (kỳ trễ)',
-        btrim(reason_in),
-        points_to_add,
-        period_start_in
-    );
-
-    perform public.refresh_late_financial_settlement(team_id_in, period_start_in);
-end;
-$$;
-
 -- Gán những coin vào đã tồn tại (ví dụ +103 và +93) vào một kỳ trễ.
 -- Không sửa teams.points và không tạo dòng coin mới, nên không thể cộng trùng.
 create or replace function public.assign_income_transactions_to_late_settlement(
@@ -235,11 +183,9 @@ $$;
 
 revoke all on function public.get_settlement_income(text, date) from public;
 revoke all on function public.refresh_late_financial_settlement(text, date) from public;
-revoke all on function public.add_points_to_late_settlement(text, date, integer, text) from public;
 revoke all on function public.assign_income_transactions_to_late_settlement(text, date, uuid[]) from public;
-revoke all on function public.add_points_to_late_settlement(text, date, integer, text) from anon;
 revoke all on function public.assign_income_transactions_to_late_settlement(text, date, uuid[]) from anon;
-grant execute on function public.add_points_to_late_settlement(text, date, integer, text) to authenticated;
+grant execute on function public.refresh_late_financial_settlement(text, date) to authenticated;
 grant execute on function public.assign_income_transactions_to_late_settlement(text, date, uuid[]) to authenticated;
 
 comment on column public.coin_transactions.settlement_period_start is

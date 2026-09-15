@@ -155,15 +155,15 @@
                     <div class="tab-pane" id="late-settlement-management" hidden>
                         <div class="late-settlement-heading">
                             <div>
-                                <h1>Bổ sung doanh thu kỳ trễ</h1>
-                                <p>Chọn một tuần đã hoàn tất, sau đó soạn khoản điều chỉnh cho đúng quán và đúng kỳ.</p>
+                                <h1>Chốt lại doanh thu kỳ trễ</h1>
+                                <p>Chỉ dùng khi một kỳ đã qua vẫn đang chờ kết toán. Coin đã cộng trong tuần sẽ tự được tính vào kỳ đó.</p>
                             </div>
-                            <span class="late-settlement-demo-badge"><i class="fa-solid fa-database"></i> Đồng bộ Supabase</span>
+                            <span class="late-settlement-badge"><i class="fa-solid fa-database"></i> Đồng bộ Supabase</span>
                         </div>
 
-                        <section class="late-settlement-notice" aria-label="Giới hạn của bản demo">
+                        <section class="late-settlement-notice" aria-label="Nguyên tắc kết toán kỳ trễ">
                             <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-                            <p><strong>Khoản mới sẽ cộng vào số dư và chốt lại đúng kỳ đã chọn.</strong> Các coin vào đã có chỉ được gán kỳ để tránh cộng trùng số dư.</p>
+                            <p><strong>Mục này không tạo coin mới và không thay đổi số dư quán.</strong> Chỉ chốt lại kết toán từ nhật ký hiện có, hoặc gán coin đã cộng muộn về đúng kỳ để tránh cộng trùng.</p>
                         </section>
 
                         <div class="late-settlement-grid">
@@ -173,24 +173,16 @@
                             </section>
 
                             <section>
-                                <h4>Soạn khoản bổ sung</h4>
+                                <h4>Chọn quán và chốt kỳ</h4>
                                 <div class="card late-settlement-form-card">
                                     <div class="card-body">
                                         <div class="late-selected-period" id="lateSettlementSelectedPeriod">Chọn một kỳ ở danh sách bên trái.</div>
                                         <div class="form-field">
-                                            <label class="form-label" for="lateSettlementTeamSelect">Quán cần bổ sung</label>
+                                            <label class="form-label" for="lateSettlementTeamSelect">Quán cần chốt lại</label>
                                             <select class="form-control" id="lateSettlementTeamSelect"></select>
                                         </div>
-                                        <div class="form-field">
-                                            <label class="form-label" for="lateSettlementAmount">Coin doanh thu bổ sung</label>
-                                            <input class="form-control" id="lateSettlementAmount" type="number" min="1" step="1" placeholder="Ví dụ: 250" />
-                                        </div>
-                                        <div class="form-field">
-                                            <label class="form-label" for="lateSettlementReason">Lý do bổ sung</label>
-                                            <textarea class="form-control coin-reason-input" id="lateSettlementReason" maxlength="200" rows="3" placeholder="Ví dụ: Bổ sung doanh thu bán hàng còn thiếu của tuần 2"></textarea>
-                                            <small class="form-hint">Khoản này được ghi là doanh thu hồi tố của kỳ đã chọn và cập nhật lại lợi nhuận.</small>
-                                        </div>
-                                        <button class="admin-button primary-button" id="applyLateSettlementAdjustmentBtn" type="button"><i class="fa-solid fa-coins"></i> Cộng coin và chốt lại kỳ</button>
+                                        <small class="form-hint">Nút này đọc các coin vào đã có trong nhật ký của kỳ và cập nhật doanh thu, chi phí, lợi nhuận. Số dư hiện tại không đổi.</small>
+                                        <button class="admin-button primary-button" id="refreshLateSettlementBtn" type="button"><i class="fa-solid fa-calculator"></i> Chốt lại theo nhật ký hiện có</button>
                                     </div>
                                 </div>
                             </section>
@@ -210,6 +202,6 @@
         </div>
 
         <script src="https://kit.fontawesome.com/c4edd7a73c.js" crossorigin="anonymous"></script>
-        <script type="module" src="/pages/admin/admin.js?v=late-settlement-demo-v1"></script>
+        <script type="module" src="/pages/admin/admin.js?v=late-settlement-v2"></script>
     </body>
 </html>

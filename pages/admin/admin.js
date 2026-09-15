@@ -302,9 +302,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     const renderLateSettlementForm = () => {
         const selectedPeriodCopy = document.getElementById("lateSettlementSelectedPeriod");
         const teamSelect = document.getElementById("lateSettlementTeamSelect");
-        const applyButton = document.getElementById("applyLateSettlementAdjustmentBtn");
+        const refreshButton = document.getElementById("refreshLateSettlementBtn");
         const selectedPeriod = getLateSettlementPeriod();
-        if (!selectedPeriodCopy || !teamSelect || !applyButton) return;
+        if (!selectedPeriodCopy || !teamSelect || !refreshButton) return;
 
         const previousTeamId = teamSelect.value;
         teamSelect.innerHTML = lateSettlementState.teams.map((team) => (
@@ -314,13 +314,13 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (!selectedPeriod) {
             selectedPeriodCopy.textContent = "Chưa có kỳ nào có thể chỉnh.";
             teamSelect.disabled = true;
-            applyButton.disabled = true;
+            refreshButton.disabled = true;
             return;
         }
         const status = getLateSettlementStatus(selectedPeriod);
-        selectedPeriodCopy.textContent = `${formatCompletedWeek(selectedPeriod)} · ${status.label}. Khoản mới sẽ tăng số dư và tính vào kỳ này.`;
+        selectedPeriodCopy.textContent = `${formatCompletedWeek(selectedPeriod)} · ${status.label}. Chỉ tính lại kết toán từ các coin đã có.`;
         teamSelect.disabled = !lateSettlementState.teams.length;
-        applyButton.disabled = !lateSettlementState.teams.length;
+        refreshButton.disabled = !lateSettlementState.teams.length;
     };
 
     const renderLateSettlementCandidates = () => {
@@ -441,44 +441,27 @@ document.addEventListener("DOMContentLoaded", async function () {
         renderLateSettlementCandidates();
     });
 
-    document.getElementById("applyLateSettlementAdjustmentBtn")?.addEventListener("click", async function () {
+    document.getElementById("refreshLateSettlementBtn")?.addEventListener("click", async function () {
         const selectedPeriod = getLateSettlementPeriod();
         const team = getLateSettlementTeam();
-        const amountInput = document.getElementById("lateSettlementAmount");
-        const reasonInput = document.getElementById("lateSettlementReason");
-        const amount = Number(amountInput?.value);
-        const reason = reasonInput?.value.trim() || "";
-        if (!selectedPeriod || !team || !Number.isInteger(amount) || amount <= 0) {
-            alert("Hãy chọn kỳ, quán và nhập số coin dương hợp lệ.");
-            return;
-        }
-        if (!reason || reason.length > 200) {
-            alert("Hãy nhập lý do từ 1 đến 200 ký tự.");
-            reasonInput?.focus();
-            return;
-        }
-        if (!window.confirm(`Cộng +${formatNumber(amount)} coin cho ${team.name} và tính vào ${formatCompletedWeek(selectedPeriod)}? Số dư và kết toán sẽ được cập nhật.`)) return;
+        if (!selectedPeriod || !team) return;
+        if (!window.confirm(`Chốt lại ${formatCompletedWeek(selectedPeriod)} cho ${team.name} theo nhật ký hiện có? Số dư quán sẽ không thay đổi.`)) return;
 
         this.disabled = true;
-        this.textContent = "Đang cập nhật...";
-        const { error } = await supabase.rpc("add_points_to_late_settlement", {
+        this.textContent = "Đang chốt...";
+        const { error } = await supabase.rpc("refresh_late_financial_settlement", {
             team_id_in: team.id,
             period_start_in: selectedPeriod.periodStartKey,
-            points_to_add: amount,
-            reason_in: reason,
         });
         this.disabled = false;
-        this.innerHTML = '<i class="fa-solid fa-coins"></i> Cộng coin và chốt lại kỳ';
+        this.innerHTML = '<i class="fa-solid fa-calculator"></i> Chốt lại theo nhật ký hiện có';
         if (error) {
-            console.error("Không thể cộng coin kỳ trễ:", error);
+            console.error("Không thể chốt kỳ trễ:", error);
             alert(`Không thể cập nhật kỳ trễ: ${error.message}`);
             return;
         }
-        amountInput.value = "";
-        reasonInput.value = "";
-        await renderLeaderboardAdmin();
         await renderLateSettlementAdmin();
-        alert(`Đã cộng +${formatNumber(amount)} coin và tính lại ${formatCompletedWeek(selectedPeriod)}.`);
+        alert(`Đã chốt lại ${formatCompletedWeek(selectedPeriod)} theo nhật ký hiện có. Số dư không thay đổi.`);
     });
 
     document.getElementById("assignLateSettlementTransactionsBtn")?.addEventListener("click", async function () {
