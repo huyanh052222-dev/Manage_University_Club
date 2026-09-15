@@ -70,6 +70,13 @@
                                             </select>
                                         </div>
                                         <div class="form-field">
+                                            <label for="pointsRevenuePeriod" class="form-label">Ghi doanh thu cho kỳ</label>
+                                            <select class="form-control" id="pointsRevenuePeriod">
+                                                <option value="">Đang tải các kỳ...</option>
+                                            </select>
+                                            <small class="form-hint">Chọn tuần đang diễn ra để tính doanh thu tuần này. Chọn một tuần đã hoàn tất khi coin cần tính vào kỳ cũ; số dư vẫn chỉ tăng đúng một lần.</small>
+                                        </div>
+                                        <div class="form-field">
                                             <label for="pointsToAdd" class="form-label">Cộng coin</label>
                                             <input type="number" class="form-control" id="pointsToAdd" placeholder="Nhập số coin" />
                                         </div>
@@ -202,6 +209,6 @@
         </div>
 
         <script src="https://kit.fontawesome.com/c4edd7a73c.js" crossorigin="anonymous"></script>
-        <script type="module" src="/pages/admin/admin.js?v=late-settlement-v2"></script>
+        <script type="module" src="/pages/admin/admin.js?v=late-settlement-v3"></script>
     </body>
 </html>

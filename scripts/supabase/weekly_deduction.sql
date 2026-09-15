@@ -38,6 +38,9 @@ create table if not exists public.weekly_financial_settlements (
 alter table public.coin_transactions
     add column if not exists reason text;
 
+alter table public.coin_transactions
+    add column if not exists settlement_period_start date;
+
 alter table public.weekly_coin_deductions enable row level security;
 alter table public.weekly_financial_settlements enable row level security;
 
@@ -136,6 +139,7 @@ begin
                 where team_id = team_record.id
                     and type = 'income'
                     and amount > 0
+                    and settlement_period_start is null
                     and occurred_at >= (previous_week_start::timestamp at time zone 'Asia/Ho_Chi_Minh')
                     and occurred_at < (week_key::timestamp at time zone 'Asia/Ho_Chi_Minh');
 

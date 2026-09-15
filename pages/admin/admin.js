@@ -6,7 +6,7 @@ import {
     getRegularOrderReward,
     getWeeklyOrderRewardPool,
 } from "../../scripts/services/weeklyOrders.js?v=reputation-rewards";
-import { getCafeWeekKey, getCompletedCafeWeeks, getLastCompletedCafeWeek, getNextCafeWeekStart } from "../../scripts/utils/cafeWeek.js?v=monday-cycle";
+import { getCafeWeekContext, getCafeWeekKey, getCompletedCafeWeeks, getLastCompletedCafeWeek, getNextCafeWeekStart } from "../../scripts/utils/cafeWeek.js?v=monday-cycle";
 import { resolveCafeName } from "../../scripts/utils/cafeNames.js?v=the-vortex-the-ora";
 import { escapeHtml, formatNumber } from "../../scripts/utils/format.js";
 import { getStoredCafeReputation, setStoredCafeReputation } from "../../scripts/utils/reputationStorage.js?v=hardcoded-v1";
@@ -125,6 +125,31 @@ document.addEventListener("DOMContentLoaded", async function () {
             .join("");
 
         teamSelect.innerHTML = teams.map((team) => `<option value="${team.id}">${team.name}</option>`).join("");
+        renderAdminRevenuePeriodSelect();
+    }
+
+    function renderAdminRevenuePeriodSelect() {
+        const periodSelect = document.getElementById("pointsRevenuePeriod");
+        if (!periodSelect) return;
+
+        const previousValue = periodSelect.value;
+        const currentWeek = getCafeWeekContext(new Date());
+        const completedWeeks = getCompletedCafeWeeks(new Date(), Math.max(0, currentWeek.week - 1));
+        const choices = [
+            {
+                value: "",
+                label: `${currentWeek.title} (đang diễn ra) · tính vào doanh thu tuần này`,
+            },
+            ...completedWeeks.map((period) => ({
+                value: period.periodStartKey,
+                label: `${getCafeWeekContext(period.periodStart).title} · ${formatCompletedWeek(period)}`,
+            })),
+        ];
+
+        periodSelect.innerHTML = choices.map((choice) => (
+            `<option value="${escapeHtml(choice.value)}">${escapeHtml(choice.label)}</option>`
+        )).join("");
+        if (choices.some((choice) => choice.value === previousValue)) periodSelect.value = previousValue;
     }
 
     const clampReputation = (value) => Math.min(
@@ -498,9 +523,11 @@ document.addEventListener("DOMContentLoaded", async function () {
             const teamSelect = document.getElementById("teamSelect");
             const pointsInput = document.getElementById("pointsToAdd");
             const reasonInput = document.getElementById("pointsReason");
+            const periodSelect = document.getElementById("pointsRevenuePeriod");
             const teamId = teamSelect?.value;
             const pointsToAdd = Number(pointsInput?.value);
             const reason = reasonInput?.value.trim() || "";
+            const settlementPeriodStart = pointsToAdd > 0 ? periodSelect?.value || "" : "";
             const addPointsBtn = this;
 
             if (!teamId || !Number.isInteger(pointsToAdd) || pointsToAdd === 0) {
@@ -523,12 +550,24 @@ document.addEventListener("DOMContentLoaded", async function () {
             addPointsBtn.disabled = true;
             addPointsBtn.textContent = "Đang cập nhật...";
 
-            // RPC cập nhật số dư và ghi lý do vào sổ cái trong cùng một transaction.
-            const { error } = await supabase.rpc("add_points_to_team", {
-                team_id_in: teamId,
-                points_to_add: pointsToAdd,
-                reason_in: reason,
-            });
+            // Chọn một kỳ đã hoàn tất sẽ tăng số dư một lần, đồng thời gán chính
+            // giao dịch đó vào kỳ đã chọn để không lọt vào doanh thu tuần hiện tại.
+            const rpcName = settlementPeriodStart
+                ? "add_points_to_team_for_settlement_period"
+                : "add_points_to_team";
+            const rpcArgs = settlementPeriodStart
+                ? {
+                    team_id_in: teamId,
+                    points_to_add: pointsToAdd,
+                    reason_in: reason,
+                    settlement_period_start_in: settlementPeriodStart,
+                }
+                : {
+                    team_id_in: teamId,
+                    points_to_add: pointsToAdd,
+                    reason_in: reason,
+                };
+            const { error } = await supabase.rpc(rpcName, rpcArgs);
 
             addPointsBtn.disabled = false;
             addPointsBtn.textContent = "Cộng coin";
@@ -539,10 +578,14 @@ document.addEventListener("DOMContentLoaded", async function () {
             } else {
                 // Tải lại bảng xếp hạng từ database
                 await renderLeaderboardAdmin();
+                if (settlementPeriodStart) await renderLateSettlementAdmin();
                 pointsInput.value = "";
                 reasonInput.value = "";
                 const action = pointsToAdd > 0 ? "cộng" : "trừ";
-                alert(`Đã ${action} thành công ${Math.abs(pointsToAdd).toLocaleString("vi-VN")} coin.`);
+                const periodLabel = settlementPeriodStart
+                    ? ` và tính vào ${periodSelect?.selectedOptions[0]?.textContent || "kỳ đã chọn"}`
+                    : "";
+                alert(`Đã ${action} thành công ${Math.abs(pointsToAdd).toLocaleString("vi-VN")} coin${periodLabel}.`);
             }
         });
 
