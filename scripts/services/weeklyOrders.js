@@ -23,14 +23,13 @@ export const ORDER_REWARD = getRegularOrderReward();
 
 // NPC Contact
 export const ORDER_CONTACTS_BY_TEAM = Object.freeze({
-  A: Object.freeze({ name: "Huỳnh Thị Thúy Vy", phone: "0394350988" }),
+  A: Object.freeze({ name: "Huỳnh Thị Thúy Vy", phone: "0392541638" }),
   B: Object.freeze({ name: "Mai Thị Yến Nhi", phone: "0395789435" }),
   C: Object.freeze({ name: "Tống Minh Duy", phone: "0913182030" }),
   D: Object.freeze({ name: "Lê Minh Khang", phone: "0948313971" }),
-  E: Object.freeze({ name: "Nguyễn Đăng Dương", phone: "0339744676" }),
+  E: Object.freeze({ name: "Nguyễn Đăng Dương", phone: "0369743690" }),
   F: Object.freeze({ name: "Lê Hồng Cường", phone: "0368944409" }),
   G: Object.freeze({ name: "Tống Hoàng Phước Sang", phone: "0819813331" }),
-  // Liên hệ H dùng URL hồ sơ được giải mã trực tiếp từ QR Zalo người dùng cung cấp.
   H: Object.freeze({ name: "Lợi", phone: "0335383315" }),
 });
 
