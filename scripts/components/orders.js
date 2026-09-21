@@ -66,7 +66,7 @@ export const renderOrders = () => {
         <span class="section-icon coral">${icon("receipt")}</span>
         <div><h2 id="orders-title">Đơn hàng</h2><p>Thứ Hai–Thứ Bảy · 10 đơn · Đơn thường ${formatNumber(regularOrderReward)} coin</p></div>
       </header>
-      <div class="order-allocation" aria-label="Phân bổ 10 đơn hàng tuần">
+      <div class="order-allocation" aria-label="Phân bổ 5 đơn hàng tuần">
         ${summarizeWeeklyOrders(orders).map((item) => `
           <span>${escapeHtml(item.title)} <b>×${item.quantity}</b></span>
         `).join("")}

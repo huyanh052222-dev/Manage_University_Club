@@ -1,4 +1,4 @@
-export const WEEKLY_ORDER_TOTAL = 10;
+export const WEEKLY_ORDER_TOTAL = 5;
 export const MIN_CAFE_REPUTATION = 1;
 export const MAX_CAFE_REPUTATION = 5;
 export const BASE_WEEKLY_ORDER_REWARD_POOL = 200;

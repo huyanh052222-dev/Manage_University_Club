@@ -228,7 +228,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         <strong>${escapeHtml(team.name)}</strong>
                     </div>
                     <span class="reputation-list-stars" aria-label="${reputation} sao">${renderAdminStars(reputation)}</span>
-                    <span class="reputation-list-reward"><strong>${formatNumber(getRegularOrderReward(reputation))} coin/đơn</strong>${formatNumber(getWeeklyOrderRewardPool(reputation))} coin/10 đơn</span>
+                    <span class="reputation-list-reward"><strong>${formatNumber(getRegularOrderReward(reputation))} coin/đơn</strong>${formatNumber(getWeeklyOrderRewardPool(reputation))} coin/5 đơn</span>
                 </div>
             `;
         }).join("");
