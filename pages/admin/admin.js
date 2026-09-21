@@ -271,8 +271,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 
     // --- BỔ SUNG DOANH THU KỲ TRỄ ---
-    // Coin mới dùng RPC riêng để tăng số dư một lần. Coin vào đã có chỉ được gán kỳ,
-    // nhờ đó ví dụ +103 và +93 có thể đi vào kỳ cũ mà không bị cộng trùng.
+    // Chỉ gán lại những coin đã tồn tại; một giao dịch có ghi "Tuần N" chỉ
+    // được đưa vào đúng Tuần N để không làm sai các kỳ liền kề.
     let lateSettlementState = {
         periods: [],
         teams: [],
@@ -291,6 +291,19 @@ document.addEventListener("DOMContentLoaded", async function () {
     const getLateSettlementTeam = () => {
         const teamId = document.getElementById("lateSettlementTeamSelect")?.value;
         return lateSettlementState.teams.find((team) => String(team.id) === String(teamId));
+    };
+
+    const getLateSettlementWeekNumber = (period) => (
+        period ? getCafeWeekContext(period.periodStart).week : 0
+    );
+
+    const getTransactionWeekHint = (transaction) => {
+        const source = `${transaction?.title || ""} ${transaction?.reason || ""}`
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase();
+        const match = source.match(/\btuan\s*(\d+)\b/);
+        return match ? Number(match[1]) : 0;
     };
 
     const getLateSettlementStatus = (period) => {
@@ -343,7 +356,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             return;
         }
         const status = getLateSettlementStatus(selectedPeriod);
-        selectedPeriodCopy.textContent = `${formatCompletedWeek(selectedPeriod)} · ${status.label}. Chỉ tính lại kết toán từ các coin đã có.`;
+        selectedPeriodCopy.textContent = `Tuần ${getLateSettlementWeekNumber(selectedPeriod)} · ${formatCompletedWeek(selectedPeriod)} · ${status.label}. Chỉ tính lại kết toán từ các coin đã có.`;
         teamSelect.disabled = !lateSettlementState.teams.length;
         refreshButton.disabled = !lateSettlementState.teams.length;
     };
@@ -364,7 +377,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             return;
         }
         if (!lateSettlementState.candidates.length) {
-            candidateList.innerHTML = '<p class="late-draft-empty">Không có coin vào chưa gán sau kỳ này.</p>';
+            candidateList.innerHTML = '<p class="late-draft-empty">Không có coin vào phù hợp với kỳ này. Các giao dịch đã ghi “Tuần khác” được tự loại để tránh gán nhầm.</p>';
             return;
         }
         candidateList.innerHTML = lateSettlementState.candidates.map((candidate) => `
@@ -401,7 +414,11 @@ document.addEventListener("DOMContentLoaded", async function () {
             lateSettlementState.candidatesError = "Chưa tải được coin vào. Hãy chạy late_settlement_adjustments.sql trước.";
             return;
         }
-        lateSettlementState.candidates = data || [];
+        const selectedWeekNumber = getLateSettlementWeekNumber(selectedPeriod);
+        lateSettlementState.candidates = (data || []).filter((candidate) => {
+            const mentionedWeek = getTransactionWeekHint(candidate);
+            return !mentionedWeek || mentionedWeek === selectedWeekNumber;
+        });
     }
 
     async function renderLateSettlementAdmin() {

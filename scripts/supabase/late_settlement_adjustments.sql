@@ -311,6 +311,7 @@ as $$
 declare
     selected_count integer;
     eligible_count integer;
+    target_week_number integer;
 begin
     if auth.uid() is null or not coalesce(public.is_admin(), false) then
         raise exception 'admin access required';
@@ -327,6 +328,7 @@ begin
 
     -- Xác thực kỳ trước, đồng thời có thể tạo ảnh chụp kết toán nếu đang bị trễ.
     perform public.refresh_late_financial_settlement(team_id_in, period_start_in);
+    target_week_number := ((period_start_in - date '2026-08-31') / 7) + 1;
 
     select count(*)::integer
     into eligible_count
@@ -336,10 +338,24 @@ begin
         and transactions.type = 'income'
         and transactions.amount > 0
         and transactions.settlement_period_start is null
-        and transactions.occurred_at >= ((period_start_in + 7)::timestamp at time zone 'Asia/Ho_Chi_Minh');
+        and transactions.occurred_at >= ((period_start_in + 7)::timestamp at time zone 'Asia/Ho_Chi_Minh')
+        and (
+            regexp_match(
+                concat_ws(' ', transactions.title, transactions.reason),
+                '(tuần|tuan)[[:space:]]*([0-9]+)',
+                'i'
+            ) is null
+            or (
+                regexp_match(
+                    concat_ws(' ', transactions.title, transactions.reason),
+                    '(tuần|tuan)[[:space:]]*([0-9]+)',
+                    'i'
+                )
+            )[2]::integer = target_week_number
+        );
 
     if eligible_count <> selected_count then
-        raise exception 'only unassigned income transactions created after the selected period can be assigned';
+        raise exception 'only unassigned income for the selected week can be assigned';
     end if;
 
     update public.coin_transactions
