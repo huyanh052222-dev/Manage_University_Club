@@ -2,7 +2,6 @@ import { DEFAULT_CAFE_REPUTATION, MAX_CAFE_REPUTATION, cafeStats, club, finance,
 import { getTeamIdFromLocation } from "../routes/teamRoutes.js?v=cafe-visit";
 import { getCafeWeekStart, getLastCompletedCafeWeek, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=monday-cycle";
 import { resolveCafeName } from "../utils/cafeNames.js?v=the-vortex-the-ora";
-import { getStoredCafeReputation } from "../utils/reputationStorage.js?v=hardcoded-v1";
 import { supabase } from "../supabase/supabase.js";
 import { getWeeklyCostEstimate, isManagerRole } from "./weeklyCosts.js";
 import { createWeeklyOrders } from "./weeklyOrders.js?v=reputation-rewards";
@@ -266,7 +265,7 @@ export const loadDashboardData = async ({ visitorMode = false } = {}) => {
                 MAX_CAFE_REPUTATION,
             )
             : DEFAULT_CAFE_REPUTATION;
-        const reputation = getStoredCafeReputation(teamId, databaseReputation);
+        const reputation = databaseReputation;
 
         if (team) {
             Object.assign(club, {

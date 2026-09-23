@@ -9,7 +9,6 @@ import {
 import { getCafeWeekContext, getCafeWeekKey, getCompletedCafeWeeks, getLastCompletedCafeWeek, getNextCafeWeekStart } from "../../scripts/utils/cafeWeek.js?v=monday-cycle";
 import { resolveCafeName } from "../../scripts/utils/cafeNames.js?v=the-vortex-the-ora";
 import { escapeHtml, formatNumber } from "../../scripts/utils/format.js";
-import { getStoredCafeReputation, setStoredCafeReputation } from "../../scripts/utils/reputationStorage.js?v=hardcoded-v1";
 import { adminLoginUrl } from "./adminRoutes.js";
 
 const adminPeriodFormatter = new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -86,7 +85,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             ...team,
             name: resolveCafeName(team),
             pts: team.points,
-            reputation: getStoredCafeReputation(team.id, team.reputation),
+            reputation: team.reputation,
         }));
     }
 
@@ -236,7 +235,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         renderSelectedReputation();
     }
 
-    function changeSelectedReputation(step) {
+    async function changeSelectedReputation(step) {
         const teamSelect = document.getElementById("reputationTeamSelect");
         const team = reputationTeams.find((item) => String(item.id) === teamSelect?.value);
         if (!team) return;
@@ -250,24 +249,29 @@ document.addEventListener("DOMContentLoaded", async function () {
             document.getElementById("increaseReputationBtn"),
         ].filter(Boolean);
         reputationButtons.forEach((item) => { item.disabled = true; });
-        if (!setStoredCafeReputation(team.id, nextReputation)) {
+        const { data, error } = await supabase.rpc("set_team_reputation", {
+            team_id_in: team.id,
+            reputation_in: nextReputation,
+        });
+        if (error) {
+            console.error("Lỗi khi cập nhật số sao:", error);
             renderSelectedReputation();
-            alert("Trình duyệt không cho phép lưu số sao cục bộ.");
+            alert(`Không thể cập nhật số sao: ${error.message}`);
             return;
         }
 
-        team.reputation = nextReputation;
+        team.reputation = clampReputation(data ?? nextReputation);
         renderSelectedReputation();
         void renderReputationAdmin(team.id);
-        alert(`Đã cập nhật ${team.name} thành ${nextReputation} sao trên trình duyệt này.`);
+        alert(`Đã cập nhật ${team.name} thành ${team.reputation} sao trên Supabase. Mọi máy sẽ thấy sau khi tải lại trang.`);
     }
 
     document.getElementById("reputationTeamSelect")?.addEventListener("change", renderSelectedReputation);
     document.getElementById("decreaseReputationBtn")?.addEventListener("click", function () {
-        changeSelectedReputation(-1);
+        void changeSelectedReputation(-1);
     });
     document.getElementById("increaseReputationBtn")?.addEventListener("click", function () {
-        changeSelectedReputation(1);
+        void changeSelectedReputation(1);
     });
 
     // --- BỔ SUNG DOANH THU KỲ TRỄ ---

@@ -1,10 +1,10 @@
 HƯỚNG DẪN DEMO HỆ THỐNG SAO CỦA QUÁN
 =====================================
 
-1. MỨC SAO MẶC ĐỊNH SAU KHI DEPLOY
+1. CÀI ĐẶT ĐỒNG BỘ SAO LẦN ĐẦU
 
 - Team A - The Vortex Coffee - Nguyễn Văn Bảo: 2 sao
-- Team B - Chuột Ôm Cheese Coffee: 1 sao
+- Team B - Chuột Ôm Cheese Coffee: 2 sao
 - Team C - AUREXA Coffee: 1 sao
 - Team D - Tabulous Beasts: 1 sao
 - Team E - Ngự Hoa Viên: 1 sao
@@ -12,36 +12,27 @@ HƯỚNG DẪN DEMO HỆ THỐNG SAO CỦA QUÁN
 - Team G - 7-Byte Brew - Ngô Văn Quân: 2 sao
 - Team H - Fortuna (Rise & Concordia) - Nguyễn Trọng Nhân: 2 sao
 
-Các giá trị trên được hardcode trong biến HARDCODED_CAFE_REPUTATIONS tại:
-scripts/utils/reputationStorage.js
+Trước khi deploy giao diện, mở Supabase SQL Editor và chạy toàn bộ file:
 
-Vì cấu hình nằm trong source code, tất cả người truy cập bản Vercel sau khi
-deploy sẽ nhìn thấy mức sao mặc định giống nhau.
+scripts/supabase/reputation_sync.sql
 
-2. THỨ TỰ ƯU TIÊN DỮ LIỆU
+Script tạo RPC set_team_reputation, bảo vệ thao tác ghi bằng vai trò admin,
+và đưa năm quán A, B, F, G, H từ mức mặc định 1 sao lên 2 sao. Dữ liệu nguồn là
+cột public.teams.reputation.
 
-Khi trang quán được mở, hệ thống chọn mức sao theo thứ tự:
+2. DỮ LIỆU ĐƯỢC ĐỌC Ở ĐÂU
 
-1) Nếu trình duyệt đã từng nâng/hạ sao trong Admin, dùng giá trị localStorage.
-2) Nếu chưa có giá trị localStorage, dùng cấu hình hardcode theo team A-H.
-3) Với team không có trong cấu hình, mới dùng giá trị fallback.
-
-Vì vậy cấu hình hardcode là mức mặc định chung sau deploy. Thao tác trong Admin
-chỉ là lớp ghi đè để demo trên một trình duyệt, không ghi vào Supabase.
+Khi mở bất kỳ trang quán nào, giao diện đọc trực tiếp cột reputation của quán
+trong Supabase. localStorage cũ không còn được ưu tiên, nên một máy không thể
+tự đè mức sao đang dùng chung.
 
 3. ADMIN NÂNG/HẠ SAO HOẠT ĐỘNG NHƯ THẾ NÀO
 
 - Admin chọn quán và bấm "Nâng 1 sao" hoặc "Hạ 1 sao".
-- Trình duyệt lưu một object theo team_id vào localStorage với khóa:
-  cafe-reputation-overrides-v1
-- Tất cả link quán trên cùng domain và cùng trình duyệt sẽ đọc được giá trị này.
-- Giá trị vẫn còn sau khi tải lại trang.
-- Trình duyệt hoặc thiết bị khác vẫn thấy cấu hình hardcode mặc định.
-
-Muốn xóa toàn bộ thay đổi demo trên trình duyệt, mở DevTools Console và chạy:
-
-localStorage.removeItem("cafe-reputation-overrides-v1");
-location.reload();
+- Admin gọi RPC set_team_reputation để cập nhật public.teams.reputation.
+- Chỉ tài khoản có app_metadata.role = "admin" mới chạy được RPC.
+- Tất cả quán và tất cả thiết bị sẽ thấy kết quả sau khi tải lại trang.
+- Thay đổi không tác động số coin, nhật ký coin, kết toán hoặc đơn hàng.
 
 4. SAO ẢNH HƯỞNG ĐẾN ĐƠN HÀNG
 
@@ -51,9 +42,10 @@ location.reload();
 - 4 sao: 500 coin / 10 đơn = 50 coin mỗi đơn thường
 - 5 sao: 600 coin / 10 đơn = 60 coin mỗi đơn thường
 
-Đơn đặc biệt không dùng công thức trên và luôn hiện "Từ 200-1000 coin".
+Đơn đặc biệt không dùng công thức trên và luôn hiện "Từ 200-800 coin".
 
-5. MUỐN ĐỔI MỨC MẶC ĐỊNH CHO MỌI NGƯỜI
+5. ĐỔI SAO SAU KHI DEPLOY
 
-Sửa số sao của team cần đổi trong HARDCODED_CAFE_REPUTATIONS, commit, push và
-deploy lại Vercel. Không cần chạy SQL cho phần sao.
+Đăng nhập Admin > Quản lý sao, chọn quán rồi bấm "Nâng 1 sao" hoặc "Hạ 1 sao".
+Không cần sửa HTML hay deploy lại. Nếu một máy từng thử nâng/hạ sao theo phiên
+bản cũ, hãy thực hiện lại một lần ở Admin để ghi mức đó vào Supabase.
