@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const choices = [
             {
                 value: "",
-                label: `${currentWeek.title} (đang diễn ra) · tính vào doanh thu tuần này`,
+                label: `${currentWeek.title} (đang diễn ra) · ghi biến động của tuần này`,
             },
             ...completedWeeks.map((period) => ({
                 value: period.periodStartKey,
@@ -548,7 +548,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             const teamId = teamSelect?.value;
             const pointsToAdd = Number(pointsInput?.value);
             const reason = reasonInput?.value.trim() || "";
-            const settlementPeriodStart = pointsToAdd > 0 ? periodSelect?.value || "" : "";
+            const settlementPeriodStart = periodSelect?.value || "";
             const addPointsBtn = this;
 
             if (!teamId || !Number.isInteger(pointsToAdd) || pointsToAdd === 0) {
@@ -571,8 +571,8 @@ document.addEventListener("DOMContentLoaded", async function () {
             addPointsBtn.disabled = true;
             addPointsBtn.textContent = "Đang cập nhật...";
 
-            // Chọn một kỳ đã hoàn tất sẽ tăng số dư một lần, đồng thời gán chính
-            // giao dịch đó vào kỳ đã chọn để không lọt vào doanh thu tuần hiện tại.
+            // Chọn một kỳ đã hoàn tất sẽ đổi số dư đúng một lần, đồng thời gán
+            // khoản cộng vào doanh thu hoặc khoản trừ vào chi phí của kỳ đó.
             const rpcName = settlementPeriodStart
                 ? "add_points_to_team_for_settlement_period"
                 : "add_points_to_team";

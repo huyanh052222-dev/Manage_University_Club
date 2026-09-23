@@ -33,7 +33,7 @@ export const renderCafeHero = ({ isVisiting = false } = {}) => {
         </div>
         <div class="cafe-score-grid${isVisiting ? " visitor-score-grid" : ""}">
           <div class="cafe-score-item" aria-label="Uy tín quán: ${club.reputation} trên ${MAX_REPUTATION_STARS} sao"><span>Uy tín quán</span><strong class="stars">${renderReputationStars(club.reputation)}</strong></div>
-          ${isVisiting ? "" : `<button class="cafe-score-item development-feature" type="button" data-development-feature="Xếp hạng CLB đang được phát triển." data-development-message="Tính năng đang phát triển" aria-label="Xếp hạng CLB: 0, tính năng đang phát triển"><span>Xếp hạng CLB</span><strong>0 / 0</strong></button>
+          ${isVisiting ? "" : `<button class="cafe-score-item development-feature" type="button" data-development-feature="Xếp hạng đang được phát triển." data-development-message="Tính năng đang phát triển" aria-label="Xếp hạng: 0, tính năng đang phát triển"><span>Xếp hạng CLB</span><strong>0 / 0</strong></button>
           <button class="cafe-score-item development-feature" type="button" data-development-feature="Mức độ hài lòng đang được phát triển." data-development-message="Tính năng đang phát triển" aria-label="Khách hàng hài lòng: 0 phần trăm, tính năng đang phát triển"><span>Khách hàng hài lòng</span><strong class="satisfaction">${icon("smile")} 0%</strong></button>
           `}
         </div>
