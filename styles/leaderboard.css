@@ -4,6 +4,41 @@
   gap: 18px;
 }
 
+.leaderboard-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.return-origin-ranking-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 5px 12px;
+  color: var(--brown);
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  background: #fff;
+  transition: all var(--transition);
+}
+
+.return-origin-ranking-link:hover {
+  background: var(--brown);
+  border-color: var(--brown);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.return-origin-ranking-link .icon {
+  width: 14px;
+  height: 14px;
+}
+
 .leaderboard-callout {
   display: flex;
   align-items: center;
@@ -221,6 +256,15 @@
   white-space: nowrap;
 }
 
+.leaderboard-view .lb-origin-badge {
+  background: #e2f0dc;
+  color: #2b5523;
+}
+
+.leaderboard-view .lb-row.is-origin-team {
+  background: linear-gradient(90deg, #f3faef, #fffdfa);
+}
+
 .leaderboard-view .lb-reputation .stars {
   font-size: 13px;
   letter-spacing: 1px;
@@ -289,6 +333,20 @@
 .leaderboard-view .lb-visit-link .icon {
   width: 13px;
   height: 13px;
+}
+
+.leaderboard-view .lb-return-home-link {
+  background: #edf6eb;
+  border-color: #aed5a6;
+  color: #274f20;
+  font-weight: 700;
+}
+
+.leaderboard-view .lb-return-home-link:hover {
+  background: #274f20;
+  border-color: #274f20;
+  color: #fff;
+  transform: translateX(-2px);
 }
 
 .leaderboard-view .lb-current-pill {

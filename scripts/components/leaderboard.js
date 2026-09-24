@@ -1,5 +1,5 @@
 import { club, leaderboardTeams } from "../data/dashboard.js";
-import { getTeamLandingUrl } from "../routes/teamRoutes.js?v=cafe-visit";
+import { getCafeVisitUrl, getTeamLandingUrl } from "../routes/teamRoutes.js?v=cafe-visit";
 import { escapeHtml, formatNumber } from "../utils/format.js";
 import { icon } from "./icons.js";
 import { renderReputationStars } from "./cafeHero.js";
@@ -7,8 +7,13 @@ import { renderReputationStars } from "./cafeHero.js";
 export const renderLeaderboardView = ({
   isVisiting = false,
   currentTeamId = "A",
+  originTeamId = "",
   localStaticServer = false,
 } = {}) => {
+  const returnRankingUrl = originTeamId
+    ? `${getTeamLandingUrl(originTeamId, { localStaticServer })}#ranking`
+    : "#ranking";
+
   const maxPts = leaderboardTeams.length > 0 && leaderboardTeams[0].pts > 0
     ? leaderboardTeams[0].pts
     : 1;
@@ -35,7 +40,14 @@ export const renderLeaderboardView = ({
     <section class="management-view leaderboard-view" aria-labelledby="leaderboard-view-title">
       <header class="management-heading">
         <div>
-          <button class="back-link" type="button" data-action="back-overview">${icon("arrowLeft")} Quay lại tổng quan</button>
+          <div class="leaderboard-nav-actions">
+            <button class="back-link" type="button" data-action="back-overview">${icon("arrowLeft")} Quay lại tổng quan</button>
+            ${isVisiting && originTeamId ? `
+              <a class="back-link return-origin-ranking-link" href="${returnRankingUrl}">
+                ${icon("award")} Quay về BXH quán chính
+              </a>
+            ` : ""}
+          </div>
           <h2 id="leaderboard-view-title">Bảng xếp hạng các quán</h2>
           <p>Thành tích điểm coin và thứ tự xếp hạng của 8 quán café sinh viên.</p>
         </div>
@@ -74,11 +86,18 @@ export const renderLeaderboardView = ({
               const rankIcon = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : rank;
               const barWidth = Math.max(6, Math.min(100, Math.round(((team.pts || 0) / maxPts) * 100)));
               const isCurrentTeam = String(team.id).toUpperCase() === String(currentTeamId).toUpperCase();
-              const teamUrl = getTeamLandingUrl(team.id, { localStaticServer });
-              const currentTagText = isVisiting ? "Quán đang ghé" : "Quán của bạn";
+              const isOriginTeam = isVisiting && originTeamId && String(team.id).toUpperCase() === String(originTeamId).toUpperCase();
+              const originForVisit = originTeamId || currentTeamId;
+              const teamUrl = isOriginTeam
+                ? `${getTeamLandingUrl(originTeamId, { localStaticServer })}#ranking`
+                : `${getCafeVisitUrl(team.id, originForVisit, { localStaticServer })}&src=ranking`;
+
+              const currentTagText = isVisiting
+                ? (isCurrentTeam ? "Quán đang ghé" : "Quán của bạn")
+                : "Quán của bạn";
 
               return `
-                <article class="lb-row${isCurrentTeam ? " is-current-team" : ""}" data-team-id="${escapeHtml(team.id)}">
+                <article class="lb-row${isCurrentTeam ? " is-current-team" : ""}${isOriginTeam ? " is-origin-team" : ""}" data-team-id="${escapeHtml(team.id)}">
                   <div class="lb-rank ${rankClass}" aria-label="Hạng ${rank}">
                     <span class="lb-rank-badge">${rankIcon}</span>
                   </div>
@@ -90,7 +109,7 @@ export const renderLeaderboardView = ({
                     <div class="lb-team-info">
                       <div class="lb-team-name-row">
                         <strong class="lb-team-name">${escapeHtml(team.name)}</strong>
-                        ${isCurrentTeam ? `<span class="lb-current-badge">${currentTagText}</span>` : ""}
+                        ${isCurrentTeam ? `<span class="lb-current-badge">${currentTagText}</span>` : isOriginTeam ? `<span class="lb-current-badge lb-origin-badge">Quán của bạn</span>` : ""}
                       </div>
                       <small class="lb-team-meta">Nhóm ${escapeHtml(team.id)}</small>
                     </div>
@@ -110,6 +129,10 @@ export const renderLeaderboardView = ({
                   <div class="lb-action-col">
                     ${isCurrentTeam ? `
                       <span class="lb-current-pill">Đang mở</span>
+                    ` : isOriginTeam ? `
+                      <a class="lb-visit-link lb-return-home-link" href="${teamUrl}">
+                        ${icon("arrowLeft")} Về lại quán
+                      </a>
                     ` : `
                       <a class="lb-visit-link" href="${teamUrl}">
                         Ghé thăm ${icon("arrowRight")}

@@ -30,7 +30,11 @@ document.body.classList.toggle("visitor-mode", visitContext.isVisiting);
 
 const renderApp = () => {
   elements.sidebar.innerHTML = renderSidebar(visitContext);
-  elements.topbar.innerHTML = renderTopbar({ isVisiting: visitContext.isVisiting });
+  elements.topbar.innerHTML = renderTopbar({
+    isVisiting: visitContext.isVisiting,
+    originTeamId: visitContext.originTeamId,
+    localStaticServer: visitContext.localStaticServer,
+  });
   renderCurrentView();
 };
 
@@ -63,7 +67,12 @@ const setPageHeading = (title, subtitle) => {
 };
 
 const renderOverviewView = () => {
-  elements.dashboard.innerHTML = renderDashboard({ isVisiting: visitContext.isVisiting });
+  elements.dashboard.innerHTML = renderDashboard({
+    isVisiting: visitContext.isVisiting,
+    originTeamId: visitContext.originTeamId,
+    localStaticServer: visitContext.localStaticServer,
+    visitSource: visitContext.visitSource,
+  });
   const weekContext = getCafeWeekContext();
   setPageHeading(
     visitContext.isVisiting ? `Ghé thăm ${club.name}` : weekContext.title,
@@ -88,6 +97,7 @@ const renderRankingView = () => {
   elements.dashboard.innerHTML = renderLeaderboardView({
     isVisiting: visitContext.isVisiting,
     currentTeamId: visitContext.currentTeamId,
+    originTeamId: visitContext.originTeamId,
     localStaticServer: visitContext.localStaticServer,
   });
   const rankLabel = club.ranking > 0 ? `Hạng ${club.ranking} / ${club.totalTeams || 8}` : "Thứ hạng các quán";

@@ -74,15 +74,18 @@ export const getTeamLandingUrl = (teamId, { localStaticServer = false } = {}) =>
 
 export const getCafeVisitContext = ({ pathname = "", search = "", hostname = "", fallback = "A" } = {}) => {
   const currentTeamId = getTeamIdFromLocation({ pathname, search, fallback });
-  const requestedOriginTeamId = getTeamIdFromRouteToken(getSearchParams(search).get("from"));
+  const searchParams = getSearchParams(search);
+  const requestedOriginTeamId = getTeamIdFromRouteToken(searchParams.get("from"));
   const originTeamId = requestedOriginTeamId && requestedOriginTeamId !== currentTeamId
     ? requestedOriginTeamId
     : "";
+  const visitSource = searchParams.get("src") || searchParams.get("from_src") || "";
 
   return {
     currentTeamId,
     originTeamId,
     isVisiting: Boolean(originTeamId),
+    visitSource,
     localStaticServer: ["localhost", "127.0.0.1"].includes(hostname),
   };
 };
