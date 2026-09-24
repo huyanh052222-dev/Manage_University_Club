@@ -1,4 +1,4 @@
-import { DEFAULT_CAFE_REPUTATION, MAX_CAFE_REPUTATION, cafeStats, club, finance, members, orders, transactionLogs, weeklyCoinSummary } from "../data/dashboard.js";
+import { DEFAULT_CAFE_REPUTATION, MAX_CAFE_REPUTATION, cafeStats, club, finance, leaderboardTeams, members, orders, transactionLogs, weeklyCoinSummary } from "../data/dashboard.js";
 import { getTeamIdFromLocation } from "../routes/teamRoutes.js?v=cafe-visit";
 import { getCafeWeekStart, getLastCompletedCafeWeek, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=monday-cycle";
 import { resolveCafeName } from "../utils/cafeNames.js?v=the-vortex-the-ora";
@@ -57,6 +57,7 @@ const resetSharedData = (teamId) => {
     members.splice(0, members.length);
     orders.splice(0, orders.length, ...createWeeklyOrders(new Date(), teamId));
     transactionLogs.splice(0, transactionLogs.length);
+    leaderboardTeams.splice(0, leaderboardTeams.length);
     Object.assign(weeklyCoinSummary, {
         totalIncome: 0,
         totalExpense: 0,
@@ -74,6 +75,7 @@ const resetSharedData = (teamId) => {
         startingFund: 0,
         reputation: DEFAULT_CAFE_REPUTATION,
         ranking: 0,
+        totalTeams: 8,
         satisfaction: 0,
     });
     Object.assign(finance, {
@@ -240,13 +242,37 @@ export const loadDashboardData = async ({ visitorMode = false } = {}) => {
         ? "id, name, reputation, member_limit"
         : "*";
 
+    const allTeamsQuery = supabase
+        .from("teams")
+        .select("id, name, points, reputation, icon, color, bg")
+        .order("points", { ascending: false });
+
     try {
-        const [teamResult, memberResult, transactionResult, settlementResult] = await Promise.all([
+        const [teamResult, memberResult, transactionResult, settlementResult, allTeamsResult] = await Promise.all([
             supabase.from("teams").select(teamColumns).eq("id", teamId).maybeSingle(),
             supabase.from("members").select("*").eq("team_id", teamId).order("name", { ascending: true }),
             transactionQuery,
             settlementQuery,
+            allTeamsQuery,
         ]);
+
+        const resolvedAllTeams = (allTeamsResult.data || []).map((t) => ({
+            ...t,
+            name: resolveCafeName(t),
+            pts: numberOrZero(t.points),
+            reputation: clamp(
+                numberOrDefault(t.reputation, DEFAULT_CAFE_REPUTATION),
+                DEFAULT_CAFE_REPUTATION,
+                MAX_CAFE_REPUTATION,
+            ),
+        }));
+        leaderboardTeams.splice(0, leaderboardTeams.length, ...resolvedAllTeams);
+
+        const currentRankIndex = resolvedAllTeams.findIndex((t) => String(t.id) === String(teamId));
+        if (currentRankIndex >= 0) {
+            club.ranking = currentRankIndex + 1;
+            club.totalTeams = resolvedAllTeams.length;
+        }
 
         const team = teamResult.data;
         const resolvedMembers = (memberResult.data || [])

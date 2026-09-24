@@ -118,9 +118,8 @@
 .visitor-notice strong { font-size: 12px; }
 .visitor-notice p { margin: 3px 0 0; color: #70826f; font-size: 10px; line-height: 1.45; }
 
-.visitor-detail-grid { grid-template-columns: minmax(280px, .82fr) minmax(420px, 1.18fr); }
-.visitor-score-grid { grid-template-columns: 1fr; }
-.visitor-score-grid .cafe-score-item { border-right: 0; }
+.visitor-score-grid { grid-template-columns: 1fr 1fr; }
+.visitor-score-grid .cafe-score-item:last-child { border-right: 0; }
 
 .visitor-order-lock {
   display: flex;

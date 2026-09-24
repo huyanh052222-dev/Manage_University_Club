@@ -25,5 +25,5 @@ if (isAdminLoginHash) {
 } else {
   appRoot.innerHTML = renderCafePage();
 
-  await import("./app.js?v=20260923-reputation-supabase-v1");
+  await import("./app.js?v=20260923-ranking-v1");
 }

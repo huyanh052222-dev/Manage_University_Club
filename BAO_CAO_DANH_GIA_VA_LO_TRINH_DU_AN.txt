@@ -1,0 +1,406 @@
+================================================================================
+BÁO CÁO TOÀN DIỆN VỀ CẤU TRÚC DỰ ÁN, CÁC ĐIỂM CẦN SỬA, THÊM, UPDATE
+VÀ TRIỂN VỌNG PHÁT TRIỂN HỆ THỐNG CAFE HORIZON (MANAGE UNIVERSITY CLUB)
+================================================================================
+Thời gian lập báo cáo: 23/09/2026
+Phiên bản phân tích: Branch main (commit 885cbfa)
+Mã nguồn: /Users/huy/QuanLy HTML (Manage_University_Club)
+
+--------------------------------------------------------------------------------
+MỤC LỤC:
+1. TỔNG QUAN KIẾN TRÚC VÀ CẤU TRÚC THƯ MỤC DỰ ÁN
+2. NHỮNG ĐIỂM CẦN SỬA (BUGS, XUNG ĐỘT LOGIC & RỦI RO KỸ THUẬT)
+3. NHỮNG ĐIỂM CẦN THÊM (FEATURES MỚI CẦN THIẾT CHO VẬN HÀNH)
+4. NHỮNG ĐIỂM CẦN UPDATE (REFACTORING, HIỆN ĐẠI HÓA & TỐI ƯU HỆ THỐNG)
+5. TRIỂN VỌNG PHÁT TRIỂN & LỘ TRÌNH THỰC HIỆN CHI TIẾT (ROADMAP)
+--------------------------------------------------------------------------------
+
+
+================================================================================
+1. TỔNG QUAN KIẾN TRÚC VÀ CẤU TRÚC THƯ MỤC DỰ ÁN
+================================================================================
+
+1.1. Bản chất và Mục tiêu Dự án:
+- Dự án là hệ thống Dashboard quản lý và theo dõi vận hành 8 quán café sinh viên
+  thuộc Câu lạc bộ Sinh Viên (gồm các quán từ Team A đến Team H: The Vortex Coffee,
+  Chuột Ôm Cheese Coffee, AUREXA Coffee, Tabulous Beasts, Ngự Hoa Viên, The Ora
+  café, 7-Byte Brew, Fortuna).
+- Mục tiêu: Minh họa và theo dõi hoạt động kinh doanh giả lập/thực chiến: doanh
+  thu, chi phí vận hành hàng tuần, quỹ tiền mặt (coin), uy tín (1-5 sao), nhân sự,
+  và phân bổ đơn hàng đồ uống hàng tuần.
+- Nền tảng kỹ thuật hiện tại:
+  + Frontend: Vanilla HTML5, CSS3 thuần (Tokens, Flexbox/Grid), JavaScript ES Modules.
+    Không sử dụng Node.js package build (không có package.json, không bundler).
+  + Backend as a Service: Supabase (PostgreSQL, Supabase Auth, Row Level Security,
+    các hàm Stored Procedure / RPC viết bằng PL/pgSQL).
+  + Deployment: Static hosting trên Vercel qua cấu hình định tuyến vercel.json.
+
+1.2. Sơ đồ Cây thư mục và Chức năng từng phần:
+.
+├── index.html                   Entry point chính của Landing Page dashboard quán.
+├── vercel.json                  Cấu hình URL rewrite cho Vercel (định tuyến 8 quán, admin).
+├── README.md                    Tài liệu hướng dẫn vận hành, công thức tài chính và demo.
+├── HUONG_DAN_DEMO_SAO.txt       Hướng dẫn chi tiết luồng đồng bộ uy tín 1-5 sao.
+├── admin/                       Các alias chuyển hướng (index.html, login/index.html).
+├── assets/images/               Chứa ảnh banner quán (cafe-horizon-hero.jpg, .png).
+├── pages/
+│   ├── admin/                   Giao diện và logic dành riêng cho Ban Quản Trị (Admin):
+│   │   ├── login.html & login.js    Trang đăng nhập Admin (Supabase Auth).
+│   │   ├── admin.html & admin.js    Admin Panel: Bảng xếp hạng, cộng/trừ coin,
+│   │   │                            quản lý sao, chốt/gán kỳ trễ.
+│   │   ├── admin.css                Stylesheet riêng cho trang quản trị.
+│   │   └── adminRoutes.js           Định nghĩa đường dẫn điều hướng của admin.
+│   └── cafes/                   Trang danh bạ công khai 8 quán (/cafes):
+│       ├── index.html               Hiển thị danh sách 8 quán, chủ quán và link mở.
+│       ├── cafes.js                 Xử lý chuyển đổi link khi chạy localhost.
+│       └── cafes.css                Stylesheet danh bạ quán.
+├── scripts/
+│   ├── main.js                  Entry script: kiểm tra route token, mount cafePage.
+│   ├── app.js                   Controller điều phối render, sự kiện click, modal, view.
+│   ├── components/              Các module tạo thành phần giao diện (UI Components):
+│   │   ├── cafeHero.js              Banner hero ảnh quán, tên, uy tín, kinh nghiệm.
+│   │   ├── cafeStats.js             4 thẻ chỉ số nhanh: Nhân sự, Đơn hàng, Năng lượng, Uy tín.
+│   │   ├── cafeTip.js               Mẹo vận hành nhỏ dưới chân trang.
+│   │   ├── cafeVisitCard.js         Thành phần ghé thăm quán khác (đang bị comment).
+│   │   ├── coinManagement.js        Form điều chỉnh coin (legacy, không còn dùng).
+│   │   ├── dashboard.js             Khung layout gom các component của Dashboard.
+│   │   ├── icons.js                 Tập hợp icon SVG dạng hàm inline.
+│   │   ├── loginPage.js             Component render form đăng nhập admin.
+│   │   ├── memberDirectory.js       Giao diện danh sách hồ sơ nhân sự đầy đủ (#personnel).
+│   │   ├── memberOverview.js        Thẻ tóm tắt 4 thành viên hiển thị trên Dashboard.
+│   │   ├── orders.js                Danh sách đơn hàng tuần (đặc biệt & thường).
+│   │   ├── sidebar.js               Thanh menu bên trái và điều hướng.
+│   │   ├── topbar.js                Thanh bar trên: tuần, tiền mặt, doanh thu, chi phí, lợi nhuận.
+│   │   ├── transactionLog.js        Bảng nhật ký biến động coin và tổng kết coin vào/ra.
+│   │   ├── weeklyCosts.js           Modal & popover chi tiết chi phí cố định + lương.
+│   │   └── weeklyProfit.js          Modal & popover chi tiết lợi nhuận kết toán tuần cũ.
+│   ├── data/
+│   │   └── dashboard.js             State dùng chung toàn client và các object mặc định.
+│   ├── pages/
+│   │   └── cafePage.js              Template HTML khung cho trang quán.
+│   ├── routes/
+│   │   └── teamRoutes.js            Giải mã token định danh URL (/cafe/zzha...) ra Team A-H.
+│   ├── services/                    Tầng kết nối và xử lý nghiệp vụ:
+│   │   ├── authService.js           Đăng nhập/đăng xuất Admin qua Supabase Auth.
+│   │   ├── coinLedger.js            Xử lý coin in-memory cũ (legacy, không còn dùng).
+│   │   ├── dashboardData.js         Fetch toàn bộ data từ Supabase về client store.
+│   │   ├── weeklyCosts.js           Tính toán chi phí tuần: 200 cố định + 20*nhân viên.
+│   │   ├── weeklyOrders.js          Sinh ngẫu nhiên có hạt giống danh sách đơn hàng tuần.
+│   │   └── weeklyProfit.js          Bóc tách thông tin kỳ kết toán đã chốt.
+│   ├── supabase/                    Kết nối Supabase và các script di chuyển dữ liệu:
+│   │   ├── supabase.js              Khởi tạo client Supabase với URL và anon key.
+│   │   └── *.sql                    11 file migration SQL (schema, deduct, reputation,...)
+│   ├── ui/
+│   │   └── feedback.js              Xử lý Modal dialog và Toast notification.
+│   └── utils/                       Các hàm tiện ích:
+│       ├── cafeNames.js             Chuẩn hóa tên quán (The Vortex, The Ora,...).
+│       ├── cafeWeek.js              Tính toán tuần hiện tại, chu kỳ Thứ Hai - Chủ nhật.
+│       ├── format.js                Format tiền tệ, số, ngày tháng, escape HTML.
+│       ├── order.js                 Format deadline, nhãn đơn hàng, link Zalo.
+│       └── reputationStorage.js     Xử lý override sao qua localStorage cũ (legacy).
+└── styles/                          Hệ thống CSS phân tầng:
+    ├── tokens.css                   Khai báo biến màu sắc, typography, spacing.
+    ├── base.css                     Reset CSS và nền tảng giao diện.
+    ├── layout.css                   Bố cục App Shell, Sidebar, Main Content, Grid.
+    ├── components.css               Styles cho từng thẻ, card, nút, hero.
+    ├── auth.css                     Styles cho trang login Admin.
+    ├── member-directory.css         Styles cho trang danh bạ nhân sự.
+    ├── responsive.css               Media queries cho tablet và mobile.
+    ├── visitor.css                  Styles riêng cho chế độ xem công khai (ghé thăm).
+    └── index.css                    File gom toàn bộ stylesheet của ứng dụng.
+
+
+================================================================================
+2. NHỮNG ĐIỂM CẦN SỬA (BUGS, XUNG ĐỘT LOGIC & RỦI RO KỸ THUẬT)
+================================================================================
+
+[!] ĐIỂM SỬA 1: Xung đột nghiêm trọng về số lượng đơn hàng (5 đơn vs 10 đơn)
+- Hiện trạng:
+  + Trong commit gần nhất (098c046), WEEKLY_ORDER_TOTAL trong file
+    `scripts/services/weeklyOrders.js` bị sửa thành 5 đơn:
+    `export const WEEKLY_ORDER_TOTAL = 5;`
+  + Tuy nhiên, trong `scripts/components/orders.js` dòng 67 vẫn hiển thị cứng:
+    `<p>Thứ Hai–Thứ Bảy · 10 đơn · Đơn thường ${formatNumber(regularOrderReward)} coin</p>`
+  + Trong `pages/admin/admin.js` dòng 189 vẫn ghi text:
+    `Doanh thu tối đa / 10 đơn thường`, trong khi dòng 230 lại hiển thị: `coin/5 đơn`.
+  + Trong `README.md` và `HUONG_DAN_DEMO_SAO.txt`: Toàn bộ công thức tài chính và
+    hướng dẫn đều ghi là "10 đơn mỗi tuần" với mức chia thưởng:
+    1 sao: 200/10 = 20 coin/đơn; 2 sao: 300/10 = 30 coin/đơn; ... 5 sao = 60 coin/đơn.
+  + Do `WEEKLY_ORDER_TOTAL` bị đổi thành 5, hàm `getRegularOrderReward` đang chia
+    cho 5, dẫn đến tiền thưởng đơn thường bị đội lên gấp đôi (40, 60, 80, 100, 120 coin/đơn).
+- Cần sửa: Thống nhất một con số duy nhất trong toàn hệ thống (hoặc là 5 đơn hoặc
+  là 10 đơn), sửa lại toàn bộ nhãn hiển thị ở `orders.js`, `admin.js`, `admin.html`,
+  và cập nhật chính xác tài liệu `README.md` cùng công thức phân bổ coin.
+
+[!] ĐIỂM SỬA 2: Cơ chế kích hoạt kết toán tuần (Weekly Settlement) hoàn toàn phụ thuộc
+vào trình duyệt của Admin
+- Hiện trạng:
+  + Hàm `deduct_weekly_coins()` chỉ được gọi khi Admin đăng nhập và mở trang
+    `pages/admin/admin.html` (chạy qua `window.setInterval` 30 giây hoặc khi load trang).
+  + Nếu vào sáng Thứ Hai, Admin không mở trình duyệt hoặc quên đăng nhập, toàn bộ
+    8 quán sẽ KHÔNG được kết toán kỳ cũ và KHÔNG bị trừ chi phí vận hành tuần mới.
+  + Hậu quả: Dashboard các quán sẽ hiện trạng thái "Chờ kết toán trễ", dữ liệu
+    lợi nhuận bị treo và số dư tiền mặt bị sai lệch so với thực tế.
+- Cần sửa: Phải chuyển tác vụ này sang tự động hóa ở Backend (Database Server-side):
+  + Cách 1 (Khuyến nghị cao): Cấu hình extension `pg_cron` trực tiếp trên Supabase
+    để chạy hàm `deduct_weekly_coins` đúng 00:00 Thứ Hai hàng tuần.
+  + Cách 2: Thiết lập một cron trigger từ bên ngoài (Vercel Cron hoặc GitHub Actions
+    Workflow) gọi đến một Supabase Edge Function được bảo vệ bằng secret key.
+
+[!] ĐIỂM SỬA 3: Lỗ hổng bảo mật và lộ lọt dữ liệu tài chính qua chính sách RLS
+- Hiện trạng:
+  + File `scripts/supabase/supabase.js` công khai `supabaseKey` (anon key). Điều này
+    là chuẩn với client-side frontend.
+  + Tuy nhiên, trong `scripts/supabase/schema.sql`, chính sách bảo mật tầng dòng
+    (Row Level Security - RLS) cho phép anon đọc TOÀN BỘ dữ liệu:
+    `create policy "public_read_coin_transactions" on public.coin_transactions for select to anon, authenticated using (true);`
+    `create policy "public_read_weekly_financial_settlements" on public.weekly_financial_settlements for select to anon, authenticated using (true);`
+  + Mặc dù ở tầng giao diện, code `dashboardData.js` khi ở chế độ ghé thăm (visitor)
+    không gửi query lấy transactions, nhưng bất kỳ ai chỉ cần mở F12 Console đều
+    có thể truy vấn xem toàn bộ nhật ký giao dịch, chi phí, doanh thu, lý do cộng/trừ
+    tiền của toàn bộ các quán khác.
+- Cần sửa: Điều chỉnh RLS policy trên Supabase:
+  + Chỉ cho phép anon đọc dữ liệu public của quán (tên, logo, sao, danh sách thành viên).
+  + Khóa hoàn toàn quyền đọc `coin_transactions` và `weekly_financial_settlements`
+    đối với role `anon`, hoặc chỉ cho phép đọc khi đã xác thực đúng quán (nếu sau này
+    có tài khoản riêng cho từng quán).
+
+[!] ĐIỂM SỬA 4: Tính năng "Ghé thăm quán khác" bị vô hiệu hóa nhưng tài liệu vẫn mô tả
+- Hiện trạng:
+  + Trong commit `8b78af0`, toàn bộ nội dung file `scripts/components/cafeVisitCard.js`
+    đã bị comment out.
+  + Trong `scripts/components/sidebar.js`, lời gọi `${renderCafeVisitCard(visitContext)}`
+    cũng bị comment out.
+  + Nhưng trong `README.md` (dòng 75), tính năng này vẫn được mô tả như một thành phần
+    hoàn chỉnh nằm dưới thanh điều hướng.
+- Cần sửa: Nếu tính năng này là bắt buộc cho buổi demo, cần uncomment, kiểm tra
+  lại đường dẫn và style tương thích; nếu cố tình bỏ thì phải dọn dẹp file và
+  cập nhật lại `README.md` để tránh gây nhầm lẫn cho người sử dụng/giám khảo.
+
+[!] ĐIỂM SỬA 5: Code thừa, rác và tàn dư lịch sử (Dead Code / Technical Debt)
+- Hiện trạng trong dự án có nhiều file và biến hoàn toàn không được sử dụng:
+  + `scripts/components/coinManagement.js`: Component render form cộng trừ coin cũ,
+    hoàn toàn không được import ở bất kỳ đâu.
+  + `scripts/services/coinLedger.js`: Xử lý mock transaction in-memory trước khi
+    chuyển sang Supabase, không nơi nào gọi tới.
+  + `scripts/utils/reputationStorage.js`: Xử lý lưu sao vào `localStorage`, không còn
+    được import (hệ thống đã chuyển sang Supabase `teams.reputation`).
+  + `scripts/data/dashboard.js`: Chứa nhiều dữ liệu mẫu cũ từ template tiền nhiệm
+    không còn mục đích sử dụng như: `groups` (4 nhóm công nghệ/môi trường cũ),
+    `tasks` (các task workshop, tình nguyện cũ), `resources`, `taskTabs`.
+- Cần sửa: Xóa bỏ các file và biến rác này để làm sạch codebase, giảm dung lượng
+  và tránh gây hiểu sai cho lập trình viên mới tiếp cận.
+
+[!] ĐIỂM SỬA 6: Cố định (hardcode) dữ liệu danh bạ quán trong `pages/cafes/index.html`
+- Hiện trạng:
+  + Trang danh bạ 8 quán (`/cafes`) hoàn toàn viết cứng HTML tên quán và tên chủ quán.
+  + Khi tên quán được đổi trên database (như The Vortex Coffee hay The Ora café),
+    hoặc khi một quán đổi chủ, trang này sẽ không đồng bộ và hiển thị sai thông tin.
+- Cần sửa: Viết script hydrate danh sách quán từ bảng `public.teams` và `public.members`
+  (vai trò Quản lý) trên Supabase tương tự như trang chủ Dashboard.
+
+[!] ĐIỂM SỬA 7: Kiểm soát phiên đăng nhập Admin chưa triệt để
+- Hiện trạng:
+  + Trong `pages/admin/admin.js`, việc kiểm tra quyền admin `isAdminAuthenticated()`
+    diễn ra sau khi toàn bộ HTML của trang đã render và tải xuống trình duyệt.
+  + Gặp hiện tượng "chớp giao diện" (FOUC - Flash of Unauthenticated Content) trước
+    khi lệnh `window.location.replace` kịp điều hướng về trang login.
+  + Trạng thái đăng nhập lưu trong `localStorage` mà không có cơ chế tự động logout
+    sau một khoảng thời gian không thao tác (inactivity timeout).
+- Cần sửa: Ẩn phần nội dung chính bằng CSS mặc định (`display: none`), chỉ hiển thị
+  khi `isAdminAuthenticated()` trả về true.
+
+
+================================================================================
+3. NHỮNG ĐIỂM CẦN THÊM (FEATURES MỚI CẦN THIẾT CHO VẬN HÀNH)
+================================================================================
+
+[+] TÍNH NĂNG 1: Luồng Nhận Đơn & Xác Nhận Đơn Hàng Thực Tế (Order Workflow)
+- Hiện trạng: Danh sách đơn hàng hiện chỉ là danh sách sinh ngẫu nhiên để xem, bấm
+  vào chỉ hiện modal xem chi tiết và link Zalo liên hệ.
+- Cần thêm:
+  + Bảng `orders` và `order_completions` đã có sẵn trong database (`schema.sql`).
+  + Thêm nút "Nhận đơn", "Bắt đầu pha chế", "Xác nhận giao hàng".
+  + Cho phép thành viên upload ảnh minh chứng (bill hoặc ly nước đã làm) hoặc
+    yêu cầu mã xác nhận từ khách hàng/NPC.
+  + Khi đơn hoàn thành thành công: Tự động gọi RPC cộng coin vào số dư của quán
+    và ghi vào sổ cái `coin_transactions`.
+
+[+] TÍNH NĂNG 2: Cổng Quản Lý Riêng Cho Từng Quán (Cafe Manager Portal)
+- Hiện trạng: Chỉ có 1 tài khoản Super Admin quản lý toàn bộ 8 quán. Mỗi quán
+  chỉ có một đường dẫn đọc token công khai.
+- Cần thêm:
+  + Phân quyền cấp độ Quán (Team Role): Cho phép mỗi quán có tài khoản riêng
+    (email/mật khẩu hoặc mã PIN riêng).
+  + Trưởng nhóm (Manager) sau khi đăng nhập có thể:
+    * Thêm/sửa danh sách nhân viên của quán mình.
+    * Xem báo cáo tài chính nội bộ riêng tư (không cho các quán khác thấy).
+    * Nhận và trả đơn hàng đồ uống.
+    * Đăng ảnh không gian quán (Hero image) và viết lời chào/slogan.
+
+[+] TÍNH NĂNG 3: Quản Lý Nhân Sự Động (CRUD & Điểm Danh)
+- Hiện trạng: Trang `#personnel` chỉ hiển thị danh sách thành viên tĩnh lấy từ
+  bảng `members`, người dùng không thể tương tác thêm/sửa/xóa.
+- Cần thêm:
+  + Form thêm thành viên mới, phân vai trò: Quản lý (không nhận lương) hoặc
+    Nhân viên (hưởng lương 20 coin/tuần).
+  + Chức năng điểm danh ca làm việc (Attendance Tracking): ghi nhận số buổi làm
+    thực tế để tính lương chính xác vào cuối tuần thay vì cào bằng theo số người.
+
+[+] TÍNH NĂNG 4: Kết Nối Cập Nhật Thời Gian Thực (Supabase Realtime)
+- Hiện trạng: Khi Admin cộng/trừ coin hoặc thay đổi sao, người xem ở Landing Page
+  phải tải lại trang (F5) mới thấy thay đổi.
+- Cần thêm:
+  + Lắng nghe kênh thay đổi qua `supabase.channel()`:
+    * Bảng `teams`: Cập nhật số coin, số sao ngay lập tức khi Admin thao tác.
+    * Bảng `coin_transactions`: Tự động chèn dòng giao dịch mới vào bảng nhật ký
+      kèm hiệu ứng highlight xanh/đỏ sinh động.
+
+[+] TÍNH NĂNG 5: Cơ Chế Gamification & Đánh Giá Của Khách Hàng (Feedback/Rating)
+- Hiện trạng: Trên Hero Card đang để mock: "Khách hàng hài lòng: 0%",
+  "Xếp hạng: 0/0", "Kinh nghiệm: 0/0 XP".
+- Cần thêm:
+  + Tính năng cho khách hàng sinh viên quét QR để đánh giá (1-5 sao, bình luận)
+    sau khi thưởng thức đồ uống.
+  + Tỉ lệ hài lòng (%) và điểm XP sẽ tự động tính từ số đơn hoàn thành đúng hạn
+    và phản hồi thực tế của khách hàng.
+  + Cấp độ quán (Level Up): Quán đạt mốc XP nhất định sẽ được nâng cấp bậc, mở
+    khóa các đặc quyền (ví dụ: mở thêm đơn đặc biệt giá trị cao).
+
+[+] TÍNH NĂNG 6: Bảng Xếp Hạng Công Khai (Public Leaderboard)
+- Hiện trạng: Bảng xếp hạng chỉ nằm trong trang riêng của Admin (`pages/admin/admin.html`),
+  trên Landing Page nút "#ranking" chỉ hiện toast "Tính năng đang được phát triển".
+- Cần thêm:
+  + Tab Bảng xếp hạng công khai ngay trên Landing Page để các quán thấy được thứ
+    hạng doanh thu, lợi nhuận và sao của nhau, kích thích tinh thần thi đua giữa các đội.
+
+[+] TÍNH NĂNG 7: Xuất Báo Cáo Tài Chính (Export Data)
+- Cần thêm: Nút xuất báo cáo ra file Excel (.xlsx), CSV hoặc PDF cho Admin và Quản
+  lý quán để đối soát cuối kỳ, lưu trữ hồ sơ và báo cáo lên Ban chủ nhiệm CLB.
+
+
+================================================================================
+4. NHỮNG ĐIỂM CẦN UPDATE (REFACTORING, HIỆN ĐẠI HÓA & TỐI ƯU HỆ THỐNG)
+================================================================================
+
+[^] UPDATE 1: Hiện Đại Hóa Môi Trường Phát Triển & Công Cụ Build (Build Tooling)
+- Vấn đề: Dự án dùng Vanilla JS nạp qua thẻ `<script type="module">` với hàng loạt
+  query string thủ công để chống cache (ví dụ: `?v=20260923-reputation-supabase-v1`).
+  Cách làm này thủ công, dễ quên đổi phiên bản dẫn đến lỗi cache trên máy người dùng,
+  và không tận dụng được các thư viện npm hiện đại.
+- Giải pháp đề xuất:
+  + Giữ nguyên cấu trúc code hoặc nâng cấp lên Vite + Vanilla JS (hoặc Vite + React/Vue).
+  + Tận dụng Vite để tự động bundle, minify code, tối ưu asset, tự động sinh content hash
+    cho các file tĩnh (`main.[hash].js`), loại bỏ hoàn toàn việc gõ `?v=...` thủ công.
+
+[^] UPDATE 2: Bảo Mật Biến Môi Trường (.env)
+- Vấn đề: `supabaseUrl` và `supabaseKey` đang bị gán cứng (hardcode) trực tiếp
+  trong mã nguồn `scripts/supabase/supabase.js`.
+- Giải pháp: Đưa các thông số này vào file `.env` (ví dụ `VITE_SUPABASE_URL`,
+  `VITE_SUPABASE_ANON_KEY`) và cấu hình Environment Variables trên Vercel. Không
+  commit trực tiếp secret key lên git repo công khai.
+
+[^] UPDATE 3: Chuẩn Hóa và Hợp Nhất Bộ Migration SQL (Database Schema Consolidation)
+- Vấn đề: Thư mục `scripts/supabase/` hiện có tới 11 file SQL rời rạc, chắp vá qua
+  nhiều lần sửa đổi:
+  (`schema.sql`, `weekly_deduction.sql`, `monday_revenue_cycle.sql`,
+   `correct_opening_capital_revenue.sql`, `manual_coin_revenue.sql`,
+   `late_settlement_adjustments.sql`, `manual_deduction_settlement.sql`,
+   `reputation_sync.sql`, `add_coin_reason.sql`, `settlement_log_reason_patch.sql`,
+   `rename_cafes.sql`).
+  Người mới triển khai rất dễ chạy thiếu file hoặc chạy sai thứ tự dẫn đến lỗi thiếu cột,
+  thiếu hàm RPC.
+- Giải pháp:
+  + Gộp lại thành 1 file duy nhất: `00_baseline_schema.sql` chứa toàn bộ bảng, cột,
+    ràng buộc, chính sách RLS và toàn bộ phiên bản mới nhất của các hàm RPC
+    (`add_points_to_team`, `set_team_reputation`, `refresh_late_financial_settlement`,
+     `assign_income_transactions_to_late_settlement`, `deduct_weekly_coins`, v.v.).
+  + Đưa vào tài liệu thứ tự cài đặt rõ ràng 1-click.
+
+[^] UPDATE 4: Đồng Bộ Thư Viện Biểu Tượng (Icon System) & Tối Ưu Tải Trang
+- Vấn đề:
+  + Landing page dùng inline SVG từ file `scripts/components/icons.js`.
+  + Admin Panel lại nạp script Font Awesome từ bên thứ ba (`https://kit.fontawesome.com/c4edd7a73c.js`).
+  + Việc này làm tăng thời gian tải trang và gây không nhất quán về mặt thị giác.
+- Giải pháp: Đồng bộ toàn bộ icon trong dự án về một nguồn duy nhất (sử dụng SVG inline
+  hoặc bộ icon mã nguồn mở như Lucide Icons / Heroicons).
+
+[^] UPDATE 5: Tùy Biến Ảnh Đại Diện (Hero Cover) Riêng Biệt Cho Từng Quán
+- Vấn đề: Trong `scripts/components/cafeHero.js`, cả 8 quán đều nạp chung một file
+  ảnh `/assets/images/cafe-horizon-hero.jpg`.
+- Giải pháp: Thêm cột `cover_image_url` và `logo_url` trong bảng `public.teams` để
+  mỗi quán có bộ nhận diện thương hiệu, hình ảnh góc pha chế riêng biệt.
+
+[^] UPDATE 6: Tối Ưu Trải Nghiệm Người Dùng (UX) & Loading State
+- Vấn đề: Khi mạng chậm, các ô số liệu (tiền mặt, uy tín, nhân sự) sẽ hiện số 0
+  hoặc "Đang tính..." một lúc rồi mới nhảy số, tạo cảm giác giật cục.
+- Giải pháp: Bổ sung hiệu ứng Skeleton Loading (khung xám nhấp nháy) trong lúc
+  chờ Supabase trả về dữ liệu.
+
+
+================================================================================
+5. TRIỂN VỌNG PHÁT TRIỂN & LỘ TRÌNH THỰC HIỆN CHI TIẾT (ROADMAP)
+================================================================================
+
+5.1. Triển vọng ứng dụng thực tế:
+- Dự án có mô hình nghiệp vụ rất thực tế, kết hợp hài hòa giữa "quản lý vận hành"
+  và "yếu tố trò chơi hóa (gamification)".
+- Rất phù hợp để:
+  + Vận hành thực tế các gian hàng café sinh viên trong các hội chợ, tuần lễ sinh
+    viên, câu lạc bộ khởi nghiệp.
+  + Ứng dụng làm nền tảng tổ chức cuộc thi thực chiến kinh doanh (Business Simulation)
+    cho các trường đại học, nơi các đội thi đấu với nhau bằng doanh thu, sự hài lòng
+    của khách hàng và tối ưu chi phí vận hành.
+
+5.2. Lộ trình thực hiện đề xuất (4 Giai đoạn):
+
+--------------------------------------------------------------------------------
+GIAI ĐOẠN 1: ỔN ĐỊNH NỀN TẢNG VÀ CHUẨN HÓA DỮ LIỆU (1 - 2 tuần)
+--------------------------------------------------------------------------------
+Mục tiêu: Sửa dứt điểm các lỗi logic, bảo mật và làm sạch mã nguồn.
+- [ ] Thống nhất số lượng đơn hàng (5 hay 10 đơn) và đồng bộ lại toàn bộ nhãn UI,
+      công thức chia thưởng và tài liệu README.
+- [ ] Dọn dẹp dead code: xóa `coinManagement.js`, `coinLedger.js`, `reputationStorage.js`
+      và dữ liệu thừa trong `dashboard.js`.
+- [ ] Gộp toàn bộ 11 file SQL thành một file baseline migration duy nhất có comment rõ ràng.
+- [ ] Cấu hình Supabase `pg_cron` để tự động hóa chốt tuần vào sáng Thứ Hai, bỏ cơ chế
+      đếm ngược phụ thuộc vào trình duyệt của Admin.
+- [ ] Khóa RLS đối với các bảng tài chính nhạy cảm để ngăn chặn đọc trộm dữ liệu.
+
+--------------------------------------------------------------------------------
+GIAI ĐOẠN 2: PHÂN QUYỀN VẬN HÀNH & TƯƠNG TÁC ĐƠN HÀNG (2 - 4 tuần)
+--------------------------------------------------------------------------------
+Mục tiêu: Đưa hệ thống từ trạng thái "chỉ xem mô phỏng" sang "vận hành thực tế".
+- [ ] Xây dựng hệ thống tài khoản Trưởng nhóm quán (Cafe Manager):
+      Đăng nhập và chỉ xem/quản lý dữ liệu riêng của quán mình.
+- [ ] Xây dựng quy trình xử lý đơn hàng: Nhận đơn -> Pha chế -> Hoàn thành.
+- [ ] Tích hợp tính năng thêm/sửa thành viên cho từng quán.
+- [ ] Tích hợp Supabase Realtime để biến động coin và sao hiển thị tức thì không cần F5.
+- [ ] Mở tab Bảng xếp hạng công khai trên Landing Page.
+
+--------------------------------------------------------------------------------
+GIAI ĐOẠN 3: TƯƠNG TÁC KHÁCH HÀNG & MỞ RỘNG TRẢI NGHIỆM (1 - 2 tháng)
+--------------------------------------------------------------------------------
+Mục tiêu: Thu hút sinh viên đến quán trải nghiệm và chấm điểm.
+- [ ] Tạo trang đánh giá cho khách hàng (quét mã QR trên bàn để chấm điểm, nhận xét).
+- [ ] Tính năng cấp độ quán (XP Level): Quán tích lũy điểm kinh nghiệm để thăng hạng.
+- [ ] Tích hợp bot thông báo (Zalo OA hoặc Telegram Bot) nhắc nhở trưởng quán khi có
+      đơn hàng mới hoặc thông báo chốt ca.
+- [ ] Chức năng xuất báo cáo tài chính (PDF/Excel) cho từng quán và toàn CLB.
+
+--------------------------------------------------------------------------------
+GIAI ĐOẠN 4: ĐÓNG GÓI THÀNH NỀN TẢNG CUỘC THI KHỞI NGHIỆP SINH VIÊN (3 - 6 tháng)
+--------------------------------------------------------------------------------
+Mục tiêu: Đưa dự án thành sản phẩm hoàn chỉnh có thể tái sử dụng cho nhiều sự kiện.
+- [ ] Hiện đại hóa mã nguồn với Vite + React/TailwindCSS để dễ bảo trì mở rộng.
+- [ ] Tạo giao diện tạo mùa giải mới (Season Management): Admin có thể tự tạo các
+      quán mới, cấu hình tiền vốn ban đầu, chi phí cố định và công thức lương linh hoạt.
+- [ ] Đóng gói và phát hành mã nguồn mở (Open Source) cho cộng đồng sinh viên các trường.
+
+================================================================================
+KẾT LUẬN:
+Dự án Cafe Horizon có nền tảng ý tưởng rất tốt, giao diện sáng sủa, ấm áp và logic
+tài chính thực tế. Việc giải quyết các điểm bất cập hiện tại và phát triển theo lộ
+trình trên sẽ giúp dự án chuyển mình từ một bản demo tĩnh thành một nền tảng vận hành
+thực chiến mạnh mẽ, chuyên nghiệp và có giá trị ứng dụng cao.
+================================================================================
