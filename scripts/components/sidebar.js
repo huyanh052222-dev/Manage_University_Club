@@ -3,7 +3,7 @@ import { club, navigationItems } from "../data/dashboard.js";
 import { icon } from "./icons.js";
 
 const renderNavigationMarkup = (isVisiting) => navigationItems
-  .filter((item) => !isVisiting || ["overview", "personnel"].includes(item.id))
+  .filter((item) => !isVisiting || ["overview", "personnel", "ranking"].includes(item.id))
   .map(
     (item, index) => `
       <a class="nav-item${index === 0 ? " active" : ""}" href="#${item.id}" data-nav-id="${item.id}">

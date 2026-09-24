@@ -25,6 +25,7 @@ export const club = {
   startingFund: 0,
   reputation: DEFAULT_CAFE_REPUTATION,
   ranking: 0,
+  totalTeams: 8,
   satisfaction: 0,
 };
 
@@ -70,6 +71,8 @@ export const weeklyCoinSummary = {
 };
 
 export const transactionLogs = [];
+
+export const leaderboardTeams = [];
 
 export const orders = createWeeklyOrders();
 

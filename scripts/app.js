@@ -1,4 +1,5 @@
 import { renderDashboard } from "./components/dashboard.js?v=reputation-rewards";
+import { renderLeaderboardView } from "./components/leaderboard.js?v=20260923-ranking";
 import { renderMemberDirectory, renderMemberList } from "./components/memberDirectory.js?v=cafe-visit";
 import { renderOrderDetail } from "./components/orders.js?v=reputation-rewards";
 import { renderSidebar } from "./components/sidebar.js?v=cafe-visit";
@@ -29,7 +30,11 @@ document.body.classList.toggle("visitor-mode", visitContext.isVisiting);
 
 const renderApp = () => {
   elements.sidebar.innerHTML = renderSidebar(visitContext);
-  elements.topbar.innerHTML = renderTopbar({ isVisiting: visitContext.isVisiting });
+  elements.topbar.innerHTML = renderTopbar({
+    isVisiting: visitContext.isVisiting,
+    originTeamId: visitContext.originTeamId,
+    localStaticServer: visitContext.localStaticServer,
+  });
   renderCurrentView();
 };
 
@@ -62,7 +67,12 @@ const setPageHeading = (title, subtitle) => {
 };
 
 const renderOverviewView = () => {
-  elements.dashboard.innerHTML = renderDashboard({ isVisiting: visitContext.isVisiting });
+  elements.dashboard.innerHTML = renderDashboard({
+    isVisiting: visitContext.isVisiting,
+    originTeamId: visitContext.originTeamId,
+    localStaticServer: visitContext.localStaticServer,
+    visitSource: visitContext.visitSource,
+  });
   const weekContext = getCafeWeekContext();
   setPageHeading(
     visitContext.isVisiting ? `Ghé thăm ${club.name}` : weekContext.title,
@@ -83,9 +93,31 @@ const renderPersonnelView = () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
+const renderRankingView = () => {
+  elements.dashboard.innerHTML = renderLeaderboardView({
+    isVisiting: visitContext.isVisiting,
+    currentTeamId: visitContext.currentTeamId,
+    originTeamId: visitContext.originTeamId,
+    localStaticServer: visitContext.localStaticServer,
+  });
+  const rankLabel = club.ranking > 0 ? `Hạng ${club.ranking} / ${club.totalTeams || 8}` : "Thứ hạng các quán";
+  setPageHeading(
+    "Bảng xếp hạng",
+    visitContext.isVisiting
+      ? `Thành tích 8 quán café sinh viên · ${club.name} (${rankLabel})`
+      : `Thành tích thi đua 8 quán · ${club.name} (${rankLabel})`,
+  );
+  updateActiveNavigation(document.querySelector('[data-nav-id="ranking"]'));
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
 const renderCurrentView = () => {
   if (["#personnel", "#member-list", "#member-management"].includes(window.location.hash)) {
     renderPersonnelView();
+    return;
+  }
+  if (["#ranking", "#leaderboard"].includes(window.location.hash)) {
+    renderRankingView();
     return;
   }
   renderOverviewView();
@@ -96,6 +128,13 @@ const navigateToPersonnel = () => {
     window.history.pushState({ view: "personnel" }, "", "#personnel");
   }
   renderPersonnelView();
+};
+
+const navigateToRanking = () => {
+  if (window.location.hash !== "#ranking") {
+    window.history.pushState({ view: "ranking" }, "", "#ranking");
+  }
+  renderRankingView();
 };
 
 const navigateToOverview = (targetHash = "#overview") => {
@@ -214,6 +253,11 @@ const handleAction = (actionElement) => {
     return;
   }
 
+  if (action === "view-ranking") {
+    navigateToRanking();
+    return;
+  }
+
   if (action === "back-overview") {
     navigateToOverview();
     return;
@@ -232,9 +276,18 @@ document.addEventListener("click", (event) => {
       navigateToPersonnel();
       return;
     }
-    if (["#events", "#ranking"].includes(targetHash)) {
+    if (targetHash === "#ranking") {
       event.preventDefault();
-      const currentNavId = document.querySelector(".management-view") ? "personnel" : "overview";
+      navigateToRanking();
+      return;
+    }
+    if (["#events"].includes(targetHash)) {
+      event.preventDefault();
+      const currentNavId = document.querySelector(".leaderboard-view")
+        ? "ranking"
+        : document.querySelector(".management-view")
+          ? "personnel"
+          : "overview";
       updateActiveNavigation(document.querySelector(`[data-nav-id="${currentNavId}"]`));
       showToast(`${navItem.textContent.trim()} đang được phát triển.`);
       return;

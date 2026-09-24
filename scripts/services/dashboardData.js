@@ -1,7 +1,7 @@
-import { DEFAULT_CAFE_REPUTATION, MAX_CAFE_REPUTATION, cafeStats, club, finance, members, orders, transactionLogs, weeklyCoinSummary } from "../data/dashboard.js";
+import { DEFAULT_CAFE_REPUTATION, MAX_CAFE_REPUTATION, cafeStats, club, finance, leaderboardTeams, members, orders, transactionLogs, weeklyCoinSummary } from "../data/dashboard.js";
 import { getTeamIdFromLocation } from "../routes/teamRoutes.js?v=cafe-visit";
 import { getCafeWeekStart, getLastCompletedCafeWeek, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=monday-cycle";
-import { resolveCafeName } from "../utils/cafeNames.js?v=the-vortex-the-ora";
+import { resolveCafeName, TEAM_THEMES } from "../utils/cafeNames.js?v=the-vortex-the-ora";
 import { supabase } from "../supabase/supabase.js";
 import { getWeeklyCostEstimate, isManagerRole } from "./weeklyCosts.js";
 import { createWeeklyOrders } from "./weeklyOrders.js?v=reputation-rewards";
@@ -57,6 +57,7 @@ const resetSharedData = (teamId) => {
     members.splice(0, members.length);
     orders.splice(0, orders.length, ...createWeeklyOrders(new Date(), teamId));
     transactionLogs.splice(0, transactionLogs.length);
+    leaderboardTeams.splice(0, leaderboardTeams.length);
     Object.assign(weeklyCoinSummary, {
         totalIncome: 0,
         totalExpense: 0,
@@ -74,6 +75,7 @@ const resetSharedData = (teamId) => {
         startingFund: 0,
         reputation: DEFAULT_CAFE_REPUTATION,
         ranking: 0,
+        totalTeams: 8,
         satisfaction: 0,
     });
     Object.assign(finance, {
@@ -237,16 +239,50 @@ export const loadDashboardData = async ({ visitorMode = false } = {}) => {
             .limit(1)
             .maybeSingle();
     const teamColumns = visitorMode
-        ? "id, name, reputation, member_limit"
+        ? "id, name, reputation"
         : "*";
 
+    const allTeamsQuery = supabase
+        .from("teams")
+        .select("*")
+        .order("points", { ascending: false });
+
     try {
-        const [teamResult, memberResult, transactionResult, settlementResult] = await Promise.all([
+        const [teamResult, memberResult, transactionResult, settlementResult, allTeamsResult] = await Promise.all([
             supabase.from("teams").select(teamColumns).eq("id", teamId).maybeSingle(),
             supabase.from("members").select("*").eq("team_id", teamId).order("name", { ascending: true }),
             transactionQuery,
             settlementQuery,
+            allTeamsQuery,
         ]);
+
+        if (allTeamsResult.error) {
+            console.warn("Lỗi khi tải bảng xếp hạng:", allTeamsResult.error);
+        }
+
+        const resolvedAllTeams = (allTeamsResult.data || []).map((t) => {
+            const theme = TEAM_THEMES[t.id] || {};
+            return {
+                ...t,
+                name: resolveCafeName(t),
+                pts: numberOrZero(t.points),
+                icon: t.icon || theme.icon || t.name?.charAt(0) || "☕",
+                color: t.color || theme.color || "#76533c",
+                bg: t.bg || theme.bg || "#f4ece2",
+                reputation: clamp(
+                    numberOrDefault(t.reputation, DEFAULT_CAFE_REPUTATION),
+                    DEFAULT_CAFE_REPUTATION,
+                    MAX_CAFE_REPUTATION,
+                ),
+            };
+        });
+        leaderboardTeams.splice(0, leaderboardTeams.length, ...resolvedAllTeams);
+
+        const currentRankIndex = resolvedAllTeams.findIndex((t) => String(t.id) === String(teamId));
+        if (currentRankIndex >= 0) {
+            club.ranking = currentRankIndex + 1;
+            club.totalTeams = resolvedAllTeams.length;
+        }
 
         const team = teamResult.data;
         const resolvedMembers = (memberResult.data || [])

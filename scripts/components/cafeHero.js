@@ -16,6 +16,9 @@ export const renderReputationStars = (value) => {
 export const renderCafeHero = ({ isVisiting = false } = {}) => {
   const xpProgress = percentage(club.xp, club.xpTarget);
   const weekContext = getCafeWeekContext();
+  const rankDisplay = club.ranking > 0
+    ? `${club.ranking === 1 ? "🥇 " : club.ranking === 2 ? "🥈 " : club.ranking === 3 ? "🥉 " : ""}${club.ranking} / ${club.totalTeams || 8}`
+    : "— / 8";
 
   return `
     <section class="cafe-hero panel" id="overview" aria-labelledby="cafe-name">
@@ -33,7 +36,11 @@ export const renderCafeHero = ({ isVisiting = false } = {}) => {
         </div>
         <div class="cafe-score-grid${isVisiting ? " visitor-score-grid" : ""}">
           <div class="cafe-score-item" aria-label="Uy tín quán: ${club.reputation} trên ${MAX_REPUTATION_STARS} sao"><span>Uy tín quán</span><strong class="stars">${renderReputationStars(club.reputation)}</strong></div>
-          ${isVisiting ? "" : `<button class="cafe-score-item development-feature" type="button" data-development-feature="Xếp hạng đang được phát triển." data-development-message="Tính năng đang phát triển" aria-label="Xếp hạng: 0, tính năng đang phát triển"><span>Xếp hạng </span><strong>0 / 0</strong></button>
+          <button class="cafe-score-item cafe-ranking-trigger" type="button" data-action="view-ranking" aria-label="Xếp hạng: ${club.ranking > 0 ? `Hạng ${club.ranking} trên ${club.totalTeams || 8} quán` : 'Chưa có xếp hạng'}. Nhấn để xem Bảng xếp hạng.">
+            <span>Xếp hạng <small class="rank-link-hint">Xem BXH ↗</small></span>
+            <strong class="ranking-highlight">${rankDisplay}</strong>
+          </button>
+          ${isVisiting ? "" : `
           <button class="cafe-score-item development-feature" type="button" data-development-feature="Mức độ hài lòng đang được phát triển." data-development-message="Tính năng đang phát triển" aria-label="Khách hàng hài lòng: 0 phần trăm, tính năng đang phát triển"><span>Khách hàng hài lòng</span><strong class="satisfaction">${icon("smile")} 0%</strong></button>
           `}
         </div>

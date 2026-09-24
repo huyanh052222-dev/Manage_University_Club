@@ -4,13 +4,17 @@ import { formatNumber } from "../utils/format.js";
 import { icon } from "./icons.js";
 import { renderWeeklyCostPopover } from "./weeklyCosts.js?v=profit-salary";
 import { renderWeeklyProfitPopover } from "./weeklyProfit.js?v=monday-cycle";
+import { getTeamLandingUrl } from "../routes/teamRoutes.js?v=cafe-visit";
 
 const formatSignedCoin = (amount) => {
   if (amount === 0) return "0 coin";
   return `${amount > 0 ? "+" : "−"}${formatNumber(Math.abs(amount))} coin`;
 };
 
-export const renderTopbar = ({ isVisiting = false } = {}) => {
+export const renderTopbar = ({ isVisiting = false, originTeamId = "", localStaticServer = false } = {}) => {
+  const returnRankingUrl = originTeamId
+    ? `${getTeamLandingUrl(originTeamId, { localStaticServer })}#ranking`
+    : "#ranking";
   const weekContext = getCafeWeekContext();
   const hasSettlement = finance.settlementStatus === "settled";
   const settlementDisplay = hasSettlement ? formatSignedCoin(finance.weeklyFlow) : "Chờ kết toán";
@@ -65,7 +69,16 @@ export const renderTopbar = ({ isVisiting = false } = {}) => {
   `}
 
   <div class="topbar-actions">
-    ${isVisiting ? `<span class="visitor-mode-badge">${icon("eye")} Đang ghé thăm</span>` : `<button class="notification-button" type="button" data-action="show-notifications" aria-label="Xem thông báo">
+    ${isVisiting ? `
+      <div class="visitor-topbar-group">
+        ${originTeamId ? `
+          <a class="visitor-topbar-return-btn" href="${returnRankingUrl}" title="Quay về Bảng xếp hạng quán của bạn">
+            ${icon("award")} <span>Quay về BXH</span>
+          </a>
+        ` : ""}
+        <span class="visitor-mode-badge">${icon("eye")} Đang ghé thăm</span>
+      </div>
+    ` : `<button class="notification-button" type="button" data-action="show-notifications" aria-label="Xem thông báo">
       ${icon("bell")}
       <span class="notification-dot"></span>
     </button>`}
