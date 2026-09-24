@@ -27,7 +27,9 @@ export const renderLeaderboardView = ({
       ? "🥈 Á quân hiện tại"
       : currentRank === 3
         ? "🥉 Hạng ba hiện tại"
-        : `Hạng ${currentRank} / ${leaderboardTeams.length || 8}`;
+        : currentRank > 0
+          ? `Hạng ${currentRank} / ${leaderboardTeams.length || 8}`
+          : "Đang cập nhật thứ hạng";
 
   return `
     <section class="management-view leaderboard-view" aria-labelledby="leaderboard-view-title">
@@ -66,7 +68,7 @@ export const renderLeaderboardView = ({
           </div>
 
           <div class="lb-list">
-            ${leaderboardTeams.map((team, index) => {
+            ${leaderboardTeams.length ? leaderboardTeams.map((team, index) => {
               const rank = index + 1;
               const rankClass = rank === 1 ? "rank-1" : rank === 2 ? "rank-2" : rank === 3 ? "rank-3" : "";
               const rankIcon = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : rank;
@@ -116,7 +118,13 @@ export const renderLeaderboardView = ({
                   </div>
                 </article>
               `;
-            }).join("")}
+            }).join("") : `
+              <div class="lb-empty">
+                <span class="lb-empty-icon">${icon("award")}</span>
+                <strong>Chưa có dữ liệu bảng xếp hạng</strong>
+                <p>Đang tải hoặc kiểm tra kết nối với hệ thống.</p>
+              </div>
+            `}
           </div>
         </div>
       </section>

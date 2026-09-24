@@ -1,7 +1,7 @@
 import { DEFAULT_CAFE_REPUTATION, MAX_CAFE_REPUTATION, cafeStats, club, finance, leaderboardTeams, members, orders, transactionLogs, weeklyCoinSummary } from "../data/dashboard.js";
 import { getTeamIdFromLocation } from "../routes/teamRoutes.js?v=cafe-visit";
 import { getCafeWeekStart, getLastCompletedCafeWeek, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=monday-cycle";
-import { resolveCafeName } from "../utils/cafeNames.js?v=the-vortex-the-ora";
+import { resolveCafeName, TEAM_THEMES } from "../utils/cafeNames.js?v=the-vortex-the-ora";
 import { supabase } from "../supabase/supabase.js";
 import { getWeeklyCostEstimate, isManagerRole } from "./weeklyCosts.js";
 import { createWeeklyOrders } from "./weeklyOrders.js?v=reputation-rewards";
@@ -239,12 +239,12 @@ export const loadDashboardData = async ({ visitorMode = false } = {}) => {
             .limit(1)
             .maybeSingle();
     const teamColumns = visitorMode
-        ? "id, name, reputation, member_limit"
+        ? "id, name, reputation"
         : "*";
 
     const allTeamsQuery = supabase
         .from("teams")
-        .select("id, name, points, reputation, icon, color, bg")
+        .select("*")
         .order("points", { ascending: false });
 
     try {
@@ -256,16 +256,26 @@ export const loadDashboardData = async ({ visitorMode = false } = {}) => {
             allTeamsQuery,
         ]);
 
-        const resolvedAllTeams = (allTeamsResult.data || []).map((t) => ({
-            ...t,
-            name: resolveCafeName(t),
-            pts: numberOrZero(t.points),
-            reputation: clamp(
-                numberOrDefault(t.reputation, DEFAULT_CAFE_REPUTATION),
-                DEFAULT_CAFE_REPUTATION,
-                MAX_CAFE_REPUTATION,
-            ),
-        }));
+        if (allTeamsResult.error) {
+            console.warn("Lỗi khi tải bảng xếp hạng:", allTeamsResult.error);
+        }
+
+        const resolvedAllTeams = (allTeamsResult.data || []).map((t) => {
+            const theme = TEAM_THEMES[t.id] || {};
+            return {
+                ...t,
+                name: resolveCafeName(t),
+                pts: numberOrZero(t.points),
+                icon: t.icon || theme.icon || t.name?.charAt(0) || "☕",
+                color: t.color || theme.color || "#76533c",
+                bg: t.bg || theme.bg || "#f4ece2",
+                reputation: clamp(
+                    numberOrDefault(t.reputation, DEFAULT_CAFE_REPUTATION),
+                    DEFAULT_CAFE_REPUTATION,
+                    MAX_CAFE_REPUTATION,
+                ),
+            };
+        });
         leaderboardTeams.splice(0, leaderboardTeams.length, ...resolvedAllTeams);
 
         const currentRankIndex = resolvedAllTeams.findIndex((t) => String(t.id) === String(teamId));
