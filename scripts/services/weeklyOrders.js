@@ -36,6 +36,9 @@ export const ORDER_CONTACTS_BY_TEAM = Object.freeze({
 export const getOrderContact = (teamId = "A") => ORDER_CONTACTS_BY_TEAM[String(teamId).toUpperCase()]
   || ORDER_CONTACTS_BY_TEAM.A;
 
+export const REGULAR_ORDER_SOURCE_URL = "https://judge.bcn.id.vn/mentor/bai-tap";
+export const getRegularOrderSourceUrl = () => REGULAR_ORDER_SOURCE_URL;
+
 export const getOrderSourceUrl = (teamId = "A") => {
   const contact = getOrderContact(teamId);
   return contact.url || `https://zalo.me/${contact.phone}`;
@@ -180,7 +183,8 @@ export const createWeeklyOrders = (now = new Date(), teamId = "A", reputation = 
       title: item.title,
       description: item.description,
       requirements: item.requirements.join("\n"),
-      sourceUrl: getOrderSourceUrl(teamId),
+      sourceUrl: REGULAR_ORDER_SOURCE_URL,
+      specialSourceUrl: getOrderSourceUrl(teamId),
       reward: regularOrderReward,
       startsAt: schedule.startsAt,
       deadline: schedule.deadline,
