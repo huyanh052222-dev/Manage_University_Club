@@ -1,5 +1,5 @@
 import { orders } from "../data/dashboard.js";
-import { summarizeWeeklyOrders } from "../services/weeklyOrders.js?v=reputation-rewards";
+import { REGULAR_ORDER_SOURCE_URL, summarizeWeeklyOrders } from "../services/weeklyOrders.js?v=reputation-rewards";
 import { escapeHtml, formatNumber } from "../utils/format.js";
 import {
   formatOrderDeadline,
@@ -18,12 +18,21 @@ const getOrderRewardLabel = (order) => isSpecialOrder(order)
   : `+${formatNumber(order.reward)} coin`;
 
 const ensureSpecialOrderDemo = (orderItems) => {
-  if (!ENABLE_SPECIAL_ORDER_DEMO || !orderItems.length || orderItems.some(isSpecialOrder)) return;
+  if (!ENABLE_SPECIAL_ORDER_DEMO || !orderItems.length) return;
 
-  Object.assign(orderItems[0], {
-    isSpecial: true,
-    specialLabel: SPECIAL_ORDER_LABEL,
-    description: `Ưu tiên xử lý trong tuần này. ${orderItems[0].description}`,
+  if (!orderItems.some(isSpecialOrder)) {
+    Object.assign(orderItems[0], {
+      isSpecial: true,
+      specialLabel: SPECIAL_ORDER_LABEL,
+      description: `Ưu tiên xử lý trong tuần này. ${orderItems[0].description}`,
+      sourceUrl: orderItems[0].specialSourceUrl || orderItems[0].sourceUrl,
+    });
+  }
+
+  orderItems.forEach((order) => {
+    if (!isSpecialOrder(order)) {
+      order.sourceUrl = REGULAR_ORDER_SOURCE_URL;
+    }
   });
 };
 
@@ -80,9 +89,12 @@ export const renderOrders = () => {
 };
 
 export const renderOrderDetail = (order, { isVisiting = false } = {}) => {
-  const sourceUrl = normalizeOrderSourceUrl(order.sourceUrl);
-  const isPlaceholderSource = sourceUrl === "#";
   const isSpecial = isSpecialOrder(order);
+  const rawSourceUrl = isSpecial
+    ? (order.sourceUrl || order.specialSourceUrl)
+    : REGULAR_ORDER_SOURCE_URL;
+  const sourceUrl = normalizeOrderSourceUrl(rawSourceUrl);
+  const isPlaceholderSource = sourceUrl === "#";
   const orderStatus = isSpecial
     ? `${order.specialLabel || SPECIAL_ORDER_LABEL} · ${getOrderStatusLabel(order.status)}`
     : getOrderStatusLabel(order.status);
