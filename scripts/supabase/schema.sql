@@ -166,26 +166,29 @@ create policy "public_read_order_completions"
     to anon, authenticated
     using (true);
 
+-- Sổ cái và kết toán tài chính: Chỉ cho phép tài khoản quản trị (authenticated) đọc để tránh rò rỉ dữ liệu tài chính
 drop policy if exists "public_read_coin_transactions" on public.coin_transactions;
-create policy "public_read_coin_transactions"
+drop policy if exists "authenticated_read_coin_transactions" on public.coin_transactions;
+create policy "authenticated_read_coin_transactions"
     on public.coin_transactions
     for select
-    to anon, authenticated
+    to authenticated
     using (true);
 
 drop policy if exists "public_read_weekly_financial_settlements" on public.weekly_financial_settlements;
-create policy "public_read_weekly_financial_settlements"
+drop policy if exists "authenticated_read_weekly_financial_settlements" on public.weekly_financial_settlements;
+create policy "authenticated_read_weekly_financial_settlements"
     on public.weekly_financial_settlements
     for select
-    to anon, authenticated
+    to authenticated
     using (true);
 
 grant select on public.teams to anon, authenticated;
 grant select on public.members to anon, authenticated;
 grant select on public.orders to anon, authenticated;
 grant select on public.order_completions to anon, authenticated;
-grant select on public.coin_transactions to anon, authenticated;
-grant select on public.weekly_financial_settlements to anon, authenticated;
+grant select on public.coin_transactions to authenticated;
+grant select on public.weekly_financial_settlements to authenticated;
 
 create or replace function public.add_points_to_team(
     team_id_in text,

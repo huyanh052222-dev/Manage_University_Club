@@ -1,0 +1,21 @@
+{
+  "name": "quanly-html",
+  "version": "1.0.0",
+  "description": "Dashboard vận hành quán café sinh viên - Bảo mật & Anti-DevTools",
+  "type": "module",
+  "scripts": {
+    "security:check": "node -c scripts/security/securityGuard.js",
+    "build:obfuscate": "node scripts/tools/obfuscate.js",
+    "build": "npm run build:obfuscate"
+  },
+  "keywords": [
+    "security",
+    "obfuscation",
+    "anti-devtools"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "javascript-obfuscator": "^4.1.1"
+  }
+}
