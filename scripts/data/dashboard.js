@@ -72,6 +72,8 @@ export const weeklyCoinSummary = {
 
 export const transactionLogs = [];
 
+export const teamSettlements = [];
+
 export const leaderboardTeams = [];
 
 export const orders = createWeeklyOrders();

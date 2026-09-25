@@ -6,7 +6,16 @@ import { renderSidebar } from "./components/sidebar.js?v=cafe-visit";
 import { renderTopbar } from "./components/topbar.js?v=monday-cycle";
 import { renderWeeklyCostModal } from "./components/weeklyCosts.js?v=profit-salary";
 import { renderWeeklyProfitModal } from "./components/weeklyProfit.js?v=monday-cycle";
-import { club, demoNotifications, orders } from "./data/dashboard.js";
+import { renderExportReportModal } from "./components/exportReportModal.js?v=export-log-v1";
+import {
+  buildFinancialReportCsv,
+  createReportFilename,
+  downloadReportFile,
+  fetchWeekSettlement,
+  filterTransactionsByWeekOption,
+  getReportWeekOptions,
+} from "./services/financialReport.js?v=export-log-v1";
+import { club, demoNotifications, finance, members, orders, teamSettlements, transactionLogs } from "./data/dashboard.js";
 import { getCafeVisitContext } from "./routes/teamRoutes.js?v=cafe-visit";
 import { loadDashboardData } from "./services/dashboardData.js?v=reputation-supabase-v1";
 import { closeModal, showModal, showToast } from "./ui/feedback.js";
@@ -172,9 +181,66 @@ const handleAction = (actionElement) => {
     "transactions",
     "weekly-costs",
     "weekly-profit",
+    "open-export-report",
+    "submit-download-report",
   ]);
   if (visitContext.isVisiting && protectedVisitorActions.has(action)) {
     showToast("Thao tác này đã được khóa trong chế độ ghé thăm.");
+    return;
+  }
+
+  if (action === "open-export-report") {
+    showModal({
+      title: "Xuất báo cáo tài chính giao dịch",
+      content: renderExportReportModal(),
+    });
+    return;
+  }
+
+  if (action === "submit-download-report") {
+    const selectedInput = document.querySelector('input[name="reportWeekSelection"]:checked');
+    const selectedWeekId = selectedInput?.value || "all";
+    const weekOptions = getReportWeekOptions(new Date(), transactionLogs, teamSettlements, members);
+    const selectedWeekOption = weekOptions.find((opt) => opt.id === selectedWeekId) || weekOptions[0];
+    const filteredTransactions = filterTransactionsByWeekOption(transactionLogs, selectedWeekId, weekOptions);
+
+    actionElement.setAttribute("disabled", "true");
+    const originalText = actionElement.innerHTML;
+    actionElement.innerHTML = `<span>Đang tạo file...</span>`;
+
+    (async () => {
+      try {
+        let settlement = null;
+        if (selectedWeekId !== "all") {
+          settlement = await fetchWeekSettlement(visitContext.currentTeamId, selectedWeekId);
+        }
+
+        const csvContent = buildFinancialReportCsv({
+          clubName: club.name,
+          teamCode: club.code,
+          teamId: visitContext.currentTeamId,
+          weekOption: selectedWeekOption,
+          transactions: filteredTransactions,
+          settlement,
+          currentBalance: finance.currentFund,
+          memberList: members,
+        });
+
+        const filename = createReportFilename({
+          clubName: club.name,
+          weekOption: selectedWeekOption,
+        });
+
+        downloadReportFile(csvContent, filename);
+        closeModal();
+        showToast(`Đã tải về báo cáo tài chính ${selectedWeekOption.title} của ${club.name}!`);
+      } catch (err) {
+        console.error("Lỗi khi tải file báo cáo:", err);
+        showToast("Có lỗi xảy ra khi tạo file báo cáo. Vui lòng thử lại.");
+        actionElement.removeAttribute("disabled");
+        actionElement.innerHTML = originalText;
+      }
+    })();
     return;
   }
 
@@ -318,6 +384,15 @@ document.addEventListener("click", (event) => {
   if (actionElement.matches("a")) event.preventDefault();
   if (actionElement.classList.contains("modal-backdrop") && event.target !== actionElement) return;
   handleAction(actionElement);
+});
+
+document.addEventListener("change", (event) => {
+  if (event.target.matches('input[name="reportWeekSelection"]')) {
+    document.querySelectorAll(".report-week-option").forEach((label) => {
+      const isChecked = label.querySelector("input")?.checked;
+      label.classList.toggle("is-selected", Boolean(isChecked));
+    });
+  }
 });
 
 document.addEventListener("input", (event) => {

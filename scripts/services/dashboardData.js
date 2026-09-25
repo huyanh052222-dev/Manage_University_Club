@@ -1,4 +1,4 @@
-import { DEFAULT_CAFE_REPUTATION, MAX_CAFE_REPUTATION, cafeStats, club, finance, leaderboardTeams, members, orders, transactionLogs, weeklyCoinSummary } from "../data/dashboard.js";
+import { DEFAULT_CAFE_REPUTATION, MAX_CAFE_REPUTATION, cafeStats, club, finance, leaderboardTeams, members, orders, teamSettlements, transactionLogs, weeklyCoinSummary } from "../data/dashboard.js";
 import { getTeamIdFromLocation } from "../routes/teamRoutes.js?v=cafe-visit";
 import { getCafeWeekStart, getLastCompletedCafeWeek, getNextCafeWeekStart } from "../utils/cafeWeek.js?v=monday-cycle";
 import { resolveCafeName, TEAM_THEMES } from "../utils/cafeNames.js?v=the-vortex-the-ora";
@@ -57,6 +57,7 @@ const resetSharedData = (teamId) => {
     members.splice(0, members.length);
     orders.splice(0, orders.length, ...createWeeklyOrders(new Date(), teamId));
     transactionLogs.splice(0, transactionLogs.length);
+    teamSettlements.splice(0, teamSettlements.length);
     leaderboardTeams.splice(0, leaderboardTeams.length);
     Object.assign(weeklyCoinSummary, {
         totalIncome: 0,
@@ -230,14 +231,12 @@ export const loadDashboardData = async ({ visitorMode = false } = {}) => {
             .order("occurred_at", { ascending: false })
             .limit(1000);
     const settlementQuery = visitorMode
-        ? Promise.resolve({ data: null, error: null })
+        ? Promise.resolve({ data: [], error: null })
         : supabase
             .from("weekly_financial_settlements")
             .select("income, expense, profit, member_count, period_start, period_end, settled_at")
             .eq("team_id", teamId)
-            .order("period_start", { ascending: false })
-            .limit(1)
-            .maybeSingle();
+            .order("period_start", { ascending: false });
     const teamColumns = visitorMode
         ? "id, name, reputation"
         : "*";
@@ -337,12 +336,16 @@ export const loadDashboardData = async ({ visitorMode = false } = {}) => {
         orders.splice(0, orders.length, ...createWeeklyOrders(new Date(), teamId, club.reputation));
 
         const resolvedTransactions = (transactionResult.data || []).map(normalizeTransaction);
+        const resolvedSettlements = settlementResult.data || [];
+        teamSettlements.splice(0, teamSettlements.length, ...resolvedSettlements);
+        const latestSettlement = resolvedSettlements[0] || null;
+
         const weeklyCost = getWeeklyCostEstimate(resolvedMembers);
         if (!visitorMode) {
             hydrateCoinLedger(resolvedTransactions, {
                 weekStart: currentWeekStart,
                 weekEnd: currentWeekEnd,
-                settlement: settlementResult.data,
+                settlement: latestSettlement,
                 completedWeek,
                 weeklyExpense: weeklyCost.total,
             });

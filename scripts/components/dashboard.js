@@ -3,7 +3,7 @@ import { renderCafeStats } from "./cafeStats.js?v=order-summary-stat";
 import { renderMemberOverview } from "./memberOverview.js?v=cafe-visit";
 import { renderOrders } from "./orders.js?v=reputation-rewards";
 import { renderCafeTip } from "./cafeTip.js?v=orders";
-import { renderTransactionLog } from "./transactionLog.js?v=coin-reason";
+import { renderTransactionLog } from "./transactionLog.js?v=export-report-v1";
 import { icon } from "./icons.js";
 import { club } from "../data/dashboard.js";
 import { getTeamLandingUrl } from "../routes/teamRoutes.js?v=cafe-visit";
