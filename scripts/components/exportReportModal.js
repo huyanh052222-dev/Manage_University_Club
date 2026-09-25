@@ -1,5 +1,5 @@
-import { club, finance, transactionLogs } from "../data/dashboard.js";
-import { getReportWeekOptions } from "../services/financialReport.js?v=export-log-v1";
+import { club, finance, members, teamSettlements, transactionLogs } from "../data/dashboard.js";
+import { getReportWeekOptions } from "../services/financialReport.js?v=export-log-v2";
 import { escapeHtml, formatNumber } from "../utils/format.js";
 import { icon } from "./icons.js";
 
@@ -9,7 +9,7 @@ const formatSignedCoin = (amount) => {
 };
 
 export const renderExportReportModal = (defaultSelectedWeekId = null) => {
-  const weekOptions = getReportWeekOptions(new Date(), transactionLogs);
+  const weekOptions = getReportWeekOptions(new Date(), transactionLogs, teamSettlements, members);
 
   // Mặc định chọn tuần hiện tại nếu có, hoặc tuần đầu tiên trong danh sách
   const currentWeekOption = weekOptions.find((opt) => opt.isCurrent) || weekOptions[1] || weekOptions[0];
@@ -34,15 +34,16 @@ export const renderExportReportModal = (defaultSelectedWeekId = null) => {
               <strong>${escapeHtml(opt.title)}</strong>
               ${opt.isCurrent ? '<span class="report-badge current">Hiện tại</span>' : ""}
               ${opt.id === "all" ? '<span class="report-badge all">Toàn bộ</span>' : ""}
-              ${opt.isCompleted ? '<span class="report-badge completed">Đã chốt kỳ</span>' : ""}
+              ${!opt.isCurrent && opt.id !== "all" && opt.settlement ? '<span class="report-badge completed">Đã chốt kỳ</span>' : ""}
+              ${!opt.isCurrent && opt.id !== "all" && !opt.settlement ? '<span class="report-badge pending">Chờ kết toán</span>' : ""}
             </span>
             <small class="report-week-range">${escapeHtml(opt.subtitle)}</small>
           </div>
           <div class="report-week-stats">
             <span class="report-stat-item"><i class="report-stat-dot"></i> <b>${opt.transactionCount}</b> giao dịch</span>
-            <span class="report-stat-item positive-text">+${formatNumber(opt.income)}</span>
-            <span class="report-stat-item negative-text">−${formatNumber(opt.expense)}</span>
-            <span class="report-stat-item ${netClass}">Ròng: <b>${formatSignedCoin(opt.profit)}</b></span>
+            <span class="report-stat-item positive-text" title="Tổng doanh thu">+${formatNumber(opt.income)}</span>
+            <span class="report-stat-item negative-text" title="Tổng chi phí vận hành & các khoản trừ">−${formatNumber(opt.expense)}${opt.isEstimated ? ' <small style="font-size:6px;opacity:0.8">(dự kiến)</small>' : ""}</span>
+            <span class="report-stat-item ${netClass}" title="Biến động ròng / Lợi nhuận">Ròng: <b>${formatSignedCoin(opt.profit)}</b></span>
           </div>
         </div>
       </label>
@@ -60,7 +61,7 @@ export const renderExportReportModal = (defaultSelectedWeekId = null) => {
           </div>
         </div>
         <p class="export-instruction">
-          Chọn phân mục tuần bạn muốn trích xuất số liệu. File tải về (.csv chuẩn UTF-8) sẽ bao gồm bảng tổng kết doanh thu, chi phí và chi tiết toàn bộ các giao dịch của quán trong kỳ đó.
+          Chọn phân mục tuần bạn muốn trích xuất số liệu. File tải về (.csv chuẩn UTF-8) sẽ bao gồm bảng tổng kết doanh thu, chi phí vận hành (cố định + lương nhân sự) và chi tiết toàn bộ các giao dịch của quán trong kỳ đó.
         </p>
       </div>
 

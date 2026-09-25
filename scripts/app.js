@@ -15,7 +15,7 @@ import {
   filterTransactionsByWeekOption,
   getReportWeekOptions,
 } from "./services/financialReport.js?v=export-log-v1";
-import { club, demoNotifications, finance, orders, transactionLogs } from "./data/dashboard.js";
+import { club, demoNotifications, finance, members, orders, teamSettlements, transactionLogs } from "./data/dashboard.js";
 import { getCafeVisitContext } from "./routes/teamRoutes.js?v=cafe-visit";
 import { loadDashboardData } from "./services/dashboardData.js?v=reputation-supabase-v1";
 import { closeModal, showModal, showToast } from "./ui/feedback.js";
@@ -200,7 +200,7 @@ const handleAction = (actionElement) => {
   if (action === "submit-download-report") {
     const selectedInput = document.querySelector('input[name="reportWeekSelection"]:checked');
     const selectedWeekId = selectedInput?.value || "all";
-    const weekOptions = getReportWeekOptions(new Date(), transactionLogs);
+    const weekOptions = getReportWeekOptions(new Date(), transactionLogs, teamSettlements, members);
     const selectedWeekOption = weekOptions.find((opt) => opt.id === selectedWeekId) || weekOptions[0];
     const filteredTransactions = filterTransactionsByWeekOption(transactionLogs, selectedWeekId, weekOptions);
 
@@ -223,6 +223,7 @@ const handleAction = (actionElement) => {
           transactions: filteredTransactions,
           settlement,
           currentBalance: finance.currentFund,
+          memberList: members,
         });
 
         const filename = createReportFilename({

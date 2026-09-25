@@ -1,5 +1,7 @@
 import { getAllCafeWeeks } from "../utils/cafeWeek.js?v=monday-cycle";
 import { formatNumber } from "../utils/format.js";
+import { members, teamSettlements } from "../data/dashboard.js";
+import { getWeeklyCostEstimate } from "./weeklyCosts.js";
 import { supabase } from "../supabase/supabase.js";
 
 const dateTimeFormatter = new Intl.DateTimeFormat("vi-VN", {
@@ -46,7 +48,11 @@ export const isTransactionInWeek = (transaction, week) => {
 
   // Nếu giao dịch được gán rõ vào kỳ kết toán trễ
   if (transaction.settlementPeriodStart) {
-    return transaction.settlementPeriodStart === week.periodStartKey;
+    if (transaction.settlementPeriodStart === week.periodStartKey) return true;
+    if (week.week === 1 && (transaction.settlementPeriodStart === "2026-08-30" || transaction.settlementPeriodStart === "2026-08-31")) {
+      return true;
+    }
+    return false;
   }
 
   // Nếu không ghi kỳ, tính theo thời điểm phát sinh occurred_at
@@ -56,17 +62,58 @@ export const isTransactionInWeek = (transaction, week) => {
   return occurredAt >= week.periodStart && occurredAt < week.periodEnd;
 };
 
-export const getReportWeekOptions = (now = new Date(), transactions = []) => {
+export const findSettlementForWeek = (settlements, week) => {
+  if (!Array.isArray(settlements) || !week) return null;
+  return settlements.find((s) => {
+    if (s.period_start === week.periodStartKey) return true;
+    if (week.week === 1 && (s.period_start === "2026-08-30" || s.period_start === "2026-08-31")) return true;
+    return false;
+  }) || null;
+};
+
+export const getReportWeekOptions = (
+  now = new Date(),
+  transactions = [],
+  settlements = teamSettlements,
+  memberList = members,
+) => {
   const allWeeks = getAllCafeWeeks(now);
+  const costEstimate = getWeeklyCostEstimate(memberList);
 
   const weekOptions = allWeeks.map((week) => {
     const weekTransactions = transactions.filter((tx) => isTransactionInWeek(tx, week));
-    const income = weekTransactions
+    const settlement = findSettlementForWeek(settlements, week);
+
+    // Tính doanh thu: ưu tiên số liệu kết toán chính thức hoặc tổng transaction income
+    const txIncome = weekTransactions
       .filter((tx) => tx.amount > 0)
       .reduce((sum, tx) => sum + tx.amount, 0);
-    const expense = weekTransactions
-      .filter((tx) => tx.amount < 0)
+    const income = settlement ? Math.max(Number(settlement.income) || 0, txIncome) : txIncome;
+
+    // Tính chi phí:
+    // 1. Phí vận hành tuần (200 coin cố định + 20 × số nhân sự)
+    // 2. Các khoản trừ phụ thủ công (nếu có trong coin_transactions)
+    const hasOperatingCostTx = weekTransactions.some(
+      (tx) => tx.amount < 0 && (tx.title?.toLowerCase().includes("vận hành") || tx.title?.toLowerCase().includes("van hanh"))
+    );
+    const manualExpense = weekTransactions
+      .filter((tx) => tx.amount < 0 && !(tx.title?.toLowerCase().includes("vận hành") || tx.title?.toLowerCase().includes("van hanh")))
       .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+
+    let operatingCost = 0;
+    let isEstimated = false;
+
+    if (settlement && Number(settlement.expense) > 0) {
+      operatingCost = Number(settlement.expense);
+      isEstimated = false;
+    } else {
+      // Tuần hiện tại hoặc tuần chưa chốt kết toán: dùng định mức chi phí tuần
+      operatingCost = costEstimate.total;
+      isEstimated = true;
+    }
+
+    const totalExpense = operatingCost + manualExpense;
+    const profit = income - totalExpense;
 
     return {
       id: week.periodStartKey,
@@ -77,22 +124,23 @@ export const getReportWeekOptions = (now = new Date(), transactions = []) => {
       periodEndKey: week.periodEndKey,
       isCurrent: week.isCurrent,
       isCompleted: week.isCompleted,
-      statusLabel: week.isCurrent ? "Đang diễn ra" : "Đã hoàn tất",
+      isEstimated,
+      statusLabel: week.isCurrent ? "Đang diễn ra" : (settlement ? "Đã chốt kỳ" : "Chờ kết toán"),
       transactionCount: weekTransactions.length,
       income,
-      expense,
-      profit: income - expense,
+      expense: totalExpense,
+      operatingCost,
+      manualExpense,
+      profit,
       periodStart: week.periodStart,
       periodEnd: week.periodEnd,
+      settlement,
+      hasOperatingCostTx,
     };
   });
 
-  const totalIncome = transactions
-    .filter((tx) => tx.amount > 0)
-    .reduce((sum, tx) => sum + tx.amount, 0);
-  const totalExpense = transactions
-    .filter((tx) => tx.amount < 0)
-    .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+  const totalIncome = weekOptions.reduce((sum, opt) => sum + opt.income, 0);
+  const totalExpense = weekOptions.reduce((sum, opt) => sum + opt.expense, 0);
 
   const allOption = {
     id: "all",
@@ -103,6 +151,7 @@ export const getReportWeekOptions = (now = new Date(), transactions = []) => {
     periodEndKey: "",
     isCurrent: false,
     isCompleted: false,
+    isEstimated: false,
     statusLabel: "Toàn kỳ",
     transactionCount: transactions.length,
     income: totalIncome,
@@ -125,12 +174,21 @@ export const filterTransactionsByWeekOption = (transactions, weekOptionId, weekO
 
 export const fetchWeekSettlement = async (teamId, periodStartKey) => {
   if (!teamId || !periodStartKey || periodStartKey === "all") return null;
+
+  const localMatch = teamSettlements.find((s) => {
+    if (s.period_start === periodStartKey) return true;
+    if (periodStartKey === "2026-08-31" && (s.period_start === "2026-08-30" || s.period_start === "2026-08-31")) return true;
+    return false;
+  });
+  if (localMatch) return localMatch;
+
   try {
     const { data, error } = await supabase
       .from("weekly_financial_settlements")
       .select("income, expense, profit, member_count, period_start, period_end, settled_at")
       .eq("team_id", teamId)
-      .eq("period_start", periodStartKey)
+      .in("period_start", [periodStartKey, "2026-08-30"])
+      .order("period_start", { ascending: false })
       .maybeSingle();
 
     if (error) {
@@ -153,8 +211,10 @@ export const buildFinancialReportCsv = ({
   settlement = null,
   currentBalance = 0,
   exportedAt = new Date(),
+  memberList = members,
 }) => {
   const rows = [];
+  const costEstimate = getWeeklyCostEstimate(memberList);
 
   // UTF-8 BOM
   const BOM = "\uFEFF";
@@ -173,7 +233,32 @@ export const buildFinancialReportCsv = ({
   rows.push([escapeCsvCell("Số dư tài khoản hiện tại"), escapeCsvCell(`${formatNumber(currentBalance)} coin`)]);
   rows.push([]);
 
-  // Tổng hợp tài chính kỳ
+  // Xác định rõ Doanh thu, Chi phí vận hành, Các khoản khác
+  const txIncome = transactions
+    .filter((tx) => tx.amount > 0)
+    .reduce((sum, tx) => sum + tx.amount, 0);
+  const income = weekOption.income || (settlement ? Math.max(Number(settlement.income) || 0, txIncome) : txIncome);
+
+  const hasOperatingCostTx = transactions.some(
+    (tx) => tx.amount < 0 && (tx.title?.toLowerCase().includes("vận hành") || tx.title?.toLowerCase().includes("van hanh"))
+  );
+  const manualExpense = transactions
+    .filter((tx) => tx.amount < 0 && !(tx.title?.toLowerCase().includes("vận hành") || tx.title?.toLowerCase().includes("van hanh")))
+    .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+
+  let operatingCost = 0;
+  if (weekOption.id === "all") {
+    operatingCost = weekOption.expense - manualExpense;
+  } else if (settlement && Number(settlement.expense) > 0) {
+    operatingCost = Number(settlement.expense);
+  } else {
+    operatingCost = weekOption.operatingCost || costEstimate.total;
+  }
+
+  const totalExpense = operatingCost + manualExpense;
+  const netProfit = income - totalExpense;
+
+  // Bảng tổng kết tài chính kỳ
   rows.push([escapeCsvCell("--- TỔNG KẾT TÀI CHÍNH TRONG KỲ ---")]);
   rows.push([
     escapeCsvCell("Chỉ số"),
@@ -181,30 +266,34 @@ export const buildFinancialReportCsv = ({
     escapeCsvCell("Ghi chú / Chi tiết"),
   ]);
 
-  const totalIncome = transactions
-    .filter((tx) => tx.amount > 0)
-    .reduce((sum, tx) => sum + tx.amount, 0);
-  const totalExpense = transactions
-    .filter((tx) => tx.amount < 0)
-    .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
-  const incomeCount = transactions.filter((tx) => tx.amount > 0).length;
-  const expenseCount = transactions.filter((tx) => tx.amount < 0).length;
-  const netFlow = totalIncome - totalExpense;
-
   rows.push([
     escapeCsvCell("Tổng coin vào (Doanh thu)"),
-    escapeCsvCell(formatSignedCoin(totalIncome)),
-    escapeCsvCell(`${incomeCount} giao dịch phát sinh`),
+    escapeCsvCell(formatSignedCoin(income)),
+    escapeCsvCell(`${transactions.filter((tx) => tx.amount > 0).length} giao dịch phát sinh`),
   ]);
   rows.push([
-    escapeCsvCell("Tổng coin ra (Chi phí)"),
+    escapeCsvCell("Chi phí vận hành tuần"),
+    escapeCsvCell(formatSignedCoin(-operatingCost)),
+    escapeCsvCell(settlement
+      ? `Đã chốt kết toán (200 coin cố định + 20 × ${settlement.member_count} nhân sự)`
+      : `Dự toán tuần (200 coin cố định + 20 × ${costEstimate.staffCount} nhân sự)`),
+  ]);
+  if (manualExpense > 0) {
+    rows.push([
+      escapeCsvCell("Các khoản trừ khác trong kỳ"),
+      escapeCsvCell(formatSignedCoin(-manualExpense)),
+      escapeCsvCell("Các khoản trừ ngoài phí vận hành định kỳ"),
+    ]);
+  }
+  rows.push([
+    escapeCsvCell("Tổng chi phí trong kỳ"),
     escapeCsvCell(formatSignedCoin(-totalExpense)),
-    escapeCsvCell(`${expenseCount} giao dịch phát sinh`),
+    escapeCsvCell(hasOperatingCostTx ? "Đã bao gồm dòng trừ trong sổ cái" : "Gồm phí vận hành và các khoản trừ"),
   ]);
   rows.push([
-    escapeCsvCell("Biến động ròng trong kỳ"),
-    escapeCsvCell(formatSignedCoin(netFlow)),
-    escapeCsvCell(netFlow >= 0 ? "Thặng dư dương" : "Thâm hụt"),
+    escapeCsvCell("Lợi nhuận ròng trong kỳ"),
+    escapeCsvCell(formatSignedCoin(netProfit)),
+    escapeCsvCell(netProfit >= 0 ? "Thặng dư dương (+)" : "Thâm hụt âm (−)"),
   ]);
 
   if (settlement) {
@@ -235,7 +324,53 @@ export const buildFinancialReportCsv = ({
     escapeCsvCell("Kỳ kết toán ghi nhận"),
   ]);
 
-  if (transactions.length === 0) {
+  const typeLabels = {
+    income: "Coin vào",
+    expense: "Coin ra",
+    adjustment: "Admin điều chỉnh",
+  };
+
+  const detailedItems = [];
+
+  // 1. Thêm các giao dịch thực tế trong sổ cái
+  transactions.forEach((tx) => {
+    const txTime = tx.occurredAt && !Number.isNaN(new Date(tx.occurredAt).getTime())
+      ? shortDateFormatter.format(new Date(tx.occurredAt))
+      : tx.date || "Chưa rõ ngày";
+
+    detailedItems.push({
+      time: txTime,
+      occurredAt: tx.occurredAt ? new Date(tx.occurredAt) : new Date(0),
+      id: tx.id || "—",
+      type: typeLabels[tx.type] || "Biến động",
+      amountFormatted: formatSignedCoin(tx.amount),
+      title: tx.title || "Giao dịch",
+      reason: tx.reason || "",
+      period: tx.settlementPeriodStart ? `Kỳ trễ ${tx.settlementPeriodStart}` : "Kỳ phát sinh",
+    });
+  });
+
+  // 2. Nếu tuần này chưa có dòng "Phí vận hành tuần" trong coin_transactions, bổ sung dòng chi phí vận hành
+  if (!hasOperatingCostTx && operatingCost > 0 && weekOption.id !== "all") {
+    const settleDate = settlement?.settled_at
+      ? shortDateFormatter.format(new Date(settlement.settled_at))
+      : (weekOption.periodEnd ? shortDateFormatter.format(weekOption.periodEnd) : shortDateFormatter.format(exportedAt));
+
+    detailedItems.push({
+      time: settleDate,
+      occurredAt: settlement?.settled_at ? new Date(settlement.settled_at) : (weekOption.periodEnd || new Date()),
+      id: settlement?.id || "OPERATING-FEE",
+      type: "Coin ra (Chi phí)",
+      amountFormatted: formatSignedCoin(-operatingCost),
+      title: settlement ? "Phí vận hành tuần (Đã kết toán)" : "Dự toán chi phí vận hành tuần",
+      reason: settlement
+        ? `Chi phí cố định 200 coin + 20 coin × ${settlement.member_count} nhân sự`
+        : `Chi phí cố định 200 coin + 20 coin × ${costEstimate.staffCount} nhân sự`,
+      period: weekOption.title,
+    });
+  }
+
+  if (detailedItems.length === 0) {
     rows.push([
       escapeCsvCell("—"),
       escapeCsvCell("—"),
@@ -247,41 +382,30 @@ export const buildFinancialReportCsv = ({
       escapeCsvCell(""),
     ]);
   } else {
-    // Sắp xếp theo thứ tự xảy ra (mới nhất lên trước hoặc từ cũ đến mới, cho báo cáo tài chính thì từ cũ đến mới hoặc mới nhất đều được, chuẩn nhất là từ mới nhất hoặc từ cũ đến mới)
     // Sắp xếp thời gian giảm dần (mới nhất lên đầu)
-    const sorted = [...transactions].sort((a, b) => new Date(b.occurredAt) - new Date(a.occurredAt));
+    detailedItems.sort((a, b) => b.occurredAt - a.occurredAt);
 
-    const typeLabels = {
-      income: "Coin vào",
-      expense: "Coin ra",
-      adjustment: "Admin điều chỉnh",
-    };
-
-    sorted.forEach((tx, idx) => {
-      const txTime = tx.occurredAt && !Number.isNaN(new Date(tx.occurredAt).getTime())
-        ? shortDateFormatter.format(new Date(tx.occurredAt))
-        : tx.date || "Chưa rõ ngày";
-
+    detailedItems.forEach((item, idx) => {
       rows.push([
         escapeCsvCell(idx + 1),
-        escapeCsvCell(txTime),
-        escapeCsvCell(tx.id || "—"),
-        escapeCsvCell(typeLabels[tx.type] || "Biến động"),
-        escapeCsvCell(formatSignedCoin(tx.amount)),
-        escapeCsvCell(tx.title || "Giao dịch"),
-        escapeCsvCell(tx.reason || ""),
-        escapeCsvCell(tx.settlementPeriodStart ? `Kỳ trễ ${tx.settlementPeriodStart}` : "Kỳ phát sinh"),
+        escapeCsvCell(item.time),
+        escapeCsvCell(item.id),
+        escapeCsvCell(item.type),
+        escapeCsvCell(item.amountFormatted),
+        escapeCsvCell(item.title),
+        escapeCsvCell(item.reason),
+        escapeCsvCell(item.period),
       ]);
     });
 
     // Dòng tổng kết
     rows.push([
       escapeCsvCell("Tổng kết"),
-      escapeCsvCell(`Tổng ${transactions.length} giao dịch`),
+      escapeCsvCell(`Tổng ${detailedItems.length} mục`),
       escapeCsvCell(""),
-      escapeCsvCell("Tổng dòng tiền"),
-      escapeCsvCell(formatSignedCoin(netFlow)),
-      escapeCsvCell(`Vào: ${formatSignedCoin(totalIncome)} | Ra: ${formatSignedCoin(-totalExpense)}`),
+      escapeCsvCell("Dòng tiền ròng"),
+      escapeCsvCell(formatSignedCoin(netProfit)),
+      escapeCsvCell(`Vào: ${formatSignedCoin(income)} | Ra: ${formatSignedCoin(-totalExpense)}`),
       escapeCsvCell(""),
       escapeCsvCell(""),
     ]);
