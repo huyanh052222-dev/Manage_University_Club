@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "security:check": "node -c scripts/security/securityGuard.js",
-    "build:obfuscate": "node scripts/tools/obfuscate.js",
-    "build": "npm run build:obfuscate"
+    "obfuscate": "node scripts/tools/obfuscate.js",
+    "build:obfuscate": "node scripts/tools/obfuscate.js"
   },
   "keywords": [
     "security",
