@@ -150,3 +150,40 @@ export const getCafeWeekContext = (now = new Date()) => {
     subtitle: `Ngày ${day} / 7 · Mở bán từ ${formatOpeningDate()}`,
   };
 };
+
+export const getAllCafeWeeks = (now = new Date()) => {
+  const currentWeekStart = getCafeWeekStart(now);
+  const firstWeekStart = createLocalFirstRevenueWeekStart();
+  const context = getCafeWeekContext(now);
+  const totalWeeks = Math.max(1, context.week);
+  const weeks = [];
+  const formatter = new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+
+  for (let w = totalWeeks; w >= 1; w -= 1) {
+    const periodStart = new Date(firstWeekStart);
+    periodStart.setDate(periodStart.getDate() + ((w - 1) * 7));
+    const periodEnd = new Date(periodStart);
+    periodEnd.setDate(periodEnd.getDate() + 7);
+
+    const displayEnd = new Date(periodEnd);
+    displayEnd.setDate(displayEnd.getDate() - 1);
+
+    const isCurrent = currentWeekStart ? periodStart.getTime() === currentWeekStart.getTime() : w === 1;
+    const isCompleted = currentWeekStart ? periodEnd <= currentWeekStart : false;
+
+    weeks.push({
+      week: w,
+      title: `Tuần ${w}`,
+      periodStart,
+      periodEnd,
+      displayEnd,
+      periodStartKey: formatDateKey(periodStart),
+      periodEndKey: formatDateKey(periodEnd),
+      displayRange: `${formatter.format(periodStart)} – ${formatter.format(displayEnd)}`,
+      isCurrent,
+      isCompleted,
+    });
+  }
+
+  return weeks;
+};

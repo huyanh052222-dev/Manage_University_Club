@@ -60,7 +60,19 @@ export const renderTransactionLog = () => `
         <span class="section-icon green">${icon("receipt")}</span>
         <div><h2 id="transaction-log-title">Nhật ký coin</h2><p>Biến động số dư của ${escapeHtml(club.name)}</p></div>
       </div>
-      <span class="log-live"><i></i> Đồng bộ Supabase</span>
+      <div class="transaction-log-header-actions">
+        <button
+          class="export-report-btn"
+          type="button"
+          data-action="open-export-report"
+          title="Xuất file báo cáo tài chính giao dịch"
+          aria-label="Xuất file báo cáo tài chính giao dịch"
+        >
+          ${icon("download")}
+          <span>Xuất báo cáo</span>
+        </button>
+        <span class="log-live"><i></i> Đồng bộ Supabase</span>
+      </div>
     </header>
 
     <div class="transaction-log-list ${transactionLogs.length ? "" : "empty"}">
