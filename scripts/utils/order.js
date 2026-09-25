@@ -48,7 +48,8 @@ export const normalizeOrderSourceUrl = (value) => {
   if (sourceUrl === "#") return "#";
 
   try {
-    const parsedUrl = new URL(sourceUrl, window.location.href);
+    const base = typeof window !== "undefined" && window.location ? window.location.href : "https://example.com";
+    const parsedUrl = new URL(sourceUrl, base);
     return ["http:", "https:"].includes(parsedUrl.protocol) ? parsedUrl.href : "#";
   } catch {
     return "#";
